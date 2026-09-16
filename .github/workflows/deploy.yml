@@ -58,34 +58,16 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:${{ github.sha }}
 
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-
-      # docker-compose.yml (labels Traefik, limites de ressources...) n'est
-      # pas embarqué dans les images : sans cette étape, ses changements ne
-      # seraient jamais répercutés sur la VPS.
-      - name: Sync docker-compose.yml
-        uses: appleboy/scp-action@v1
+      # Ce repo ne connaît jamais l'IP du VPS ni les détails Traefik — le
+      # déploiement réel (docker-compose.yml avec labels Traefik, SSH) vit
+      # dans github.com/pazpop/terraform-infra-pazpop-hetzner, notifié ici
+      # une fois les images publiées. La condition `if` évite que cette
+      # étape s'exécute (et échoue faute de secret) sur un fork/usage
+      # communautaire — le build+push ci-dessus reste utile en soi.
+      - name: Notifier terraform-infra-pazpop-hetzner
+        if: ${{ github.repository == 'pazpop/arcadepipe' }}
+        uses: peter-evans/repository-dispatch@v3
         with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          source: docker-compose.yml
-          target: ~/arcadepipe
-
-      - name: Deploy over SSH
-        uses: appleboy/ssh-action@v1
-        with:
-          host: ${{ secrets.DEPLOY_HOST }}
-          username: ${{ secrets.DEPLOY_USER }}
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          script: |
-            cd ~/arcadepipe
-            docker compose pull
-            docker compose up -d
-            docker image prune -f
+          token: ${{ secrets.TERRAFORM_INFRA_DISPATCH_TOKEN }}
+          repository: pazpop/terraform-infra-pazpop-hetzner
+          event-type: arcadepipe-published

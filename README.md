@@ -1,8 +1,8 @@
 # ArcadePipe 🚀
 
-Mini jeu vidéo (*The Last Starfighter*) avec leaderboard, déployé sur un VPS Hetzner via Docker. Projet d'apprentissage DevOps/IaC — conçu par [pazpop](https://github.com/pazpop) avec [Claude](https://claude.com).
+Mini jeu vidéo (*The Last Starfighter*) avec leaderboard — shoot'em up à défilement horizontal, pixel art généré par code, jouable directement dans le navigateur. Conçu par [pazpop](https://github.com/pazpop) avec [Claude](https://claude.com).
 
-Ce repo ne contient que l'app (backend + frontend). L'infra (VPS, OpenTofu) et le reverse-proxy partagé (Traefik, mutualisé entre jeux) vivent dans le repo séparé [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner) — doit tourner en premier sur la VPS avant ce compose (réseau Docker externe `traefik-public`).
+Ce repo contient uniquement le jeu (backend + frontend) — `docker-compose.standalone.yml` (voir plus bas) suffit à le faire tourner n'importe où, sans dépendance externe. Une instance publique tourne sur **https://arcadepipe.pazpop.net**, déployée depuis un repo d'infra séparé ([`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner)) — voir *CI/CD* pour le détail de cette séparation.
 
 ![Capture d'écran d'ArcadePipe en jeu](docs/screenshot.png)
 
@@ -14,21 +14,20 @@ Ce projet (et l'infra qui l'héberge, voir [`terraform-infra-pazpop-hetzner`](ht
 
 | Composant | Techno | Rôle |
 |---|---|---|
-| Reverse proxy | [Traefik](https://traefik.io/) *(repo infra séparé)* | Seul point d'entrée public (80/443) pour tous les jeux du VPS — route vers ce jeu par nom d'hôte (`arcadepipe.pazpop.net` → frontend, `/api/*` → backend), via labels Docker |
-| Backend | FastAPI + `sqlite3` natif | API du leaderboard, sans port publié |
-| Frontend | JS vanilla (modules ES6) + Canvas 2D | Shoot'em up à défilement horizontal, pixel art généré par code, sans port publié |
+| Backend | FastAPI + `sqlite3` natif | API du leaderboard |
+| Frontend | JS vanilla (modules ES6) + Canvas 2D | Shoot'em up à défilement horizontal, pixel art généré par code |
 | DB | SQLite (WAL), volume Docker | Scores |
 | Musique | [libopenmpt](https://lib.openmpt.org/libopenmpt/) via [chiptune3.js](https://github.com/DrSnuggles/chiptune) (`AudioWorklet`) | Rejoue le vrai fichier `.xm` (`frontend/music/theme.xm`), pas une recomposition |
 
 ```mermaid
 flowchart LR
-    Internet -->|HTTPS| Proxy["Traefik\n(repo infra)\narcadepipe.pazpop.net"]
-    Proxy -->|/| Frontend
+    Internet -->|HTTP| Proxy["Caddy (frontend)"]
+    Proxy -->|/| Static[Fichiers statiques]
     Proxy -->|/api/*| Backend
     Backend --> DB[(SQLite)]
 ```
 
-**https://arcadepipe.pazpop.net** — TLS automatique (Let's Encrypt) via Traefik, renouvellement géré tout seul. `game.pazpop.net` héberge le portail listant tous les jeux du VPS (voir repo infra, `portal/`) — ArcadePipe y apparaît automatiquement via ses labels Docker, aucun lien à ajouter à la main.
+Ce diagramme correspond à `docker-compose.standalone.yml` (voir *Docker*) : Caddy sert le jeu et route lui-même `/api/*` vers le backend, sans reverse-proxy externe. L'instance publique (`arcadepipe.pazpop.net`) ajoute Traefik devant (TLS, routage par nom d'hôte entre plusieurs jeux) — géré entièrement par le repo d'infra séparé, invisible depuis ce repo-ci.
 
 ## Lancer en local
 
@@ -40,20 +39,9 @@ pip install -r requirements.txt && python seed.py && uvicorn main:app --reload
 cd frontend && python -m http.server 5500   # http://localhost:5500
 ```
 
-## Docker (front + back, derrière Traefik)
+## Docker
 
-Nécessite le réseau externe `traefik-public` (créé par le stack Traefik du repo infra — voir son README) :
-
-```bash
-docker network create traefik-public   # si pas déjà fait par le stack Traefik
-docker compose up --build
-```
-
-Sans Traefik qui tourne à côté, backend/frontend n'ont pas de port publié (par design) — pour un test isolé rapide sans proxy, ajouter temporairement un `ports:` ou utiliser le mode "Lancer en local" ci-dessus.
-
-## Déploiement autonome (sans Traefik ni l'infra pazpop)
-
-Pour faire tourner ArcadePipe ailleurs, sans dépendre de Traefik ni du repo infra pazpop : `docker-compose.standalone.yml`, à la racine, publie directement le port 80 et garde toutes les protections déjà en place (non-root, rootfs read-only, `cap_drop: ALL`, rate limiting, CORS) — seul le routage change, Caddy (frontend) route lui-même `/api/*` vers le backend (voir la route ajoutée dans `frontend/Caddyfile`), pas besoin d'un reverse-proxy externe.
+`docker-compose.standalone.yml`, à la racine, fait tourner tout le jeu (backend + frontend) sans aucune dépendance externe — publie directement le port 80 et garde toutes les protections de sécurité (non-root, rootfs read-only, `cap_drop: ALL`, rate limiting, CORS). Caddy (frontend) route lui-même `/api/*` vers le backend, pas besoin d'un reverse-proxy en plus.
 
 ```bash
 docker compose -f docker-compose.standalone.yml up --build -d
@@ -62,7 +50,7 @@ docker compose -f docker-compose.standalone.yml up --build -d
 
 Testé de bout en bout (page d'accueil, fichiers statiques, `GET`/`POST /api/scores` via le routage interne, non-root confirmé) avant d'être documenté ici. Port 80 déjà pris ? Changer le mapping `"80:80"` du service `frontend` (ex: `"8080:80"`) et adapter `ALLOWED_ORIGINS` du service `backend` à l'URL réellement utilisée.
 
-`docker-compose.yml` (à la racine) reste le déploiement de référence pour l'infra pazpop — les deux fichiers coexistent, choisir celui qui correspond à l'usage.
+C'est le seul fichier de déploiement Docker de ce repo — celui qui ajoute Traefik/TLS pour l'instance `arcadepipe.pazpop.net` vit dans le repo d'infra séparé (voir *CI/CD*), pas ici.
 
 ## Tests
 
@@ -114,39 +102,13 @@ await page.evaluate(async () => {
 
 Ça marche pour n'importe quel module déjà chargé par la page — `config.js` pour les constantes, ou `main.js` pour atteindre les instances `music`/`audio` (voir l'export en bas de `frontend/js/main.js`). Voir `e2e/tests/helpers.js` pour le détail et d'autres exemples.
 
-## VPS
-
-Déploiement manuel (CI/CD disponible mais pas encore exercé par un vrai push — voir Roadmap) :
-
-```bash
-./deploy.sh          # IP par défaut (91.99.16.66)
-./deploy.sh <IP>      # ou une autre IP
-```
-
-Construit les images sur le serveur, redémarre les conteneurs, vérifie `/api/health` et la page d'accueil. Suppose que la stack Traefik (repo infra) tourne déjà.
-
-Détail de ce que fait le script (tar/scp/ssh), si besoin de le reproduire à la main :
-
-```bash
-tar -czf - -C . --exclude='.git' --exclude='backend/venv' --exclude='backend/__pycache__' \
-  --exclude='backend/arcadepipe.db' \
-  backend frontend docker-compose.yml \
-  | ssh -i ~/.ssh/arcadepipe_vps root@<IP> "mkdir -p ~/arcadepipe && tar xzf - -C ~/arcadepipe"
-ssh -i ~/.ssh/arcadepipe_vps root@<IP> "cd ~/arcadepipe && docker compose up --build -d"
-```
-
-(Suppose que le stack Traefik du repo infra tourne déjà sur la VPS, réseau `traefik-public` créé.)
-
 ## Sécurité
 
-- En-têtes de sécurité HTTP (HSTS, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy`, `Permissions-Policy`) posés par le middleware Traefik partagé (`secure-headers`, repo infra), en-tête `Server` retiré
 - CORS restreint (`ALLOWED_ORIGINS`, jamais `"*"`), requêtes SQL paramétrées, entrées validées (Pydantic)
 - Nom de joueur jamais inséré dans du HTML (rendu Canvas côté client, API JSON côté serveur) — aucune surface XSS, sans échappement explicite à maintenir
-- **Rate limiting** (`slowapi`, par IP réelle via `X-Forwarded-For`, fiable car le backend n'est joignable que par Traefik) : `POST /api/scores` à 5/minute, `GET /api/scores` à 60/minute (lecture bon marché mais toujours limitée, en défense en profondeur)
-- Backend non-root, rootfs read-only, `cap_drop: ALL` (frontend : voir Roadmap)
-- Firewall (repo infra) : SSH restreint à l'IP de pazpop, 80/443 ouverts (jeu public), backend/frontend sans port exposé (seul Traefik l'est)
-- Secrets (token Hetzner) jamais commités — vivent dans le repo infra, jamais ici
-- **Non fait volontairement** : score non authentifié (triche possible via `curl`, juste borné à 999999)
+- **Rate limiting** (`slowapi`, par IP réelle via `X-Forwarded-For` si un reverse-proxy de confiance le pose devant, sinon l'IP de connexion directe) : `POST /api/scores` à 5/minute, `GET /api/scores` à 60/minute (lecture bon marché mais toujours limitée, en défense en profondeur)
+- Backend **et** frontend non-root, rootfs read-only, `cap_drop: ALL` (voir `docker-compose.standalone.yml` — le frontend garde `NET_BIND_SERVICE`, seule capacité nécessaire pour qu'un Caddy non-root se lie au port 80)
+- **Non fait volontairement** : score non authentifié (triche possible via `curl`, juste borné à 999999) ; en-têtes de sécurité HTTP additionnels (HSTS, CSP...) laissés au reverse-proxy de qui déploie ce jeu (l'instance `arcadepipe.pazpop.net` les pose via Traefik, dans son repo d'infra séparé) plutôt qu'imposés ici
 
 ## Données collectées
 
@@ -156,16 +118,15 @@ ssh -i ~/.ssh/arcadepipe_vps root@<IP> "cd ~/arcadepipe && docker compose up --b
 
 ## CI/CD
 
-`.github/workflows/deploy.yml` : sur push vers `main`, build + push des images vers GHCR (tags `:latest` et `:<sha>`, public — pas d'auth nécessaire sur la VPS pour `docker pull`), synchronisation de `docker-compose.yml` sur la VPS, puis déploiement SSH (`docker compose pull && up -d`).
+`.github/workflows/deploy.yml` : sur push vers `main`, lint (`ruff`) puis build + push des images vers GHCR (tags `:latest` et `:<sha>`, public — aucune authentification requise pour `docker pull` où que ce soit).
 
-Secrets GitHub à configurer une fois le repo créé : `DEPLOY_HOST`, `DEPLOY_USER`, `DEPLOY_SSH_KEY`.
+Ce repo s'arrête là — il ne connaît ni VPS ni serveur cible. L'instance `arcadepipe.pazpop.net` est déployée par un repo d'infra séparé ([`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner)), notifié via un événement `repository_dispatch` une fois les images publiées (voir le CI/CD de ce repo-là pour le détail). Un fork ou un usage communautaire n'a pas ce déclenchement (secret absent) et n'en a pas besoin — voir *Docker* ci-dessus pour se déployer soi-même.
 
-⚠️ GHCR crée les packages en **privé** par défaut au premier push — après le premier run, aller dans Package Settings sur GitHub et les passer en public (sinon `docker compose pull` échoue sur la VPS sans authentification).
+⚠️ GHCR crée les packages en **privé** par défaut au premier push — après le premier run, aller dans Package Settings sur GitHub et les passer en public (sinon `docker compose pull` échoue côté déploiement sans authentification).
 
 ## Roadmap
 
-- [ ] Créer les repos GitHub (`arcadepipe`, `terraform-infra-pazpop-hetzner`) et pousser le code
-- [ ] Premier push vers `main` pour valider le pipeline CI/CD de bout en bout (`.github/workflows/deploy.yml` n'a encore jamais tourné — déploiements actuels faits à la main), puis passer les packages GHCR en public (voir ci-dessus)
+- [ ] Premier push vers `main` pour valider le nouveau pipeline CI/CD de bout en bout (build/push/notification cross-repo — jamais exercé depuis la séparation des repos), puis passer les packages GHCR en public (voir ci-dessus)
 - [ ] Sauvegardes DB ([Litestream](https://litestream.io/) ou cron) — **reporté volontairement** : pas de vraie perte critique en cas d'incident pour un classement de jeu perso, pas prioritaire pour l'instant
 - [ ] Score authentifié (jeton signé émis au début de la partie, exigé à la soumission) — pas urgent, le score non authentifié est un risque assumé (voir Sécurité)
 
@@ -174,16 +135,15 @@ Secrets GitHub à configurer une fois le repo créé : `DEPLOY_HOST`, `DEPLOY_US
 ```
 arcadepipe/
 ├── backend/    # FastAPI + SQLite + Dockerfile
-├── frontend/   # Dockerfile (Caddy = serveur de fichiers statiques interne, sans rapport avec Traefik)
+├── frontend/   # Dockerfile (Caddy = serveur de fichiers statiques)
 │   ├── index.html, css/style.css
 │   ├── js/       # config, assets (sprites générés), moteur de jeu (modules ES6)
 │   │   └── audio/  # sfx.js (synthèse), music.js + leaderboard.js (intégrations)
 │   ├── lib/      # chiptune3.js + libopenmpt.worklet.js (lecture de module tracker, AudioWorklet)
 │   └── music/    # playlist de .xm — voir Crédits
 ├── e2e/        # tests bout-en-bout Playwright — voir section Tests
-├── .github/workflows/  # CI/CD (lint + build + push GHCR + déploiement SSH)
-├── docker-compose.yml             # infra pazpop (Traefik)
-└── docker-compose.standalone.yml  # déploiement autonome (voir section dédiée)
+├── .github/workflows/  # CI/CD (lint + build + push GHCR + notification de déploiement)
+└── docker-compose.standalone.yml  # seul fichier de déploiement Docker de ce repo — voir section Docker
 ```
 
 ## Crédits

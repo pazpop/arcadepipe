@@ -1,0 +1,12 @@
+[tool.ruff]
+target-version = "py311"
+# 110 plutôt que le défaut 88 (façon black) : quelques commentaires en
+# français dépassent 88 sans que ce soit un vrai problème de lisibilité —
+# évite un reformatage massif sans valeur ajoutée.
+line-length = 110
+
+[tool.ruff.lint]
+# Défaut (E/F) + imports (I) : suffisant pour un projet de cette taille,
+# pas besoin d'activer les dizaines de familles de règles plus strictes
+# (docstrings, complexité, etc.) pour un backend aussi petit.
+extend-select = ["I"]

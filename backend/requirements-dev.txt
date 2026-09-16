@@ -1,0 +1,5 @@
+# Dépendances de développement/test uniquement — jamais dans l'image Docker
+# (voir requirements.txt pour les dépendances réellement nécessaires en prod).
+pytest
+httpx   # nécessaire pour fastapi.testclient.TestClient
+ruff

@@ -1,0 +1,31 @@
+# libopenmpt.worklet.js pèse ~1.5 Mo non compressé : la compression n'est pas
+# activée par défaut dans le Caddyfile embarqué de l'image officielle, on la
+# rajoute explicitement (gzip/zstd divisent grossièrement la taille par 3).
+:80 {
+	encode zstd gzip
+
+	# Route l'API vers le backend quand rien ne l'intercepte déjà avant —
+	# utile en déploiement autonome (voir docker-compose.standalone.yml à la
+	# racine), où il n'y a pas de Traefik pour router /api/* directement
+	# vers le service backend. Sans effet en prod derrière Traefik : son
+	# routeur backend (priority=10, PathPrefix `/api`) capte déjà la requête
+	# avant qu'elle n'atteigne ce service. `backend` est résolvable dans les
+	# deux cas (même réseau Docker que ce service).
+	handle /api/* {
+		reverse_proxy backend:8000
+	}
+
+	handle {
+		root * /usr/share/caddy
+		# Sans ça, un simple F5 peut resservir une version périmée du jeu
+		# directement depuis le cache disque du navigateur, sans même
+		# vérifier auprès du serveur (heuristique de fraîcheur — aucun
+		# Cache-Control explicite n'était envoyé avant). "no-cache" ne veut
+		# PAS dire "ne pas mettre en cache" : ça force une revalidation
+		# (ETag/Last-Modified, déjà fournis par file_server) à chaque
+		# chargement — un fichier inchangé revient en 304 sans
+		# retélécharger, un fichier modifié est récupéré immédiatement.
+		header Cache-Control "no-cache"
+		file_server
+	}
+}

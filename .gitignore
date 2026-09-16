@@ -1,0 +1,16 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+backend/arcadepipe.db
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node / Playwright (e2e/)
+node_modules/
+e2e/test-results/
+e2e/playwright-report/
+e2e/package-lock.json

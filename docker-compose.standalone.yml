@@ -1,0 +1,66 @@
+# Déploiement autonome — pour quiconque veut faire tourner ArcadePipe SANS
+# l'infra pazpop (Traefik, réseau externe `traefik-public`, terraform-infra-
+# pazpop-hetzner). Toutes les protections de sécurité qui concernent le jeu
+# lui-même (non-root, rootfs read-only, cap_drop, rate limiting, CORS)
+# restent identiques à docker-compose.yml — seul le routage change : ici
+# Caddy (frontend) route lui-même /api/* vers le backend (voir la route
+# ajoutée dans frontend/Caddyfile), pas besoin d'un reverse-proxy externe.
+#
+# Usage :
+#   docker compose -f docker-compose.standalone.yml up --build -d
+#   -> le jeu est sur http://localhost (port 80)
+#
+# Pour changer le port publié (80 déjà pris, etc.), modifier le mapping
+# "80:80" ci-dessous (ex: "8080:80") ET la valeur ALLOWED_ORIGINS du backend
+# pour qu'elle corresponde à l'URL réellement utilisée dans le navigateur.
+#
+# docker-compose.yml (à la racine) reste le déploiement de référence pour
+# l'infra pazpop — ne pas le modifier pour un usage autonome, utiliser ce
+# fichier séparé à la place.
+services:
+  backend:
+    build: ./backend
+    volumes:
+      - backend_data:/data
+    environment:
+      - ALLOWED_ORIGINS=http://localhost
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 256m
+    cpus: 0.5
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      # /config,/data : XDG_CONFIG_HOME/XDG_DATA_HOME de Caddy (autosave de
+      # config, cache) — pas de vrais certificats ici (pas de TLS en
+      # standalone, voir Roadmap si besoin d'HTTPS direct un jour).
+      - /tmp
+      - /config
+      - /data
+    cap_drop:
+      - ALL
+    # NET_BIND_SERVICE : indispensable pour que le Caddy non-root (voir
+    # frontend/Dockerfile, USER caddyuser) puisse quand même se lier au
+    # port 80.
+    cap_add:
+      - NET_BIND_SERVICE
+    security_opt:
+      - no-new-privileges:true
+    mem_limit: 128m
+    cpus: 0.25
+
+volumes:
+  backend_data:

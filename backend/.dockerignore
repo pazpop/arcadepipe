@@ -1,0 +1,12 @@
+venv/
+__pycache__/
+*.pyc
+arcadepipe.db
+# Tests/lint : utiles en dev, inutiles (et jamais exécutés) dans l'image —
+# deploy.sh les exclut déjà pour le déploiement pazpop ; ceci couvre aussi
+# un `docker build`/déploiement standalone direct, sans passer par deploy.sh.
+test_main.py
+test_api.py
+requirements-dev.txt
+pyproject.toml
+.pytest_cache/

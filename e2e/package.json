@@ -1,0 +1,15 @@
+{
+  "name": "arcadepipe-e2e",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tests bout-en-bout (Playwright) pour le frontend ArcadePipe — complète les tests de logique pure de frontend/js/*.test.js (node --test), qui ne peuvent pas couvrir le canvas/les entrées souris-tactile.",
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "install-browsers": "playwright install chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.55.0"
+  }
+}

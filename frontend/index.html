@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+<title>ArcadePipe — Starfighter</title>
+<meta name="description" content="ArcadePipe Starfighter — jeu d'arcade spatial rétro gratuit, jouable directement dans le navigateur, sans installation. Vagues d'ennemis, boss, bonus et classement en ligne." />
+<meta name="keywords" content="jeu arcade, shoot em up, shmup, jeu spatial, jeu de tir, jeu navigateur, jeu gratuit, jeu html5, retro gaming, arcadepipe, starfighter" />
+<meta name="robots" content="index, follow" />
+<link rel="canonical" href="https://arcadepipe.pazpop.net/" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="ArcadePipe — Starfighter" />
+<meta property="og:description" content="Jeu d'arcade spatial rétro gratuit, jouable directement dans le navigateur." />
+<meta property="og:url" content="https://arcadepipe.pazpop.net/" />
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content="ArcadePipe — Starfighter" />
+<meta name="twitter:description" content="Jeu d'arcade spatial rétro gratuit, jouable directement dans le navigateur." />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas"></canvas>
+    <div id="crt-overlay" aria-hidden="true"></div>
+    <input id="name-input" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" />
+
+    <div id="mc-wrap">
+      <div id="music-controls">
+        <div class="mc-section">
+          <!-- Échap/P mettent en pause au clavier, mais rien d'équivalent au
+               tactile — ce bouton est le seul moyen d'ouvrir le menu pause
+               sur mobile. -->
+          <button id="pause-btn" type="button" class="mc-pause-btn" title="Menu pause">⏸ Pause</button>
+        </div>
+        <div class="mc-section">
+          <div class="mc-label">MUSIQUE</div>
+          <div class="mc-row">
+            <button id="music-stop-btn" type="button" title="Stop / lecture">⏹</button>
+            <button id="music-next-btn" type="button" title="Piste suivante">⏭</button>
+            <input id="music-volume" type="range" min="0" max="100" step="1" title="Volume musique" />
+          </div>
+        </div>
+        <div class="mc-section">
+          <div class="mc-label">BRUITAGES</div>
+          <div class="mc-row">
+            <input id="sfx-volume" type="range" min="0" max="100" step="1" title="Volume bruitages" />
+          </div>
+        </div>
+        <div class="mc-section">
+          <div class="mc-label">OPTIONS</div>
+          <label class="mc-check">
+            <input id="autofire-toggle" type="checkbox" />
+            <span>Tir auto</span>
+          </label>
+          <button id="help-btn" type="button" class="mc-pause-btn" title="Aide">Aide</button>
+        </div>
+      </div>
+      <!-- Hors du panneau qui glisse : reste toujours visible, replié ou non. -->
+      <button id="mc-toggle" type="button" title="Afficher/masquer le menu">◀</button>
+    </div>
+  </div>
+
+  <!-- Le lecteur de module tracker (lib/chiptune3.js, AudioWorklet) est un
+       vrai module ES6, importé directement par js/audio/music.js — pas
+       besoin de <script> classique ici. -->
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

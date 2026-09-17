@@ -80,7 +80,7 @@ const HELP_INFO = {
   sections: [
     { heading: "DÉPLACEMENT", detail: "Souris ou doigt : dirige le vaisseau" },
     { heading: "TIR", detail: 'Maintiens le clic, ou coche "TIR AUTO" (bas à gauche)' },
-    { heading: "BONUS", detail: "Ennemis détruits : PUISSANCE/RAFALE/BOUCLIER, rarement NOVA" },
+    { heading: "BONUS", detail: "Ennemis détruits : PUISSANCE/RAFALE/CHEVROTINE/BOUCLIER, rarement NOVA" },
     { heading: "BOSS", detail: "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie" },
     { heading: "MUSIQUE", detail: "Playlist aléatoire, réglable en bas à gauche" },
   ],
@@ -109,6 +109,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     wave: 1,
     waveKills: 0,
     waveKillTarget: DIFFICULTY.baseWaveKills,
+    tookDamageThisWave: false, // pour DIFFICULTY.noDamageWaveBonus — reset dans startWave, mis à true dans onPlayerHit
     spawnTimer: 0,
     spawnInterval: DIFFICULTY.baseSpawnInterval,
     waveBreak: 0,
@@ -178,6 +179,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
   function startWave(wave) {
     g.wave = wave;
     g.waveKills = 0;
+    g.tookDamageThisWave = false;
     g.waveKillTarget = DIFFICULTY.baseWaveKills + (wave - 1) * DIFFICULTY.waveKillsStep;
     g.spawnInterval = Math.max(
       DIFFICULTY.minSpawnInterval,
@@ -202,6 +204,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     resetPlayer(player);
     for (const b of projectiles.player.items) b.active = false;
     for (const b of projectiles.enemy.items) b.active = false;
+    for (const b of projectiles.pellet.items) b.active = false;
     for (const e of enemies.items) e.active = false;
     for (const p of particles.items) p.active = false;
     for (const pu of powerups.items) pu.active = false;
@@ -312,61 +315,65 @@ export function createGame({ input, audio, music, nameInputEl }) {
   function resolveCollisions() {
     if (g.clearingScreen) return;
 
-    // Balles alliées vs ennemis normaux/élites
-    for (const b of projectiles.player.items) {
-      if (!b.active) continue;
-      for (const en of enemies.items) {
-        if (!en.active) continue;
-        if (!circlesOverlap(b.x, b.y, projectiles.player.radius, en.x, en.y, en.radius)) continue;
-        b.active = false;
-        const destroyed = damageEnemy(en, particles, b.damage || 1);
-        if (destroyed) {
-          g.score += pointsFor(en);
-          g.waveKills += 1;
-          g.enemiesKilled += 1;
-          audio.playExplosion();
-          // Pas de shake sur un kill "classique" (réservé aux coups encaissés/
-          // victoire boss), sinon l'écran tremble en permanence.
-          triggerHitStop(en.type === "elite" ? 0.05 : 0.03);
-          // Un seul bonus à la fois, aucun si déjà actif — évite le gâchis et
-          // garde le HUD lisible.
-          const noBonusInPlay = !player.buff && !player.shield && !powerups.items.some((pu) => pu.active);
-          const dropChance = en.type === "elite" ? POWERUP.dropChanceElite : POWERUP.dropChanceNormal;
-          if (noBonusInPlay && Math.random() < dropChance) {
-            spawnPowerup(powerups, en.x, en.y, pickPowerupType());
-          }
-        } else {
-          audio.playBossHit();
-        }
-        break;
-      }
-    }
-
-    // Balles alliées vs points faibles du boss
-    if (g.boss && !g.boss.victory) {
-      for (const b of projectiles.player.items) {
+    // Balles alliées (tirs normaux + plombs CHEVROTINE) vs ennemis normaux/élites
+    for (const pool of [projectiles.player, projectiles.pellet]) {
+      for (const b of pool.items) {
         if (!b.active) continue;
-        const res = hitBossWeakPoint(g.boss, b.x, b.y, projectiles.player.radius, particles, b.damage || 1);
-        if (res) {
+        for (const en of enemies.items) {
+          if (!en.active) continue;
+          if (!circlesOverlap(b.x, b.y, pool.radius, en.x, en.y, en.radius)) continue;
           b.active = false;
-          if (res === true) {
-            g.score += 300; // vaut un ennemi élite (TYPE_STATS.elite.points dans enemies.js)
-            triggerShake(6);
-            triggerHitStop(0.06);
+          const destroyed = damageEnemy(en, particles, b.damage || 1);
+          if (destroyed) {
+            g.score += pointsFor(en);
+            g.waveKills += 1;
+            g.enemiesKilled += 1;
             audio.playExplosion();
-            if (g.boss.victory) {
-              g.score += 1000; // bonus de victoire, nettement au-dessus d'un point faible pour marquer l'accomplissement
-              player.lives = Math.min(PLAYER.maxLives, player.lives + 1); // récompense de victoire, plafonnée
-              g.flash = Math.max(g.flash, 0.6);
-              triggerShake(14);
-              triggerHitStop(0.14);
-              vibrate([40, 60, 40]);
-              spawnExplosion(particles, g.boss.x, g.boss.y, 80, PALETTE.boss);
-              spawnFlashBurst(particles, g.boss.x, g.boss.y, 24);
-              triggerDeathStarLeave(starfield);
+            // Pas de shake sur un kill "classique" (réservé aux coups encaissés/
+            // victoire boss), sinon l'écran tremble en permanence.
+            triggerHitStop(en.type === "elite" ? 0.05 : 0.03);
+            // Un seul bonus à la fois, aucun si déjà actif — évite le gâchis et
+            // garde le HUD lisible.
+            const noBonusInPlay = !player.buff && !player.shield && !powerups.items.some((pu) => pu.active);
+            const dropChance = en.type === "elite" ? POWERUP.dropChanceElite : POWERUP.dropChanceNormal;
+            if (noBonusInPlay && Math.random() < dropChance) {
+              spawnPowerup(powerups, en.x, en.y, pickPowerupType());
             }
           } else {
             audio.playBossHit();
+          }
+          break;
+        }
+      }
+    }
+
+    // Balles alliées (tirs normaux + plombs) vs points faibles du boss
+    if (g.boss && !g.boss.victory) {
+      for (const pool of [projectiles.player, projectiles.pellet]) {
+        for (const b of pool.items) {
+          if (!b.active) continue;
+          const res = hitBossWeakPoint(g.boss, b.x, b.y, pool.radius, particles, b.damage || 1);
+          if (res) {
+            b.active = false;
+            if (res === true) {
+              g.score += 300; // vaut un ennemi élite (TYPE_STATS.elite.points dans enemies.js)
+              triggerShake(6);
+              triggerHitStop(0.06);
+              audio.playExplosion();
+              if (g.boss.victory) {
+                g.score += 1000; // bonus de victoire, nettement au-dessus d'un point faible pour marquer l'accomplissement
+                player.lives = Math.min(PLAYER.maxLives, player.lives + 1); // récompense de victoire, plafonnée
+                g.flash = Math.max(g.flash, 0.6);
+                triggerShake(14);
+                triggerHitStop(0.14);
+                vibrate([40, 60, 40]);
+                spawnExplosion(particles, g.boss.x, g.boss.y, 80, PALETTE.boss);
+                spawnFlashBurst(particles, g.boss.x, g.boss.y, 24);
+                triggerDeathStarLeave(starfield);
+              }
+            } else {
+              audio.playBossHit();
+            }
           }
         }
       }
@@ -452,6 +459,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
   }
 
   function onPlayerHit() {
+    g.tookDamageThisWave = true; // casse l'éligibilité au bonus DIFFICULTY.noDamageWaveBonus — un coup absorbé par le bouclier (onShieldHit) ne compte pas, lui
     triggerShake(10);
     triggerHitStop(0.08);
     vibrate(40);
@@ -522,7 +530,8 @@ export function createGame({ input, audio, music, nameInputEl }) {
         projectiles,
         dt,
         (colorKey) => {
-          audio.playPlayerShot(colorKey);
+          if (colorKey === "shotgun") audio.playShotgunBlast();
+          else audio.playPlayerShot(colorKey);
         },
         !g.clearingScreen
       );
@@ -556,7 +565,16 @@ export function createGame({ input, audio, music, nameInputEl }) {
         g.waveBreakDuration = g.boss ? DIFFICULTY.bossWaveBreakDuration : DIFFICULTY.waveBreakDuration;
         g.waveBreak = g.waveBreakDuration;
         g.flash = Math.max(g.flash, 0.3);
-        g.banner = { text: `VAGUE ${g.wave} TERMINÉE`, timer: g.waveBreakDuration };
+        if (!g.tookDamageThisWave) {
+          g.score += DIFFICULTY.noDamageWaveBonus;
+          g.banner = {
+            text: `VAGUE ${g.wave} TERMINÉE — SANS DÉGÂTS ! +${DIFFICULTY.noDamageWaveBonus}`,
+            timer: g.waveBreakDuration,
+          };
+          audio.playPowerup();
+        } else {
+          g.banner = { text: `VAGUE ${g.wave} TERMINÉE`, timer: g.waveBreakDuration };
+        }
         // Tirs/bonus disparaissent immédiatement, mais les ennemis défilent
         // vers la gauche comme le fond (enemies.js) plutôt que de disparaître
         // d'un coup — le boss reste visible jusqu'à startWave (explosion de

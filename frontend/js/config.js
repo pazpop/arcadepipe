@@ -64,6 +64,7 @@ export const DIFFICULTY = {
   // rester esquivables.
   bulletSpeedGrowthPerWave: 0.045,
   bulletSpeedCap: 1.7,
+  noDamageWaveBonus: 500, // bonus de score si la vague se termine sans avoir perdu de vie (voir g.tookDamageThisWave dans game.js)
 };
 
 export function bulletSpeedFactor(wave) {
@@ -85,11 +86,18 @@ export const POWERUP = {
   types: {
     power: { fireCooldownMul: 1.15, damage: 2, color: "#ff7043", label: "PUISSANCE", effect: "dégâts renforcés, tir plus lent" },
     rapid: { fireCooldownMul: 0.4, damage: 0.6, color: "#7dfcff", label: "RAFALE", effect: "tir très rapide, dégâts réduits" },
+    // Cône de plombs à dégâts décroissants (voir firePlayerPellets et
+    // PELLET_DAMAGE_DECAY dans projectiles.js) — `damage` ici est le dégât
+    // initial par plomb, pas le total du tir. Cadence plus lente que
+    // "power" : un tir plus engageant, pas un simple "tire plus fort partout".
+    shotgun: { fireCooldownMul: 1.35, damage: 2, color: "#d4a24c", label: "CHEVROTINE", effect: "cône de plombs, dégâts décroissants avec la distance" },
     shield: { color: "#5ec8ff", label: "BOUCLIER", effect: "absorbe les prochains coups" },
     nova: { instant: true, color: "#ffffff", label: "NOVA", effect: "détruit tous les ennemis à l'écran" },
   },
   // Poids relatifs (pickPowerupType() dans game.js) — nova doit rester nettement plus rare.
-  typeWeights: { power: 0.36, rapid: 0.36, shield: 0.2, nova: 0.08 },
+  // TEMPORAIRE : shotgun boosté pour faciliter les tests du nouveau bonus —
+  // à rééquilibrer (retour vers ~0.16) une fois validé en jeu.
+  typeWeights: { power: 0.15, rapid: 0.15, shotgun: 0.55, shield: 0.1, nova: 0.05 },
 };
 
 export const BOSS = {

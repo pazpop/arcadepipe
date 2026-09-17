@@ -161,6 +161,46 @@ export class AudioEngine {
     this._tone({ type: "sawtooth", startFreq: 300, endFreq: 60, duration: 0.2, gain: 0.15 });
   }
 
+  // Fusil à pompe (bonus CHEVROTINE) : superpose un transitoire (bruit
+  // filtré, même technique que playExplosion mais plus grave dès le départ)
+  // et un corps grave (onde descendante courte, comme playBossHit mais plus
+  // bas) — le mélange donne un "poids" que ni l'un ni l'autre seul ne
+  // rendrait, pour bien se distinguer du "pew" aigu du tir normal.
+  playShotgunBlast() {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+
+    const duration = 0.15;
+    const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(700, now);
+    filter.frequency.exponentialRampToValueAtTime(80, now + duration);
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.28, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.master);
+    noise.start(now);
+    noise.stop(now + duration);
+
+    const osc = this.ctx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(90, now);
+    osc.frequency.exponentialRampToValueAtTime(35, now + 0.12);
+    const oscGain = this._envGain(0.14, 0.2, 0.002, 0.1);
+    osc.connect(oscGain);
+    oscGain.connect(this.master);
+    osc.start(now);
+    osc.stop(now + 0.16);
+  }
+
   // Survol menu : "tic" bref et discret, retour sonore léger — déclenché à
   // chaque CHANGEMENT d'item, pas en continu.
   playMenuHover() {

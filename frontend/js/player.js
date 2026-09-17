@@ -2,7 +2,7 @@
 // invincibilité clignotante après un coup.
 import { RES_W, RES_H, PLAYER, PALETTE, POWERUP } from "./config.js";
 import { buildSprites, drawWithGlow } from "./assets.js";
-import { firePlayerBullet } from "./projectiles.js";
+import { firePlayerBullet, firePlayerPellets } from "./projectiles.js";
 
 export function createPlayer() {
   return {
@@ -12,7 +12,7 @@ export function createPlayer() {
     invuln: 0,
     lives: PLAYER.startingLives,
     alive: true,
-    buff: null, // { type: "power" | "rapid", timer } — voir POWERUP dans config.js
+    buff: null, // { type: "power" | "rapid" | "shotgun", timer } — voir POWERUP dans config.js
     shield: 0, // coups restants absorbés par le bouclier (indépendant de `buff`, pas de minuteur)
   };
 }
@@ -72,7 +72,11 @@ export function updatePlayer(player, input, projectiles, dt, onShotFired, canFir
     if (player.alive && (input.fireHeld || input.autoFire) && player.fireTimer <= 0) {
       const damage = buffDef ? buffDef.damage : 1;
       const color = buffDef ? buffDef.color : null;
-      firePlayerBullet(projectiles, player.x + 8, player.y, PLAYER.bulletSpeed, damage, color);
+      if (player.buff && player.buff.type === "shotgun") {
+        firePlayerPellets(projectiles, player.x + 8, player.y, PLAYER.bulletSpeed, damage, color);
+      } else {
+        firePlayerBullet(projectiles, player.x + 8, player.y, PLAYER.bulletSpeed, damage, color);
+      }
       player.fireTimer = PLAYER.fireCooldown * (buffDef ? buffDef.fireCooldownMul : 1);
       if (onShotFired) onShotFired(player.buff ? player.buff.type : "normal");
     }

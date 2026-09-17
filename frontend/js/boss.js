@@ -16,6 +16,17 @@ import { spawnExplosion, spawnFlashBurst } from "./particles.js";
 const RIGHT_ZONE_BOUND = (RES_W * 2) / 3;
 const BOSS_ZONE_MARGIN = 12;
 
+// Couleur d'un point faible selon les dégâts déjà encaissés (fraction de
+// p.hp/p.maxHp restante) — dérivée directement des PV, pas d'état à part à
+// maintenir. Sain = même couleur pour tous (WEAK_POINT_COLORS[0]), puis
+// passe par les suivantes à mesure qu'il approche de sa destruction.
+const WEAK_POINT_COLORS = [PALETTE.bossWeakOn, PALETTE.bossWeakHit, PALETTE.bossWeakCritical];
+function weakPointColor(p) {
+  const dmgFrac = 1 - p.hp / p.maxHp;
+  const idx = Math.min(WEAK_POINT_COLORS.length - 1, Math.floor(dmgFrac * WEAK_POINT_COLORS.length));
+  return WEAK_POINT_COLORS[idx];
+}
+
 // Le tout premier combat de boss (voir BOSS.firstBoss* dans config.js) —
 // générique plutôt qu'un "wave === 4" en dur, pour rester correct si
 // DIFFICULTY.bossWaveEvery change un jour.
@@ -227,8 +238,9 @@ export function drawBoss(ctx, boss) {
     ctx.globalAlpha = 0.35 + blink * 0.65;
     ctx.fillStyle = "#1a0a08";
     ctx.fillRect(wx - 5, wy - 5, 10, 10);
-    ctx.fillStyle = PALETTE.bossWeakOn;
-    ctx.shadowColor = PALETTE.bossWeakOn;
+    const color = weakPointColor(p);
+    ctx.fillStyle = color;
+    ctx.shadowColor = color;
     ctx.shadowBlur = 8;
     ctx.fillRect(wx - 4, wy - 4, 8, 8);
     ctx.globalAlpha = 1;

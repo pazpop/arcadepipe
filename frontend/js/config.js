@@ -22,6 +22,8 @@ export const PALETTE = {
   enemyElite: "#c86bff",
   boss: "#ffcc33",
   bossWeakOn: "#fff44a", // jaune vif — doit trancher net avec la coque du boss
+  bossWeakHit: "#ff9a3d", // encaissé un coup, pas encore critique
+  bossWeakCritical: "#ff4d4d", // sur le point de céder
   bossWeakOff: "#4a1018",
   particle: "#ffb347",
   shield: "#5ec8ff",

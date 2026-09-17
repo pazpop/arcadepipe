@@ -243,22 +243,38 @@ export function createGame({ input, audio, music, nameInputEl }) {
     }
   }
 
+  // Jeton de version : un double-tap sur "Classement" (ou un retour au menu
+  // suivi d'un nouvel appel avant que le premier ait fini de répondre) lance
+  // deux séries de fetch en parallèle. Sans garde, la réponse arrivée en
+  // second gagne toujours, même si elle correspond à l'appel le plus
+  // ancien — un tableau de scores pourrait alors afficher un résultat périmé
+  // par-dessus le plus récent. Même défaut que celui corrigé dans
+  // audio/music.js (_loadToken), appliqué ici à ce deuxième cas.
+  let leaderboardToken = 0;
+
   async function goToLeaderboard(returnTo) {
+    const token = ++leaderboardToken;
     g.mode = MODE.LEADERBOARD;
     g.leaderboardReturnTo = returnTo;
     g.scores = [];
     g.scoresRevealCount = 0;
     g.scoresRevealTimer = 0;
+    let scores = [];
     try {
-      g.scores = await fetchTopScores(10);
+      scores = await fetchTopScores(10);
     } catch {
-      g.scores = [];
+      scores = [];
     }
+    if (token !== leaderboardToken) return; // supplantée par un appel plus récent
+    g.scores = scores;
+    let gamesPlayed = null;
     try {
-      g.gamesPlayed = await fetchGamesPlayedCount();
+      gamesPlayed = await fetchGamesPlayedCount();
     } catch {
-      g.gamesPlayed = null; // affichage masqué plutôt qu'un faux "0" (voir drawLeaderboardScreen)
+      gamesPlayed = null; // affichage masqué plutôt qu'un faux "0" (voir drawLeaderboardScreen)
     }
+    if (token !== leaderboardToken) return;
+    g.gamesPlayed = gamesPlayed;
   }
 
   async function handleGameOver() {

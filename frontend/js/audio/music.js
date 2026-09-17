@@ -102,7 +102,17 @@ export class MusicPlayer {
         g.linearRampToValueAtTime(target, t + 0.03);
       })
       .catch(() => {
-        if (token === this._loadToken) this.player.fireEvent("onError", { type: "Load" });
+        if (token !== this._loadToken) return; // supplantée, la piste plus récente gère déjà le volume
+        // Le fondu de sortie a déjà coupé le son avant même de savoir si le
+        // chargement allait réussir (voir plus haut) — sans ce filet, un
+        // simple raté réseau laissait la musique silencieuse en permanence :
+        // rien ne remontait jamais le volume tant qu'aucune piste suivante
+        // ne chargeait derrière.
+        const target = this.muted ? 0 : this.volume;
+        const t = this.player.context.currentTime;
+        g.cancelScheduledValues(t);
+        g.linearRampToValueAtTime(target, t + 0.03);
+        this.player.fireEvent("onError", { type: "Load" });
       });
   }
 

@@ -22,12 +22,11 @@ function makeStar(layer, randomX) {
 // un élément de gameplay : toutes les couleurs de gameplay de ce jeu sont
 // pleinement saturées, donc un décor terne reste reconnaissable comme
 // "arrière-plan" quelle que soit la teinte qu'il tire.
-// TEMPORAIRE : trou noir à 60% de chance (demande explicite, le temps de le
-// voir facilement en jeu) — remettre roll < 0.08 une fois validé, avec
-// galaxie/planète qui se repartagent le reste à 50/50 comme avant.
+// Trou noir plus rare que galaxie/planète (silhouette la plus chargée
+// visuellement des trois) — le reste se repartage 50/50 entre les deux autres.
 function makeCelestial() {
   const roll = Math.random();
-  const type = roll < 0.6 ? "blackhole" : roll < 0.8 ? "galaxy" : "planet";
+  const type = roll < 0.08 ? "blackhole" : roll < 0.54 ? "galaxy" : "planet";
   const radius =
     type === "blackhole" ? 28 + Math.random() * 20 : type === "galaxy" ? 26 + Math.random() * 18 : 12 + Math.random() * 22;
   return {

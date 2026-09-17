@@ -3,6 +3,7 @@
 import { RES_W, RES_H, PALETTE, POWERUP, VERSION } from "./config.js";
 import { drawPowerupIcon } from "./powerups.js";
 import { bossHealthFraction } from "./boss.js";
+import { buildSprites, drawWithGlow } from "./assets.js";
 
 // Version courte de POWERUP.types[type].effect pour la légende de l'écran
 // Aide — le texte complet (utilisé par drawBuffIndicator en jeu) est trop
@@ -14,6 +15,17 @@ const BONUS_SHORT_EFFECT = {
   shield: "absorbe des coups",
   nova: "nettoie l'écran",
 };
+
+// Légende des ennemis (menu Aide, colonne droite) — boss volontairement
+// exclu (sa propre section "BOSS" plus haut suffit, ses patterns changent en
+// combat). Sprite réel (assets.js) + même couleur que enemyGlowColor
+// (enemies.js), pas une réinterprétation.
+const ENEMY_LEGEND = [
+  { spriteKey: "enemyNormal", color: PALETTE.enemyNormal, text: "FACILE — pas de tir, ligne droite" },
+  { spriteKey: "enemyGunner", color: PALETTE.enemyGunner, text: "MOYEN — tire visé (vague 5+)" },
+  { spriteKey: "enemyElite", color: PALETTE.enemyElite, text: "ÉLITE — tire visé, ondule" },
+  { spriteKey: "enemyKamikaze", color: PALETTE.danger, text: "KAMIKAZE — fonce sur toi (vague 4+)" },
+];
 
 // Point dans un rectangle {x,y,w,h} centré sur (x,y) — même test répété par
 // toutes les fonctions hitTest* ci-dessous (menu, pause, confirmation,
@@ -483,21 +495,32 @@ export function drawInfoScreen(ctx, content) {
     }
   });
 
-  // Légende des bonus (menu Aide uniquement) : icône + couleur identiques à
-  // celles du bonus qui tombe en jeu (drawPowerupIcon, partagé avec
-  // drawPowerups dans powerups.js) — le joueur associe visuellement
-  // l'apparence à l'effet sans avoir à ramasser chaque bonus pour vérifier.
+  // Légende bonus + ennemis (menu Aide uniquement), deux colonnes côte à
+  // côte (même x que les sections du haut) faute de hauteur pour les empiler.
+  // Icônes identiques à ce qui apparaît en jeu (drawPowerupIcon partagé avec
+  // powerups.js ; sprite réel d'assets.js pour les ennemis) — le joueur
+  // associe l'apparence à l'effet sans avoir à le vérifier en jeu.
   if (content.showBonusLegend) {
-    const legendY = 144;
-    text(ctx, "BONUS", RES_W / 2, legendY, { size: 9, align: "center", color: PALETTE.player, glow: PALETTE.player });
-    const iconX = RES_W * 0.5 - 150;
-    const labelX = iconX + 10;
+    const legendY = 132;
     const rowH = 14;
+    text(ctx, "BONUS", colX[0], legendY, { size: 9, align: "center", color: PALETTE.player, glow: PALETTE.player });
+    const bonusIconX = colX[0] - 62;
+    const bonusLabelX = bonusIconX + 10;
     Object.keys(POWERUP.types).forEach((type, i) => {
       const y = legendY + 16 + i * rowH;
       const def = POWERUP.types[type];
-      drawPowerupIcon(ctx, iconX, y, type, 4);
-      text(ctx, `${def.label} — ${BONUS_SHORT_EFFECT[type]}`, labelX, y, { size: 7, align: "left", color: def.color });
+      drawPowerupIcon(ctx, bonusIconX, y, type, 4);
+      text(ctx, `${def.label} — ${BONUS_SHORT_EFFECT[type]}`, bonusLabelX, y, { size: 6.5, align: "left", color: def.color });
+    });
+
+    text(ctx, "ENNEMIS", colX[1], legendY, { size: 9, align: "center", color: PALETTE.player, glow: PALETTE.player });
+    const enemySprites = buildSprites();
+    const enemyIconX = colX[1] - 62;
+    const enemyLabelX = enemyIconX + 12;
+    ENEMY_LEGEND.forEach((en, i) => {
+      const y = legendY + 16 + i * rowH;
+      drawWithGlow(ctx, enemySprites[en.spriteKey], enemyIconX, y, en.color, 0.3);
+      text(ctx, en.text, enemyLabelX, y, { size: 6.5, align: "left", color: en.color });
     });
   }
 

@@ -1,22 +1,19 @@
-# Déploiement autonome — pour quiconque veut faire tourner ArcadePipe SANS
-# l'infra pazpop (Traefik, réseau externe `traefik-public`, terraform-infra-
-# pazpop-hetzner). Toutes les protections de sécurité qui concernent le jeu
-# lui-même (non-root, rootfs read-only, cap_drop, rate limiting, CORS)
-# restent identiques à docker-compose.yml — seul le routage change : ici
-# Caddy (frontend) route lui-même /api/* vers le backend (voir la route
-# ajoutée dans frontend/Caddyfile), pas besoin d'un reverse-proxy externe.
+# Seul fichier de déploiement Docker de ce repo — pour quiconque veut faire
+# tourner ArcadePipe SANS l'infra pazpop (Traefik, réseau externe
+# `traefik-public`, terraform-infra-pazpop-hetzner). Caddy (frontend) route
+# lui-même /api/* vers le backend (voir la route ajoutée dans
+# frontend/Caddyfile), pas besoin d'un reverse-proxy externe. Le déploiement
+# pazpop (avec Traefik devant) vit entièrement dans l'autre repo
+# (terraform-infra-pazpop-hetzner/docker/arcadepipe/docker-compose.yml) —
+# celui-ci ne connaît ni l'IP du VPS ni Traefik, et ne le connaîtra jamais.
 #
 # Usage :
-#   docker compose -f docker-compose.standalone.yml up --build -d
+#   docker compose up --build -d
 #   -> le jeu est sur http://localhost (port 80)
 #
 # Pour changer le port publié (80 déjà pris, etc.), modifier le mapping
 # "80:80" ci-dessous (ex: "8080:80") ET la valeur ALLOWED_ORIGINS du backend
 # pour qu'elle corresponde à l'URL réellement utilisée dans le navigateur.
-#
-# docker-compose.yml (à la racine) reste le déploiement de référence pour
-# l'infra pazpop — ne pas le modifier pour un usage autonome, utiliser ce
-# fichier séparé à la place.
 services:
   backend:
     build: ./backend

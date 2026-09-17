@@ -58,6 +58,15 @@ def get_connection():
     """Ouvre une connexion SQLite et la ferme proprement après usage."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  # pour récupérer des résultats type dict
+    # Par défaut, SQLite renvoie IMMÉDIATEMENT une erreur "database is locked"
+    # (SQLITE_BUSY) si une autre connexion écrit au même moment — busy_timeout
+    # fait attendre jusqu'à 5s que le verrou se libère avant d'abandonner.
+    # WAL (voir init_db) réduit déjà beaucoup la contention (les lectures ne
+    # bloquent jamais derrière une écriture), mais deux ÉCRITURES simultanées
+    # (deux scores soumis à la même milliseconde) restent possibles sur un
+    # jeu multijoueur en ligne comme celui-ci — sans ce PRAGMA, l'une des deux
+    # échouerait sèchement plutôt que d'attendre son tour.
+    conn.execute("PRAGMA busy_timeout = 5000")
     try:
         yield conn
     finally:

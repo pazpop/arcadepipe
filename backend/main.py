@@ -50,9 +50,13 @@ def get_client_ip(request: Request) -> str:
     #    réellement avant de transmettre la requête. Revalider ce point avant
     #    tout redéploiement si trustedIPs est un jour ajouté.
     #  - Déploiement autonome (docker-compose.yml de ce repo, Caddy en frontal) :
-    #    même garantie par défaut — `reverse_proxy` dans le Caddyfile fixe lui
-    #    aussi X-Forwarded-For à l'IP réellement observée, sans faire confiance
-    #    à une valeur déjà présente dans la requête entrante.
+    #    mécanisme différent de Traefik mais résultat identique. Caddy n'écrase
+    #    PAS un X-Forwarded-For déjà présent — il AJOUTE l'IP réellement
+    #    observée à la fin de la liste (comportement documenté officiellement :
+    #    caddyserver.com/docs/caddyfile/directives/reverse_proxy). Un client
+    #    qui envoie son propre X-Forwarded-For voit donc sa valeur conservée
+    #    en tête, mais c'est sans effet ici puisqu'on lit toujours la
+    #    DERNIÈRE IP — celle que Caddy vient d'ajouter, jamais falsifiable.
     # Dans les deux cas, c'est pourquoi on lit la DERNIÈRE IP de la chaîne :
     # c'est celle ajoutée par le proxy de confiance, jamais celle envoyée par
     # le client. Sans reverse-proxy devant (accès direct au port 8000), cette

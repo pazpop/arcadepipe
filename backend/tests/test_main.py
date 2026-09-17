@@ -69,9 +69,17 @@ def _requete_factice(x_forwarded_for: str | None) -> Mock:
 
 
 def test_get_client_ip_lit_la_derniere_ip_de_la_chaine():
-    """Invariant documenté dans main.py : Traefik écrase X-Forwarded-For par
-    la vraie IP observée, ajoutée en DERNIÈRE position — jamais la première
-    (potentiellement forgée par le client)."""
+    """Invariant documenté dans main.py (get_client_ip) : peu importe le
+    mécanisme exact du reverse-proxy devant l'API, la vraie IP observée est
+    TOUJOURS en dernière position d'X-Forwarded-For, jamais en première.
+      - Traefik (instance publique) : écrase la valeur entrante par la sienne.
+      - Caddy (déploiement autonome) : AJOUTE la sienne à la fin sans toucher
+        à une valeur déjà présente — donc "1.2.3.4" ici pourrait être une IP
+        forgée par le client lui-même, "203.0.113.7" est systématiquement
+        celle du dernier hop de confiance.
+    Ce test protège contre une régression silencieuse si [-1] devient un jour
+    [0] dans get_client_ip — c'est la vraie valeur de ce test, pas l'absence
+    d'un bug déjà présent (vérifié empiriquement sur les deux topologies)."""
     requete = _requete_factice("1.2.3.4, 203.0.113.7")
     assert get_client_ip(requete) == "203.0.113.7"
 

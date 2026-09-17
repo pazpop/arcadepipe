@@ -1,6 +1,7 @@
 // Particules (explosions, étincelles, fragments) via un pool d'objets fixe
 // — aucune allocation pendant la boucle de jeu, donc pas de pause GC.
 import { PALETTE } from "./config.js";
+import { acquireSlot } from "./pool.js";
 
 const POOL_SIZE = 400;
 
@@ -20,20 +21,17 @@ export function createParticlePool() {
 }
 
 function spawnOne(pool, x, y, vx, vy, life, size, color) {
-  for (const p of pool.items) {
-    if (p.active) continue;
-    p.active = true;
-    p.x = x;
-    p.y = y;
-    p.vx = vx;
-    p.vy = vy;
-    p.life = life;
-    p.maxLife = life;
-    p.size = size;
-    p.color = color;
-    return;
-  }
-  // Pool saturé : on ignore silencieusement plutôt que de faire grandir le tableau.
+  const p = acquireSlot(pool);
+  if (!p) return;
+  p.active = true;
+  p.x = x;
+  p.y = y;
+  p.vx = vx;
+  p.vy = vy;
+  p.life = life;
+  p.maxLife = life;
+  p.size = size;
+  p.color = color;
 }
 
 export function spawnExplosion(pool, x, y, count = 10, color = PALETTE.particle) {

@@ -400,9 +400,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
       if (!eb.active) continue;
       if (circlesOverlap(eb.x, eb.y, projectiles.enemy.radius, player.x, player.y, PLAYER.hitboxRadius)) {
         eb.active = false;
-        const res = hitPlayer(player);
-        if (res === "shield") onShieldHit();
-        else if (res) onPlayerHit();
+        applyHitToPlayer();
       }
     }
 
@@ -412,9 +410,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
       if (circlesOverlap(en.x, en.y, en.radius, player.x, player.y, PLAYER.hitboxRadius)) {
         en.active = false;
         spawnExplosion(particles, en.x, en.y, 8, PALETTE.enemyNormal);
-        const res = hitPlayer(player);
-        if (res === "shield") onShieldHit();
-        else if (res) onPlayerHit();
+        applyHitToPlayer();
       }
     }
 
@@ -423,9 +419,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     // hitsBossHull dans boss.js, qui ne touche jamais à ses PV). Rien
     // pendant le fondu de victoire (la coque se dissipe, plus un obstacle).
     if (g.boss && !g.boss.victory && hitsBossHull(g.boss, player.x, player.y, PLAYER.hitboxRadius)) {
-      const res = hitPlayer(player);
-      if (res === "shield") onShieldHit();
-      else if (res) onPlayerHit();
+      applyHitToPlayer();
     }
 
     // Ramassage des bonus
@@ -498,6 +492,16 @@ export function createGame({ input, audio, music, nameInputEl }) {
       g.deathTimer = PLAYER.invulnDuration + 0.2;
       triggerShake(16);
     }
+  }
+
+  // Dispatch commun d'un coup reçu par le joueur (tir ennemi, corps
+  // d'ennemi, coque du boss) — bouclier ou vie perdue selon hitPlayer().
+  // Centralisé ici plutôt que répété à chaque source de dégât ci-dessus dans
+  // resolveCollisions().
+  function applyHitToPlayer() {
+    const res = hitPlayer(player);
+    if (res === "shield") onShieldHit();
+    else if (res) onPlayerHit();
   }
 
   // Glissée d'entrée du vaisseau (vague 1) : interpole sa position

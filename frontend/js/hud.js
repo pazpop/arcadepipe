@@ -4,6 +4,29 @@
 // pixel par pixel).
 import { RES_W, RES_H, PALETTE, POWERUP } from "./config.js";
 
+// Point dans un rectangle {x,y,w,h} centré sur (x,y) — même test répété par
+// toutes les fonctions hitTest* ci-dessous (menu, pause, confirmation,
+// boutons uniques), factorisé ici plutôt que copié à chaque écran.
+function pointInRect(x, y, r) {
+  return x > r.x - r.w / 2 && x < r.x + r.w / 2 && y > r.y - r.h / 2 && y < r.y + r.h / 2;
+}
+
+// Index du rectangle survolé/cliqué parmi une liste (menu, pause,
+// confirmation) ; -1 si aucun.
+function hitTestRects(x, y, rects) {
+  for (let i = 0; i < rects.length; i++) {
+    if (pointInRect(x, y, rects[i])) return i;
+  }
+  return -1;
+}
+
+// Bouton unique (aide, game over, saisie du nom) : 0 si survolé/cliqué, -1
+// sinon — même contrat que hitTestRects, pour rester compatible avec
+// syncHover()/syncHoverWithSound() côté game.js.
+function hitTestSingle(x, y, r) {
+  return pointInRect(x, y, r) ? 0 : -1;
+}
+
 function text(ctx, str, x, y, { size = 8, color = PALETTE.hud, align = "left", alpha = 1, glow = null } = {}) {
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -117,12 +140,7 @@ export function menuOptionRects() {
 }
 
 export function hitTestMenu(x, y) {
-  const rects = menuOptionRects();
-  for (let i = 0; i < rects.length; i++) {
-    const r = rects[i];
-    if (x > r.x - r.w / 2 && x < r.x + r.w / 2 && y > r.y - r.h / 2 && y < r.y + r.h / 2) return i;
-  }
-  return -1;
+  return hitTestRects(x, y, menuOptionRects());
 }
 
 // Bref résumé de l'histoire (survie de la galaxie face à une invasion) —
@@ -298,12 +316,7 @@ export function pauseOptionRects() {
 }
 
 export function hitTestPause(x, y) {
-  const rects = pauseOptionRects();
-  for (let i = 0; i < rects.length; i++) {
-    const r = rects[i];
-    if (x > r.x - r.w / 2 && x < r.x + r.w / 2 && y > r.y - r.h / 2 && y < r.y + r.h / 2) return i;
-  }
-  return -1;
+  return hitTestRects(x, y, pauseOptionRects());
 }
 
 export function drawPauseScreen(ctx, selected) {
@@ -340,12 +353,7 @@ export function confirmQuitOptionRects() {
 }
 
 export function hitTestConfirmQuit(x, y) {
-  const rects = confirmQuitOptionRects();
-  for (let i = 0; i < rects.length; i++) {
-    const r = rects[i];
-    if (x > r.x - r.w / 2 && x < r.x + r.w / 2 && y > r.y - r.h / 2 && y < r.y + r.h / 2) return i;
-  }
-  return -1;
+  return hitTestRects(x, y, confirmQuitOptionRects());
 }
 
 export function drawConfirmQuitScreen(ctx, selected) {
@@ -381,12 +389,8 @@ export function infoContinueRect() {
   return { x: RES_W / 2, y: RES_H * 0.86, w: 200, h: 18 };
 }
 
-// Bouton unique — retourne 0 si survolé/cliqué, -1 sinon (même convention
-// que les autres hitTest*, pour rester compatible avec syncHover()).
 export function hitTestInfoContinue(x, y) {
-  const r = infoContinueRect();
-  const hit = x > r.x - r.w / 2 && x < r.x + r.w / 2 && y > r.y - r.h / 2 && y < r.y + r.h / 2;
-  return hit ? 0 : -1;
+  return hitTestSingle(x, y, infoContinueRect());
 }
 
 // Découpe une chaîne en lignes qui tiennent dans maxWidth pour la police
@@ -479,12 +483,8 @@ export function gameOverContinueRect() {
   return { x: RES_W / 2, y: RES_H * 0.62, w: 200, h: 18 };
 }
 
-// Bouton unique — même convention que hitTestInfoContinue (0 si survolé/
-// cliqué, -1 sinon) pour rester compatible avec syncHover().
 export function hitTestGameOverContinue(x, y) {
-  const r = gameOverContinueRect();
-  const hit = x > r.x - r.w / 2 && x < r.x + r.w / 2 && y > r.y - r.h / 2 && y < r.y + r.h / 2;
-  return hit ? 0 : -1;
+  return hitTestSingle(x, y, gameOverContinueRect());
 }
 
 export function drawDeathScreen(ctx, score, wave, kills) {
@@ -510,11 +510,8 @@ export function nameEntryValidateRect() {
   return { x: RES_W / 2, y: RES_H * 0.48 + 54, w: 200, h: 18 };
 }
 
-// Bouton unique — même convention que hitTestInfoContinue/hitTestGameOverContinue.
 export function hitTestNameEntryValidate(x, y) {
-  const r = nameEntryValidateRect();
-  const hit = x > r.x - r.w / 2 && x < r.x + r.w / 2 && y > r.y - r.h / 2 && y < r.y + r.h / 2;
-  return hit ? 0 : -1;
+  return hitTestSingle(x, y, nameEntryValidateRect());
 }
 
 export function drawNameEntry(ctx, name, cursorVisible) {

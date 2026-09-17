@@ -1,6 +1,7 @@
 // Vagues d'ennemis : types, comportements, tirs. Un pool fixe (comme les
 // projectiles/particules) plutôt qu'un tableau qu'on repousse chaque frame.
 import { RES_W, RES_H, PALETTE, bulletSpeedFactor } from "./config.js";
+import { acquireSlot } from "./pool.js";
 import { buildSprites, drawWithGlow } from "./assets.js";
 import { patternAimed } from "./patterns.js";
 import { spawnExplosion, spawnSpark, spawnFlashBurst } from "./particles.js";
@@ -42,25 +43,23 @@ export function createEnemyPool() {
 
 function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
   const stats = TYPE_STATS[type];
-  for (const en of pool.items) {
-    if (en.active) continue;
-    en.active = true;
-    en.type = type;
-    en.x = x;
-    en.y = y;
-    en.vx = vx;
-    en.vy = vy;
-    en.wobbleSeed = Math.random() * Math.PI * 2;
-    en.hp = stats.hp;
-    en.maxHp = stats.hp;
-    en.radius = stats.radius;
-    en.fireTimer = 0.6 + Math.random() * 0.8;
-    en.elapsed = 0;
-    en.gunner = gunner;
-    en.leaving = false;
-    return en;
-  }
-  return null;
+  const en = acquireSlot(pool);
+  if (!en) return null;
+  en.active = true;
+  en.type = type;
+  en.x = x;
+  en.y = y;
+  en.vx = vx;
+  en.vy = vy;
+  en.wobbleSeed = Math.random() * Math.PI * 2;
+  en.hp = stats.hp;
+  en.maxHp = stats.hp;
+  en.radius = stats.radius;
+  en.fireTimer = 0.6 + Math.random() * 0.8;
+  en.elapsed = 0;
+  en.gunner = gunner;
+  en.leaving = false;
+  return en;
 }
 
 // À partir de la vague 5, une partie des ennemis normaux devient "gunner" et

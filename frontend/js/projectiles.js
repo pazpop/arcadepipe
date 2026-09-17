@@ -2,6 +2,7 @@
 // nombreux simultanément (patterns danmaku) donc un pool généreux + aucune
 // allocation par frame est important ici plus que partout ailleurs.
 import { RES_W, RES_H, PALETTE } from "./config.js";
+import { acquireSlot } from "./pool.js";
 
 const PLAYER_POOL_SIZE = 60;
 const ENEMY_POOL_SIZE = 400;
@@ -39,19 +40,17 @@ export function createProjectiles() {
 }
 
 function spawnInto(pool, x, y, vx, vy, colorOverride = null, damage = 1, turnRate = 0) {
-  for (const b of pool.items) {
-    if (b.active) continue;
-    b.active = true;
-    b.x = x;
-    b.y = y;
-    b.vx = vx;
-    b.vy = vy;
-    b.colorOverride = colorOverride;
-    b.damage = damage;
-    b.turnRate = turnRate;
-    return b;
-  }
-  return null;
+  const b = acquireSlot(pool);
+  if (!b) return null;
+  b.active = true;
+  b.x = x;
+  b.y = y;
+  b.vx = vx;
+  b.vy = vy;
+  b.colorOverride = colorOverride;
+  b.damage = damage;
+  b.turnRate = turnRate;
+  return b;
 }
 
 export function firePlayerBullet(projectiles, x, y, speed, damage = 1, color = null) {

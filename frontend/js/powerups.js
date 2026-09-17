@@ -2,6 +2,7 @@
 // dérivent lentement, disparaissent si non ramassés. Pool fixe, même
 // pattern que particles.js/projectiles.js.
 import { RES_H, POWERUP } from "./config.js";
+import { acquireSlot } from "./pool.js";
 
 const POOL_SIZE = 8;
 
@@ -18,16 +19,14 @@ export function createPowerupPool() {
 }
 
 export function spawnPowerup(pool, x, y, type) {
-  for (const p of pool.items) {
-    if (p.active) continue;
-    p.active = true;
-    p.type = type;
-    p.x = x;
-    p.y = y;
-    p.elapsed = 0;
-    return p;
-  }
-  return null; // pool saturé (rare avec 8 emplacements) : on ignore silencieusement
+  const p = acquireSlot(pool); // pool saturé (rare avec 8 emplacements) : ignoré silencieusement
+  if (!p) return null;
+  p.active = true;
+  p.type = type;
+  p.x = x;
+  p.y = y;
+  p.elapsed = 0;
+  return p;
 }
 
 export function updatePowerups(pool, dt) {

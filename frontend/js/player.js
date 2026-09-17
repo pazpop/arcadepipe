@@ -57,7 +57,10 @@ export function updatePlayer(player, input, projectiles, dt, onShotFired, canFir
   player.invuln = Math.max(0, player.invuln - dt);
 
   if (player.buff) {
-    player.buff.timer -= dt;
+    // Gelé pendant le saut spatial (canFire=false, voir plus bas) : sinon la
+    // durée du bonus s'écoule pendant une phase où on ne peut de toute façon
+    // pas tirer pour en profiter.
+    if (canFire) player.buff.timer -= dt;
     if (player.buff.timer <= 0) player.buff = null;
   }
   const buffDef = player.buff ? POWERUP.types[player.buff.type] : null;

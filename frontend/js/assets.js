@@ -100,6 +100,28 @@ const ENEMY_ELITE_PALETTE = {
   e: "#ffb347",
 };
 
+// --- Ennemi kamikaze : dard rouge fin, pointe à DROITE (voir la rotation
+// dans drawEnemies, enemies.js — orienté selon sa vitesse réelle, contrairement
+// aux autres ennemis qui restent fixes). Queue "e" = tuyère, comme les autres
+// vaisseaux ; pointe "c" quasi blanche, la partie qui fonce sur le joueur.
+const ENEMY_KAMIKAZE_ROWS = [
+  "...............",
+  "..........a....",
+  "........aabb...",
+  "......aabbbbc..",
+  "eee.aabbbbbbbcc",
+  "......aabbbbc..",
+  "........aabb...",
+  "..........a....",
+  "...............",
+];
+const ENEMY_KAMIKAZE_PALETTE = {
+  a: "#7a1220",
+  b: "#ff5d73", // même rouge que PALETTE.danger (config.js) — cohérent avec l'urgence qu'il signale
+  c: "#ffd0d6",
+  e: "#ffb347",
+};
+
 // --- Coque du boss : coin triangulaire générique (large à l'arrière, effilé
 // à l'avant face au joueur) — trope SF générique, pas de détails copiés.
 // Superstructure (s) décalée pour casser la symétrie.
@@ -139,6 +161,7 @@ export function buildSprites() {
     enemyNormal: pixelsToCanvas(ENEMY_NORMAL_ROWS, ENEMY_NORMAL_PALETTE, 1),
     enemyGunner: pixelsToCanvas(ENEMY_NORMAL_ROWS, ENEMY_GUNNER_PALETTE, 1),
     enemyElite: pixelsToCanvas(ENEMY_ELITE_ROWS, ENEMY_ELITE_PALETTE, 1),
+    enemyKamikaze: pixelsToCanvas(ENEMY_KAMIKAZE_ROWS, ENEMY_KAMIKAZE_PALETTE, 1),
     bossHull: pixelsToCanvas(BOSS_HULL_ROWS, BOSS_HULL_PALETTE, 2),
   };
   return cache;

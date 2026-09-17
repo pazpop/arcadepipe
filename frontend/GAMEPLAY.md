@@ -42,6 +42,7 @@ Comment les couleurs et les formes sont décidées et générées.
 
 - [x] Tir de base par défaut.
 - [x] Les bonus ramassés ont une durée limitée, et un seul est actif à la fois (en ramasser un nouveau remplace l'ancien plutôt que de les cumuler) — plus simple à suivre pour le joueur, et plus simple à équilibrer.
+- [x] Le décompte d'un bonus actif se met en pause pendant la transition animée entre deux vagues (on ne peut de toute façon pas tirer pendant ce court passage) — la durée du bonus n'est jamais grignotée par un temps mort.
 - [x] Plusieurs armes bonus avec un vrai compromis, pas juste "plus fort que le tir normal" : une qui frappe plus fort mais tire plus lentement, une qui tire très vite mais fait moins de dégâts par tir, et un fusil à pompe qui tire plusieurs projectiles en éventail dont la puissance diminue avec la distance parcourue (fort à bout portant, faible loin).
 - [x] Un bouclier qui absorbe un nombre fixe de coups (pas une durée limitée) et qui peut être actif en même temps qu'une arme bonus, puisque ce sont deux systèmes indépendants.
 - [x] Un bonus à effet instantané qui détruit tous les ennemis normaux à l'écran (le boss n'est jamais concerné) — volontairement plus rare que les autres bonus.
@@ -52,6 +53,7 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] Plusieurs types d'ennemis avec des statistiques différentes (résistance, vitesse, valeur en points, capacité à tirer ou non).
 - [x] Un type d'ennemi plus rare et plus résistant, qui devient de plus en plus fréquent à mesure que la partie avance.
 - [x] À partir d'un certain stade de la partie, une partie des ennemis "normaux" se met aussi à tirer (avant ce stade, seul le type rare tirait).
+- [x] Un type d'ennemi qui ne tire jamais mais fonce directement sur le joueur (poursuite avec vitesse de rotation plafonnée — insistant mais esquivable en bougeant), plutôt distinctif visuellement (couleur/silhouette/orientation selon sa trajectoire réelle) pour bien signaler que c'est une menace différente des autres.
 - [x] Les ennemis n'apparaissent que dans une zone définie de l'écran (pas n'importe où), ce qui garde l'écran lisible même sur un petit écran de téléphone — une fois apparus, ils peuvent ensuite se déplacer librement.
 - [x] Même système de stock d'objets réutilisables que pour les projectiles.
 

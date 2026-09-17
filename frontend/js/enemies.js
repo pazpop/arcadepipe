@@ -16,6 +16,10 @@ const LEFT_BOUND = (RES_W * 2) / 3;
 const TYPE_STATS = {
   normal: { hp: 1, radius: 4.5, points: 100, speed: 55, fireChance: 0 },
   elite: { hp: 3, radius: 5, points: 300, speed: 45, fireChance: 1 }, // tire toujours (aimed périodique)
+  // Ne tire jamais (fireChance 0) — sa menace, c'est sa trajectoire, pas ses
+  // tirs (voir la poursuite dans updateEnemies). 1 PV : facile à abattre si
+  // on réagit vite, dangereux si on l'ignore.
+  kamikaze: { hp: 1, radius: 4, points: 150, speed: 70, fireChance: 0 },
 };
 
 export function createEnemyPool() {
@@ -65,6 +69,11 @@ function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
 const GUNNER_MIN_WAVE = 5;
 const GUNNER_CHANCE = 0.22;
 
+// Dès la vague 4, une petite chance de tomber sur un kamikaze plutôt qu'un
+// ennemi normal — exclusif avec élite/gunner (voir spawnEnemyWave).
+const KAMIKAZE_MIN_WAVE = 4;
+const KAMIKAZE_CHANCE = 0.12;
+
 // Pas de vraie physique de collision — juste un espacement à la génération
 // pour éviter qu'ils apparaissent superposés (tous dans le même tiers d'écran).
 const SPAWN_MIN_GAP = 14;
@@ -84,8 +93,9 @@ function tooCloseToActive(pool, x, y, minGap) {
 // de l'écran) pour varier les angles d'approche.
 export function spawnEnemyWave(pool, waveNumber, eliteChance) {
   const isElite = waveNumber >= 3 && Math.random() < eliteChance;
-  const type = isElite ? "elite" : "normal";
-  const isGunner = !isElite && waveNumber >= GUNNER_MIN_WAVE && Math.random() < GUNNER_CHANCE;
+  const isKamikaze = !isElite && waveNumber >= KAMIKAZE_MIN_WAVE && Math.random() < KAMIKAZE_CHANCE;
+  const type = isElite ? "elite" : isKamikaze ? "kamikaze" : "normal";
+  const isGunner = !isElite && !isKamikaze && waveNumber >= GUNNER_MIN_WAVE && Math.random() < GUNNER_CHANCE;
   const stats = TYPE_STATS[type];
   const fromEdge = Math.random() < 0.28 ? (Math.random() < 0.5 ? "top" : "bottom") : "right";
 
@@ -125,11 +135,28 @@ export function setEnemiesLeaving(pool) {
   }
 }
 
+// Poursuite du kamikaze : re-vise le joueur en continu, mais la rotation est
+// plafonnée (rad/s) plutôt qu'un demi-tour instantané — assez insistant pour
+// être une vraie menace, assez lent pour rester esquivable en bougeant.
+const KAMIKAZE_TURN_RATE = 2.6;
+
 export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
   const bulletSpeed = 70 * bulletSpeedFactor(wave);
   for (const en of pool.items) {
     if (!en.active) continue;
     en.elapsed += dt;
+    // Re-vise le joueur avant de bouger, pour que ce soit bien vx/vy déjà à
+    // jour qui déterminent le déplacement de cette frame ci-dessous.
+    if (en.type === "kamikaze" && !en.leaving) {
+      const speed = Math.hypot(en.vx, en.vy);
+      const current = Math.atan2(en.vy, en.vx);
+      const desired = Math.atan2(target.y - en.y, target.x - en.x);
+      const diff = Math.atan2(Math.sin(desired - current), Math.cos(desired - current));
+      const turn = Math.max(-KAMIKAZE_TURN_RATE * dt, Math.min(KAMIKAZE_TURN_RATE * dt, diff));
+      const angle = current + turn;
+      en.vx = Math.cos(angle) * speed;
+      en.vy = Math.sin(angle) * speed;
+    }
     // En fuite : suit le rythme du fond étoilé (warp), sinon vitesse normale.
     en.x += en.vx * dt * (en.leaving ? warp : 1);
     en.y += en.vy * dt;
@@ -161,6 +188,7 @@ export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
 // qu'un vaisseau jaune explose en jaune plutôt qu'en vert par défaut.
 export function enemyGlowColor(en) {
   if (en.type === "elite") return PALETTE.enemyElite;
+  if (en.type === "kamikaze") return PALETTE.danger;
   return en.gunner ? PALETTE.enemyGunner : PALETTE.enemyNormal;
 }
 
@@ -185,9 +213,24 @@ export function drawEnemies(ctx, pool) {
   const sprites = buildSprites();
   for (const en of pool.items) {
     if (!en.active) continue;
-    const sprite = en.type === "elite" ? sprites.enemyElite : en.gunner ? sprites.enemyGunner : sprites.enemyNormal;
+    const sprite =
+      en.type === "elite" ? sprites.enemyElite
+      : en.type === "kamikaze" ? sprites.enemyKamikaze
+      : en.gunner ? sprites.enemyGunner
+      : sprites.enemyNormal;
     const glow = enemyGlowColor(en);
-    drawWithGlow(ctx, sprite, en.x, en.y, glow, 0.3);
+    if (en.type === "kamikaze") {
+      // Orienté selon sa vitesse réelle (pas fixe comme les autres) — se voit
+      // pivoter à mesure qu'il rectifie sa trajectoire vers le joueur (voir
+      // updateEnemies). Le sprite pointe vers +X au repos (ENEMY_KAMIKAZE_ROWS).
+      ctx.save();
+      ctx.translate(en.x, en.y);
+      ctx.rotate(Math.atan2(en.vy, en.vx));
+      drawWithGlow(ctx, sprite, 0, 0, glow, 0.3);
+      ctx.restore();
+    } else {
+      drawWithGlow(ctx, sprite, en.x, en.y, glow, 0.3);
+    }
     if (en.maxHp > 1) {
       ctx.save();
       ctx.fillStyle = glow;

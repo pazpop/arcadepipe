@@ -1,6 +1,6 @@
 // Point d'entrée : bootstrapping (canvas, entrées, audio) + boucle
 // requestAnimationFrame avec delta-time borné.
-import { RES_W, RES_H, STORAGE_KEYS } from "./config.js";
+import { RES_W, RES_H, STORAGE_KEYS, GAME_SPEEDS } from "./config.js";
 import { createInput, canvasToLogical } from "./input.js";
 import { AudioEngine } from "./audio/sfx.js";
 import { MusicPlayer } from "./audio/music.js";
@@ -25,6 +25,7 @@ const mcToggle = document.getElementById("mc-toggle");
 const sfxVolumeEl = document.getElementById("sfx-volume");
 const autoFireToggle = document.getElementById("autofire-toggle");
 const helpBtn = document.getElementById("help-btn");
+const speedBtn = document.getElementById("speed-btn");
 
 const input = createInput(canvas);
 const audio = new AudioEngine();
@@ -163,6 +164,32 @@ if (helpBtn) {
   });
 }
 
+// --- Vitesse du jeu (x1/x1.5/x2, cycle au clic) : multiplie le delta-time
+// envoyé à game.update() ci-dessous — accélère tout ce qui dépend du temps
+// de façon uniforme (déplacement, cadence de tir, apparition des ennemis...),
+// donc la difficulté relative ne change pas. La musique/les bruitages tournent
+// sur leur propre horloge audio réelle et ne sont jamais affectés.
+let gameSpeed = 1;
+if (speedBtn) {
+  try {
+    const stored = parseFloat(localStorage.getItem(STORAGE_KEYS.gameSpeed));
+    if (GAME_SPEEDS.includes(stored)) gameSpeed = stored;
+  } catch {
+    /* stockage indisponible — pas bloquant */
+  }
+  speedBtn.textContent = `x${gameSpeed}`;
+  speedBtn.addEventListener("click", () => {
+    const idx = GAME_SPEEDS.indexOf(gameSpeed);
+    gameSpeed = GAME_SPEEDS[(idx + 1) % GAME_SPEEDS.length];
+    speedBtn.textContent = `x${gameSpeed}`;
+    try {
+      localStorage.setItem(STORAGE_KEYS.gameSpeed, String(gameSpeed));
+    } catch {
+      /* stockage indisponible — pas bloquant */
+    }
+  });
+}
+
 // --- Mute (M) et bascule CRT (C) ---
 window.addEventListener("keydown", (e) => {
   if (e.code === "KeyM") {
@@ -220,9 +247,9 @@ document.addEventListener("visibilitychange", () => {
 // --- Boucle principale ---
 let lastTime = 0;
 function loop(timestamp) {
-  const dt = Math.min(0.05, (timestamp - lastTime) / 1000 || 0);
+  const realDt = Math.min(0.05, (timestamp - lastTime) / 1000 || 0); // borné avant le multiplicateur de vitesse, pas après
   lastTime = timestamp;
-  game.update(dt);
+  game.update(realDt * gameSpeed);
   game.draw(ctx);
   requestAnimationFrame(loop);
 }

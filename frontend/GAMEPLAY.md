@@ -101,6 +101,9 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] Navigation possible au clavier (flèches + Entrée) et à la souris, avec un petit son quand la sélection change.
 - [x] L'écran d'aide s'affiche automatiquement lors de la toute première partie jouée, puis reste accessible à la demande ensuite via un bouton.
 - [x] La saisie du pseudo de fin de partie fonctionne même sur les téléphones où le clavier virtuel ne s'ouvre pas automatiquement (bouton de validation tactile en secours).
+- [x] Légende visuelle des bonus dans l'écran Aide (icône + couleur réelles de chaque bonus, pas juste une liste de noms) — le joueur associe l'apparence à l'effet sans avoir à tout ramasser pour vérifier.
+- [x] Réglage de la vitesse du jeu (x1/x1.5/x2, bouton dans le panneau en bas à gauche, préférence mémorisée) — accélère tout ce qui dépend du temps de façon uniforme (donc la difficulté relative ne change pas), sans jamais affecter la musique ni les bruitages (qui tournent sur leur propre horloge audio).
+- [x] Lien vers le code source (GitHub) dans les crédits.
 - [x] Numéro de version affiché dans le jeu (détail plus bas).
 
 ## Classement (leaderboard)

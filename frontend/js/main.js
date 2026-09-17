@@ -279,7 +279,9 @@ function loop(timestamp) {
   lastTime = timestamp;
   game.update(realDt * gameSpeed);
   game.draw(ctx);
-  if (novaBtn) novaBtn.classList.toggle("hidden", !(game.mode === game.MODE.PLAYING && game.novaStock > 0));
+  if (novaBtn) {
+    novaBtn.classList.toggle("hidden", !(game.mode === game.MODE.PLAYING && game.novaStock > 0 && !game.inBonusLevel));
+  }
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);

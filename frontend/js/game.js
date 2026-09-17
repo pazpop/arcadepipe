@@ -971,6 +971,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
     get novaStock() {
       return g.novaStock;
     },
+    get inBonusLevel() {
+      return g.bonusLevel !== null;
+    },
     update,
     draw,
     handleTap,

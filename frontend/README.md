@@ -15,7 +15,7 @@ python -m http.server 5500   # http://localhost:5500
 Logique pure des modules JS, aucune dépendance npm (Node ≥ 18) :
 
 ```bash
-cd js && node --test   # 9 tests
+cd js && node --test   # 16 tests
 ```
 
 Rien du canvas, de la souris/du tactile ni de l'audio n'est couvert ici — voir [`../e2e/README.md`](../e2e/README.md) pour les tests bout-en-bout (Playwright) qui pilotent un vrai navigateur.

@@ -5,7 +5,7 @@
 	encode zstd gzip
 
 	# Route l'API vers le backend quand rien ne l'intercepte déjà avant —
-	# utile en déploiement autonome (voir docker-compose.standalone.yml à la
+	# utile en déploiement autonome (voir docker-compose.yml à la
 	# racine), où il n'y a pas de Traefik pour router /api/* directement
 	# vers le service backend. Sans effet en prod derrière Traefik : son
 	# routeur backend (priority=10, PathPrefix `/api`) capte déjà la requête

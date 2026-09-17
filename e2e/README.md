@@ -17,6 +17,8 @@ npm test                   # ou : npx playwright test --headed pour voir le navi
 - `menu-pause.spec.js` — chargement du menu, clic souris dans la pause, confirmation de sortie de partie, aide de bienvenue (première partie), accès à l'aide depuis le menu/la pause/le bouton du panneau
 - `gameplay.spec.js` — tir manuel vs tir auto (+ persistance), sélection aléatoire de piste musicale, session de jeu prolongée (vague 1 → 2), saisie du nom (nom aléatoire pré-rempli + validation tactile, sans clavier)
 - `powerups-boss.spec.js` — ramassage de bonus (un seul à la fois), bouclier (absorption de coups), premier combat de boss
+- `graze-nova.spec.js` — frôlement des tirs, remplissage de la jauge NOVA, déclenchement via le bouton tactile
+- `bonus-level.spec.js` — déclenchement du niveau bonus, défilement des anneaux, récompense NOVA
 
 **Limite volontaire** : le rendu canvas n'est pas inspectable comme du DOM, donc pas d'assertion pixel-exacte possible. Ces tests valident surtout l'absence d'erreurs JS sur de vraies séquences d'interaction, avec des captures d'écran pour la vérification visuelle humaine — pas un remplacement total du "lancer le jeu et regarder", plutôt un filet qui attrape les régressions qui plantent (erreurs JS, écran figé, flux cassé).
 

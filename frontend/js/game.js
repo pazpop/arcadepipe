@@ -482,7 +482,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
   // qui était déjà acquis par le graze), plafonnée au max courant.
   function applyNovaReward(frac) {
     const max = g.novaMax;
-    let units = Math.min(max, g.novaStock + g.novaProgress + frac * max);
+    const units = Math.min(max, g.novaStock + g.novaProgress + frac * max);
     g.novaStock = Math.floor(units);
     g.novaProgress = units - g.novaStock;
   }
@@ -519,16 +519,23 @@ export function createGame({ input, audio, music, nameInputEl }) {
     else if (res) onPlayerHit();
   }
 
+  // Position en x pendant une glissée d'entrée : interpolation directe sur
+  // une durée fixe (pas un suivi par vitesse, bien trop rapide pour rester
+  // visible) — partagée par l'intro de vague 1 et celle du niveau bonus.
+  // `timer` compte à rebours vers 0 ; ease-out cubique = ralentit en
+  // approchant la position finale, comme un vrai vaisseau qui freine.
+  function easeInFromLeft(timer, duration, startX, targetX) {
+    const t = Math.min(1, 1 - Math.max(0, timer) / duration);
+    const eased = 1 - Math.pow(1 - t, 3);
+    return startX + (targetX - startX) * eased;
+  }
+
   // Glissée d'entrée (vague 1) : interpole la position directement (pas via
   // updatePlayer) pour qu'un mouvement de souris ne la court-circuite pas.
   // input.x/y n'est pas touché, donc le contrôle reprend sans saut à la fin.
   function updateShipIntro(dt) {
     g.shipIntroTimer -= dt;
-    const t = Math.min(1, 1 - Math.max(0, g.shipIntroTimer) / SHIP_INTRO_DURATION);
-    const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic — ralentit en approchant la position finale
-    const startX = -20;
-    const targetX = RES_W * 0.18;
-    player.x = startX + (targetX - startX) * eased;
+    player.x = easeInFromLeft(g.shipIntroTimer, SHIP_INTRO_DURATION, -20, RES_W * 0.18);
     if (g.shipIntroTimer <= 0) {
       g.shipIntro = false;
     }
@@ -542,14 +549,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
     const targetX = RES_W * 0.18;
     const bl = g.bonusLevel;
     if (bl.introTimer > 0) {
-      // Glissée d'entrée (même principe que updateShipIntro, début de
-      // partie) : interpolation directe sur une durée fixe, pas le suivi par
-      // vitesse ci-dessous (bien trop rapide pour rester visible sur
-      // BONUS_LEVEL.introDuration). y immobile pendant la glissée — le
-      // contrôle reprend sans saut une fois l'intro terminée.
-      const t = Math.min(1, 1 - Math.max(0, bl.introTimer) / BONUS_LEVEL.introDuration);
-      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
-      player.x = -20 + (targetX + 20) * eased;
+      // y immobile pendant la glissée — le contrôle reprend sans saut une
+      // fois l'intro terminée (voir easeInFromLeft ci-dessus).
+      player.x = easeInFromLeft(bl.introTimer, BONUS_LEVEL.introDuration, -20, targetX);
       player.y = RES_H / 2;
       return;
     }

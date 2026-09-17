@@ -60,6 +60,29 @@ export class AudioEngine {
     return g;
   }
 
+  // Bruit blanc filtré passe-bas avec balayage de la fréquence de coupure —
+  // le "corps" commun à explosion/NOVA/fusil à pompe ci-dessous ; chacune
+  // garde sa propre enveloppe de volume (c'est elle qui les distingue au son),
+  // appliquée par l'appelant sur le filtre renvoyé ici (pas encore connecté
+  // à une sortie).
+  _noiseBurst(duration, cutoffStart, cutoffEnd) {
+    const now = this.ctx.currentTime;
+    const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(cutoffStart, now);
+    filter.frequency.exponentialRampToValueAtTime(cutoffEnd, now + duration);
+    noise.connect(filter);
+    noise.start(now);
+    noise.stop(now + duration);
+    return filter;
+  }
+
   _tone({ type = "square", startFreq, endFreq, duration = 0.1, gain = 0.15 }) {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -104,18 +127,7 @@ export class AudioEngine {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const duration = 0.3;
-    const bufferSize = Math.floor(this.ctx.sampleRate * duration);
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(200, now);
-    filter.frequency.exponentialRampToValueAtTime(20, now + duration);
+    const filter = this._noiseBurst(duration, 200, 20);
 
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(0, now);
@@ -123,11 +135,8 @@ export class AudioEngine {
     g.gain.exponentialRampToValueAtTime(0.001, now + 0.005 + 0.15); // Decay 150ms vers ~0
     g.gain.linearRampToValueAtTime(0, now + duration);
 
-    noise.connect(filter);
     filter.connect(g);
     g.connect(this.master);
-    noise.start(now);
-    noise.stop(now + duration);
   }
 
   // Transition "saut spatial" : glissement montant sur 2s avec légère
@@ -165,26 +174,13 @@ export class AudioEngine {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const duration = 0.6;
-
-    const bufferSize = Math.floor(this.ctx.sampleRate * duration);
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(500, now);
-    filter.frequency.exponentialRampToValueAtTime(20, now + duration);
+    const filter = this._noiseBurst(duration, 500, 20);
     const noiseGain = this.ctx.createGain();
     noiseGain.gain.setValueAtTime(0, now);
     noiseGain.gain.linearRampToValueAtTime(0.32, now + 0.008);
     noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-    noise.connect(filter);
     filter.connect(noiseGain);
     noiseGain.connect(this.master);
-    noise.start(now);
-    noise.stop(now + duration);
 
     // Sub grave : c'est lui qui donne le "poids" qu'un simple bruit filtré n'a pas.
     const sub = this.ctx.createOscillator();
@@ -212,24 +208,12 @@ export class AudioEngine {
     const now = this.ctx.currentTime;
 
     const duration = 0.15;
-    const bufferSize = Math.floor(this.ctx.sampleRate * duration);
-    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-    const data = buffer.getChannelData(0);
-    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
-    const noise = this.ctx.createBufferSource();
-    noise.buffer = buffer;
-    const filter = this.ctx.createBiquadFilter();
-    filter.type = "lowpass";
-    filter.frequency.setValueAtTime(700, now);
-    filter.frequency.exponentialRampToValueAtTime(80, now + duration);
+    const filter = this._noiseBurst(duration, 700, 80);
     const noiseGain = this.ctx.createGain();
     noiseGain.gain.setValueAtTime(0.28, now);
     noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
-    noise.connect(filter);
     filter.connect(noiseGain);
     noiseGain.connect(this.master);
-    noise.start(now);
-    noise.stop(now + duration);
 
     const osc = this.ctx.createOscillator();
     osc.type = "sawtooth";

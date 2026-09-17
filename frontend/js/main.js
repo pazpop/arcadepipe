@@ -210,7 +210,14 @@ const KONAMI_SEQUENCE = [
 ];
 let konamiProgress = 0;
 window.addEventListener("keydown", (e) => {
-  konamiProgress = e.code === KONAMI_SEQUENCE[konamiProgress] ? konamiProgress + 1 : e.code === KONAMI_SEQUENCE[0] ? 1 : 0;
+  if (e.code === KONAMI_SEQUENCE[konamiProgress]) {
+    konamiProgress++;
+  } else {
+    // Touche inattendue : on recommence à zéro, sauf si elle correspond
+    // justement à la première touche de la séquence (permet d'enchaîner
+    // deux tentatives sans devoir marquer une pause entre les deux).
+    konamiProgress = e.code === KONAMI_SEQUENCE[0] ? 1 : 0;
+  }
   if (konamiProgress === KONAMI_SEQUENCE.length) {
     konamiProgress = 0;
     audio.ensure();

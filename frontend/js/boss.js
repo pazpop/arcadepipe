@@ -26,9 +26,10 @@ function weakPointColor(p) {
 
 // Le tout premier combat de boss (voir BOSS.firstBoss* dans config.js) —
 // générique plutôt qu'un "wave === 4" en dur, pour rester correct si
-// DIFFICULTY.bossWaveEvery change un jour.
-function isFirstBoss(boss) {
-  return boss.wave === DIFFICULTY.bossWaveEvery;
+// DIFFICULTY.bossWaveEvery change un jour. Prend un numéro de vague brut
+// (pas l'objet boss) : réutilisable dans spawnBoss, avant que l'objet existe.
+function isFirstBoss(wave) {
+  return wave === DIFFICULTY.bossWaveEvery;
 }
 
 export function spawnBoss(waveNumber) {
@@ -36,7 +37,7 @@ export function spawnBoss(waveNumber) {
     BOSS.weakPointsMax,
     BOSS.weakPointsMin + Math.floor(waveNumber / (BOSS.weakPointsMin * 2))
   );
-  const firstBoss = waveNumber === DIFFICULTY.bossWaveEvery;
+  const firstBoss = isFirstBoss(waveNumber);
   const hp = firstBoss ? Math.max(1, Math.round(BOSS.weakPointHp * BOSS.firstBossHpMul)) : BOSS.weakPointHp;
   const hull = buildSprites().bossHull;
   // Variabilité minime d'un combat à l'autre : taille (sizeScale, pris en
@@ -105,7 +106,7 @@ export function updateBoss(boss, dt, projectiles, target) {
 
   boss.fireTimer -= dt * phaseSpeed(boss);
   if (boss.fireTimer <= 0) {
-    const firstBoss = isFirstBoss(boss);
+    const firstBoss = isFirstBoss(boss.wave);
     const speed = BOSS.bulletSpeed * bulletSpeedFactor(boss.wave) * (firstBoss ? BOSS.firstBossSpeedMul : 1);
     const countMul = firstBoss ? BOSS.firstBossBulletCountMul : 1;
     const alive = destroyedCount(boss);

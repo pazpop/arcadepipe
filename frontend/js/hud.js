@@ -67,6 +67,26 @@ function text(ctx, str, x, y, { size = 8, color = PALETTE.hud, align = "left", a
   ctx.restore();
 }
 
+// Rectangles cliquables d'une liste verticale d'options centrée (menu
+// principal, pause, confirmation de sortie) — même géométrie répétée à
+// chaque écran, seuls startY/gap/w/h changent d'un écran à l'autre.
+function verticalOptionRects(options, startY, gap, w, h) {
+  return options.map((label, i) => ({ label, x: RES_W / 2, y: startY + i * gap, w, h }));
+}
+
+// Dessine cette même liste avec le curseur "▶" sur l'option survolée/sélectionnée.
+function drawOptionList(ctx, rects, selected, size = 11) {
+  rects.forEach((r, i) => {
+    const isSel = i === selected;
+    text(ctx, (isSel ? "▶ " : "  ") + r.label, r.x, r.y, {
+      size,
+      align: "center",
+      color: isSel ? PALETTE.bulletPlayer : PALETTE.hud,
+      glow: isSel ? PALETTE.bulletPlayer : null,
+    });
+  });
+}
+
 // --- HUD en partie ---
 
 export function drawGameHud(ctx, s, lives) {
@@ -231,17 +251,9 @@ export function drawFlash(ctx, amount) {
 
 const MENU_OPTIONS = ["JOUER", "CLASSEMENT", "AIDE", "CRÉDITS"];
 
+// Zones cliquables plus larges que le texte — sur mobile, mieux vaut une marge généreuse qu'un bouton manqué.
 export function menuOptionRects() {
-  // Zones cliquables plus larges que le texte — sur mobile, mieux vaut une marge généreuse qu'un bouton manqué.
-  const startY = RES_H * 0.56;
-  const gap = 22;
-  return MENU_OPTIONS.map((label, i) => ({
-    label,
-    x: RES_W / 2,
-    y: startY + i * gap,
-    w: 220,
-    h: 20,
-  }));
+  return verticalOptionRects(MENU_OPTIONS, RES_H * 0.56, 22, 220, 20);
 }
 
 export function hitTestMenu(x, y) {
@@ -280,16 +292,7 @@ export function drawTitleScreen(ctx, elapsed, selected) {
     });
   });
 
-  const rects = menuOptionRects();
-  rects.forEach((r, i) => {
-    const isSel = i === selected;
-    text(ctx, (isSel ? "▶ " : "  ") + r.label, r.x, r.y, {
-      size: 12,
-      align: "center",
-      color: isSel ? PALETTE.bulletPlayer : PALETTE.hud,
-      glow: isSel ? PALETTE.bulletPlayer : null,
-    });
-  });
+  drawOptionList(ctx, menuOptionRects(), selected, 12);
 
   const blink = Math.sin(elapsed * 4) > 0;
   if (blink) {
@@ -410,15 +413,7 @@ export function drawCreditsScreen(ctx, scrollY) {
 const PAUSE_OPTIONS = ["REPRENDRE", "AIDE", "MENU PRINCIPAL"];
 
 export function pauseOptionRects() {
-  const startY = RES_H * 0.4 + 24;
-  const gap = 20;
-  return PAUSE_OPTIONS.map((label, i) => ({
-    label,
-    x: RES_W / 2,
-    y: startY + i * gap,
-    w: 200,
-    h: 18,
-  }));
+  return verticalOptionRects(PAUSE_OPTIONS, RES_H * 0.4 + 24, 20, 200, 18);
 }
 
 export function hitTestPause(x, y) {
@@ -430,15 +425,7 @@ export function drawPauseScreen(ctx, selected) {
   ctx.fillStyle = "rgba(0,0,0,0.55)";
   ctx.fillRect(0, 0, RES_W, RES_H);
   text(ctx, "PAUSE", RES_W / 2, RES_H * 0.4, { size: 18, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
-  pauseOptionRects().forEach((r, i) => {
-    const isSel = i === selected;
-    text(ctx, (isSel ? "▶ " : "  ") + r.label, r.x, r.y, {
-      size: 11,
-      align: "center",
-      color: isSel ? PALETTE.bulletPlayer : PALETTE.hud,
-      glow: isSel ? PALETTE.bulletPlayer : null,
-    });
-  });
+  drawOptionList(ctx, pauseOptionRects(), selected);
   ctx.restore();
 }
 
@@ -447,15 +434,7 @@ export function drawPauseScreen(ctx, selected) {
 const CONFIRM_QUIT_OPTIONS = ["OUI, QUITTER", "NON, CONTINUER"];
 
 export function confirmQuitOptionRects() {
-  const startY = RES_H * 0.58;
-  const gap = 20;
-  return CONFIRM_QUIT_OPTIONS.map((label, i) => ({
-    label,
-    x: RES_W / 2,
-    y: startY + i * gap,
-    w: 200,
-    h: 18,
-  }));
+  return verticalOptionRects(CONFIRM_QUIT_OPTIONS, RES_H * 0.58, 20, 200, 18);
 }
 
 export function hitTestConfirmQuit(x, y) {
@@ -477,15 +456,7 @@ export function drawConfirmQuitScreen(ctx, selected) {
     align: "center",
     alpha: 0.85,
   });
-  confirmQuitOptionRects().forEach((r, i) => {
-    const isSel = i === selected;
-    text(ctx, (isSel ? "▶ " : "  ") + r.label, r.x, r.y, {
-      size: 11,
-      align: "center",
-      color: isSel ? PALETTE.bulletPlayer : PALETTE.hud,
-      glow: isSel ? PALETTE.bulletPlayer : null,
-    });
-  });
+  drawOptionList(ctx, confirmQuitOptionRects(), selected);
   ctx.restore();
 }
 

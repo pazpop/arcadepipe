@@ -1,0 +1,13 @@
+{
+  "name": "arcadepipe-frontend",
+  "private": true,
+  "description": "Lint uniquement — le jeu lui-même reste du JS vanilla servi tel quel, aucune dépendance d'exécution.",
+  "type": "module",
+  "scripts": {
+    "lint": "eslint js"
+  },
+  "devDependencies": {
+    "eslint": "^10.0.0",
+    "@eslint/js": "^10.0.0"
+  }
+}

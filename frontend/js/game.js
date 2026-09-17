@@ -265,7 +265,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     g.scores = [];
     g.scoresRevealCount = 0;
     g.scoresRevealTimer = 0;
-    let scores = [];
+    let scores;
     try {
       scores = await fetchTopScores(10);
     } catch {
@@ -273,7 +273,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     }
     if (token !== leaderboardToken) return; // supplantée par un appel plus récent
     g.scores = scores;
-    let gamesPlayed = null;
+    let gamesPlayed;
     try {
       gamesPlayed = await fetchGamesPlayedCount();
     } catch {
@@ -289,7 +289,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     // Comptabilisée dès la fin de partie, qualifiée ou non (POST /api/games).
     // Fire-and-forget : un échec réseau ne doit pas bloquer la suite.
     recordGamePlayed().catch(() => {});
-    let qualifies = true;
+    let qualifies;
     try {
       const top = await fetchTopScores(10);
       qualifies = top.length < 10 || g.score > Math.min(...top.map((s) => s.score));
@@ -720,7 +720,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     updateEnemies(enemies, dt, projectiles, player, g.wave, g.warp);
 
     if (g.boss) {
-      updateBoss(g.boss, dt, projectiles, player, particles);
+      updateBoss(g.boss, dt, projectiles, player);
     } else if (g.waveBreak <= 0 && !g.bonusLevel) {
       g.spawnTimer -= dt;
       if (g.spawnTimer <= 0) {

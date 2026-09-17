@@ -19,3 +19,11 @@ cd js && node --test   # 16 tests
 ```
 
 Rien du canvas, de la souris/du tactile ni de l'audio n'est couvert ici — voir [`../e2e/README.md`](../e2e/README.md) pour les tests bout-en-bout (Playwright) qui pilotent un vrai navigateur.
+
+## Lint
+
+Config minimale (`eslint:recommended`, voir `eslint.config.js`) — vérifiée en CI avant chaque build (voir *CI/CD* dans le README racine), symétrique de `ruff` côté backend. `package.json` ici ne sert qu'à ça : le jeu lui-même reste du JS vanilla servi tel quel, aucune dépendance d'exécution.
+
+```bash
+npm install && npm run lint
+```

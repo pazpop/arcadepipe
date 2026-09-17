@@ -85,7 +85,7 @@ function phaseSpeed(boss) {
 // tout le saut spatial, assez longue pour rester visible pendant l'explosion.
 const VICTORY_FADE_DURATION = 0.4;
 
-export function updateBoss(boss, dt, projectiles, target, particlePool) {
+export function updateBoss(boss, dt, projectiles, target) {
   if (!boss) return;
   if (boss.victory) {
     boss.victoryTimer += dt;

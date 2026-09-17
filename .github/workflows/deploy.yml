@@ -37,6 +37,14 @@ jobs:
         run: |
           pip install pip-audit
           pip-audit -r backend/requirements.txt
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: "22"
+      - name: eslint (frontend)
+        working-directory: frontend
+        run: |
+          npm install
+          npm run lint
 
   build-and-push:
     needs: lint

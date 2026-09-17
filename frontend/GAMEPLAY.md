@@ -137,7 +137,7 @@ Comment les couleurs et les formes sont décidées et générées.
 ## Suivi de version
 
 - [x] Numéro de version affiché dans le jeu (menu principal + crédits), qui augmente automatiquement à chaque mise à jour du code plutôt que d'être choisi à la main.
-- [ ] Journal détaillé des changements (changelog) — pas encore fait.
+- [x] Journal des changements notables ([`CHANGELOG.md`](../CHANGELOG.md) à la racine du repo), une entrée par version qui le mérite — pas les simples ajustements numériques.
 
 ## Tests
 

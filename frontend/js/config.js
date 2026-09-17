@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.35";
+export const VERSION = "2.36";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -18,21 +18,30 @@ export const PALETTE = {
   player: "#4ee1ff",
   playerGlow: "#8ef4ff",
   bulletPlayer: "#ffe66d",
+  // Rose, partagé par tous les tirs d'ennemis normaux (élite + gunner) —
+  // la distinction de couleur qui existait entre les deux ne changeait rien
+  // à la façon de les esquiver (même tir visé dans les deux cas), donc plus
+  // de bruit visuel qu'autre chose. Voir bulletBossDirect/bulletBossCircular
+  // ci-dessous pour les tirs du boss, volontairement bien distincts de celui-ci.
   bulletEnemy: "#ff5d9e",
-  // Bleu-indigo (pas jaune-orangé, trop proche de bulletPlayer) : seule
-  // teinte encore libre dans la palette du jeu.
-  bulletEnemy2: "#5a7dff",
+  // Tirs du boss : deux couleurs distinctes selon le style, pour que le
+  // joueur sache quoi en faire d'un coup d'œil — direct = un vecteur à
+  // esquiver sur le côté, circulaire = un mur à traverser par les trous.
+  bulletBossDirect: "#5a7dff", // éventail visé (patternFan) — froid, tranche avec le rose des ennemis normaux
+  bulletBossCircular: "#e8f4ff", // spirale/anneau (patternSpiralStep/patternRing) — blanc-glacé, contraste maximal pour les patterns les plus denses
   // Rouge d'alerte générique (HUD : vies, bannières, avertissements) —
   // distinct de la couleur des ennemis "faciles" depuis que celle-ci est
   // passée au vert (code couleur par palier ci-dessous), les deux usages
   // n'ont plus de raison de partager la même valeur.
   danger: "#ff5d73",
-  // Code couleur par palier de menace façon jeu de rôle (vert < jaune <
-  // violet < or) — voir GAMEPLAY.md, section Charte graphique.
-  enemyNormal: "#27be4d", // facile
-  enemyGunner: "#beb227", // moyen (variante d'ennemi normal qui tire aussi, dès la vague 5)
-  enemyElite: "#c86bff", // difficile
-  boss: "#ffcc33", // or — 4e et dernier palier du code couleur ci-dessus
+  // Code couleur des ennemis façon jeu de rôle — voir GAMEPLAY.md, section
+  // Charte graphique. Le jaune/or reste exclusif au boss (aucun autre
+  // ennemi ne s'en approche), pour ne jamais laisser croire qu'un ennemi
+  // normal "vaut" le boss.
+  enemyNormal: "#27be4d", // facile (petit vaisseau)
+  enemyGunner: "#2748be", // moyen (variante d'ennemi normal qui tire aussi, dès la vague 5) — bleu, pour ne pas empiéter sur le jaune/or réservé au boss
+  enemyElite: "#c86bff", // difficile (violet, inchangé)
+  boss: "#ffcc33", // or — jamais réutilisé ailleurs
   bossWeakOn: "#fff44a", // jaune vif — doit trancher net avec la coque du boss
   bossWeakHit: "#ff9a3d", // encaissé un coup, pas encore critique
   bossWeakCritical: "#ff4d4d", // sur le point de céder

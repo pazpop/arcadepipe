@@ -176,7 +176,10 @@ export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
       en.fireTimer -= dt;
       if (en.fireTimer <= 0) {
         const speed = en.gunner ? bulletSpeed * 0.75 : bulletSpeed;
-        patternAimed(projectiles, en.x, en.y, target, speed, en.gunner ? PALETTE.bulletEnemy2 : null);
+        // Même couleur (PALETTE.bulletEnemy, défaut de patternAimed) pour
+        // élite et gunner — les deux sont un tir visé classique, distinguer
+        // leur couleur n'aidait pas à savoir comment l'esquiver.
+        patternAimed(projectiles, en.x, en.y, target, speed);
         en.fireTimer = en.gunner ? 2.2 + Math.random() * 1.2 : 1.4 + Math.random() * 0.8;
       }
     }

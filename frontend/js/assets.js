@@ -68,12 +68,13 @@ const ENEMY_NORMAL_PALETTE = {
 };
 
 // Même silhouette que l'ennemi normal (ENEMY_NORMAL_ROWS) — seule la palette
-// change (jaune au lieu de vert), pour signaler le palier "moyen" (variante
-// qui tire aussi, voir GUNNER_MIN_WAVE dans enemies.js) sans redessiner une forme.
+// change (bleu-indigo au lieu de vert, assorti à ses propres tirs), pour
+// signaler le palier "moyen" (variante qui tire aussi, voir GUNNER_MIN_WAVE
+// dans enemies.js) sans redessiner une forme.
 const ENEMY_GUNNER_PALETTE = {
-  a: "#716a13",
-  b: "#beb227",
-  c: "#fff799",
+  a: "#132871",
+  b: "#2748be",
+  c: "#99afff",
   d: "#7de0ff",
   e: "#ffb347",
 };

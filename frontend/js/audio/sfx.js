@@ -207,6 +207,14 @@ export class AudioEngine {
     this._tone({ type: "sine", startFreq: 900, endFreq: 1100, duration: 0.035, gain: 0.05 });
   }
 
+  // Frôlement (graze.js) : "tic" aigu et très bref, la hauteur monte avec le
+  // palier de chaîne (plafonné côté appelant) — une chaîne qui s'enchaîne se
+  // ressent au son, pas juste au score qui défile.
+  playGraze(tier = 1) {
+    const freq = 900 + Math.min(tier, 8) * 90;
+    this._tone({ type: "sine", startFreq: freq, endFreq: freq * 1.15, duration: 0.045, gain: 0.05 });
+  }
+
   // Ramassage de bonus : deux notes montantes, timbre franc et positif, distinct des tirs/impacts.
   playPowerup() {
     if (!this.ctx) return;

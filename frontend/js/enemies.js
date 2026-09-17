@@ -39,6 +39,7 @@ export function createEnemyPool() {
       elapsed: 0,
       gunner: false,
       leaving: false, // fin de vague : défile vers la gauche au lieu de disparaître (voir setEnemiesLeaving)
+      grazeCooldown: 0, // kamikaze uniquement (voir graze.js) — délai avant de pouvoir regrazer au corps
     })),
   };
 }
@@ -61,6 +62,7 @@ function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
   en.elapsed = 0;
   en.gunner = gunner;
   en.leaving = false;
+  en.grazeCooldown = 0;
   return en;
 }
 

@@ -63,6 +63,11 @@
       <!-- Hors du panneau qui glisse : reste toujours visible, replié ou non. -->
       <button id="mc-toggle" type="button" title="Afficher/masquer le menu">◀</button>
     </div>
+
+    <!-- Déclenchement tactile du NOVA stocké (voir graze.js/game.js) — Espace
+         au clavier. Masqué tant que la jauge est vide (main.js) : un bouton
+         mort en permanence serait juste du bruit visuel. -->
+    <button id="nova-btn" type="button" class="nova-btn hidden" title="Déclencher NOVA (Espace)">✦ NOVA</button>
   </div>
 
   <!-- Le lecteur de module tracker (lib/chiptune3.js, AudioWorklet) est un

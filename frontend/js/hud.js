@@ -1,6 +1,6 @@
 // Tout le texte/UI du jeu — le petit canvas interne + `image-rendering:
 // pixelated` suffit à un rendu "façon bitmap" sans dessiner une police pixel par pixel.
-import { RES_W, RES_H, PALETTE, POWERUP, VERSION } from "./config.js";
+import { RES_W, RES_H, PALETTE, POWERUP, NOVA, VERSION } from "./config.js";
 import { drawPowerupIcon } from "./powerups.js";
 import { bossHealthFraction } from "./boss.js";
 import { buildSprites, drawWithGlow } from "./assets.js";
@@ -13,7 +13,6 @@ const BONUS_SHORT_EFFECT = {
   rapid: "tir très rapide, dégâts réduits",
   shotgun: "cône de plombs, portée courte",
   shield: "absorbe des coups",
-  nova: "nettoie l'écran",
 };
 
 // Légende des ennemis (menu Aide, colonne droite) — boss volontairement
@@ -85,6 +84,37 @@ export function drawGameHud(ctx, s, lives) {
     color: PALETTE.danger,
     glow: PALETTE.danger,
   });
+}
+
+// Jauge NOVA : une pastille par charge dispo (pleine/vide) + une fine barre
+// de progression vers la prochaine sous la dernière pastille vide — sous les
+// vies (RES_H y=10), aligné à droite comme elles, pour rester dans le même
+// coin de l'œil plutôt que d'ajouter un endroit de plus à surveiller.
+export function drawNovaGauge(ctx, stock, max, progress) {
+  if (max <= 0) return;
+  const color = NOVA.color;
+  const y = 20;
+  let pips = "";
+  for (let i = 0; i < max; i++) pips += i < stock ? "●" : "○";
+  text(ctx, `NOVA ${pips}`, RES_W - 8, y, {
+    size: 7,
+    align: "right",
+    color,
+    glow: stock > 0 ? color : null,
+    alpha: stock > 0 ? 1 : 0.6,
+  });
+  if (stock < max) {
+    const barW = 36;
+    const barH = 2;
+    const barX = RES_W - 8 - barW;
+    const barY = y + 6;
+    ctx.save();
+    ctx.fillStyle = "rgba(255,255,255,0.15)";
+    ctx.fillRect(barX, barY, barW, barH);
+    ctx.fillStyle = color;
+    ctx.fillRect(barX, barY, barW * progress, barH);
+    ctx.restore();
+  }
 }
 
 // Barre de vie du boss : pleine largeur, fixe tout en bas de l'écran plutôt
@@ -475,6 +505,11 @@ export function drawInfoScreen(ctx, content) {
   const lineH = 9;
   const sectionGap = 10;
 
+  // Le bas de la colonne la plus haute dicte legendY ci-dessous : le nombre
+  // de sections/lignes wrappées varie selon leur contenu (voir HELP_INFO
+  // dans game.js), donc une valeur fixe se fait dépasser dès qu'une section
+  // s'allonge — vécu une première fois en ajoutant la section NOVA.
+  let tallestColBottom = startY;
   columns.forEach((items, c) => {
     let y = startY;
     ctx.font = detailFont; // pour measureText dans wrapLines ci-dessous
@@ -493,6 +528,7 @@ export function drawInfoScreen(ctx, content) {
       }
       y += sectionGap;
     }
+    tallestColBottom = Math.max(tallestColBottom, y);
   });
 
   // Légende bonus + ennemis (menu Aide uniquement), deux colonnes côte à
@@ -501,7 +537,7 @@ export function drawInfoScreen(ctx, content) {
   // powerups.js ; sprite réel d'assets.js pour les ennemis) — le joueur
   // associe l'apparence à l'effet sans avoir à le vérifier en jeu.
   if (content.showBonusLegend) {
-    const legendY = 132;
+    const legendY = tallestColBottom - sectionGap + 4;
     const rowH = 14;
     text(ctx, "BONUS", colX[0], legendY, { size: 9, align: "center", color: PALETTE.player, glow: PALETTE.player });
     const bonusIconX = colX[0] - 62;

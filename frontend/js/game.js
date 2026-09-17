@@ -8,6 +8,7 @@ import { createParticlePool, updateParticles, drawParticles, spawnExplosion, spa
 import { createEnemyPool, spawnEnemyWave, updateEnemies, setEnemiesLeaving, damageEnemy, pointsFor, drawEnemies, enemyGlowColor } from "./enemies.js";
 import { spawnBoss, updateBoss, hitBossWeakPoint, hitsBossHull, drawBoss } from "./boss.js";
 import { createPowerupPool, spawnPowerup, updatePowerups, drawPowerups } from "./powerups.js";
+import { updateGraze, novaMaxForWave } from "./graze.js";
 import { circlesOverlap } from "./collisions.js";
 import { consumeJustPressed, clearJustPressed } from "./input.js";
 import { fetchTopScores, submitScore, recordGamePlayed, fetchGamesPlayedCount } from "./audio/leaderboard.js";
@@ -80,7 +81,11 @@ const HELP_INFO = {
   showBonusLegend: true, // dessine icône + couleur de chaque bonus (voir drawInfoScreen dans hud.js) à la place d'une ligne "BONUS" ici
   sections: [
     { heading: "DÉPLACEMENT", detail: "Souris ou doigt : dirige le vaisseau" },
-    { heading: "TIR", detail: 'Maintiens le clic, ou coche "TIR AUTO" (bas à gauche)' },
+    {
+      heading: "TIR",
+      detail:
+        'Maintiens le clic, ou coche "TIR AUTO" (bas à gauche). NOVA (ESPACE ou bouton bas droite) une fois la jauge pleine — frôle les tirs ennemis pour la charger.',
+    },
     { heading: "BOSS", detail: "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie" },
     { heading: "MUSIQUE", detail: "Playlist aléatoire, réglable en bas à gauche" },
   ],
@@ -110,6 +115,10 @@ export function createGame({ input, audio, music, nameInputEl }) {
     waveKills: 0,
     waveKillTarget: DIFFICULTY.baseWaveKills,
     tookDamageThisWave: false, // pour DIFFICULTY.noDamageWaveBonus — reset dans startWave, mis à true dans onPlayerHit
+    grazeChain: 0, // reset dans startWave (pas startRun) — voir graze.js
+    novaStock: 0, // rechargé par le graze, consommé par tryUseNova() — vide au début d'une partie (récompense à gagner)
+    novaProgress: 0, // 0..1, progression vers la prochaine charge
+    novaMax: 1, // recalculé dans startWave (novaMaxForWave)
     spawnTimer: 0,
     spawnInterval: DIFFICULTY.baseSpawnInterval,
     waveBreak: 0,
@@ -156,7 +165,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     return Math.min(0.25, 0.06 + g.wave * 0.015);
   }
 
-  // Tire un type de bonus selon POWERUP.typeWeights (nova bien plus rare que power/rapid).
+  // Tire un type de bonus selon POWERUP.typeWeights.
   function pickPowerupType() {
     const weights = POWERUP.typeWeights;
     const total = Object.values(weights).reduce((s, w) => s + w, 0);
@@ -180,6 +189,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
     g.wave = wave;
     g.waveKills = 0;
     g.tookDamageThisWave = false;
+    g.grazeChain = 0;
+    g.novaMax = novaMaxForWave(wave);
+    g.novaStock = Math.min(g.novaStock, g.novaMax);
     g.waveKillTarget = DIFFICULTY.baseWaveKills + (wave - 1) * DIFFICULTY.waveKillsStep;
     g.spawnInterval = Math.max(
       DIFFICULTY.minSpawnInterval,
@@ -216,6 +228,8 @@ export function createGame({ input, audio, music, nameInputEl }) {
     g.dying = false;
     g.deathTimer = 0;
     g.warp = 1;
+    g.novaStock = 0; // vide au début d'une partie — la première charge doit être gagnée (voir graze.js)
+    g.novaProgress = 0;
     g.mode = MODE.PLAYING;
     g.controlHint = 4;
     startWave(1);
@@ -413,9 +427,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
         pu.active = false;
         audio.playPowerup();
         spawnFlashBurst(particles, pu.x, pu.y, 8);
-        if (POWERUP.types[pu.type].instant) {
-          triggerNova();
-        } else if (pu.type === "shield") {
+        if (pu.type === "shield") {
           applyShield(player, POWERUP.shieldHits);
         } else {
           applyPowerup(player, pu.type);
@@ -449,6 +461,15 @@ export function createGame({ input, audio, music, nameInputEl }) {
       triggerShake(12);
       g.banner = { text: "NOVA !", timer: 1.2 };
     }
+  }
+
+  // Déclenchement manuel de la jauge NOVA (touche Espace ou bouton tactile
+  // dédié, voir input.justPressed "NovaTrigger" dans main.js) — réutilise
+  // triggerNova() tel quel, seule la façon de l'obtenir/déclencher change.
+  function tryUseNova() {
+    if (g.novaStock <= 0) return;
+    g.novaStock -= 1;
+    triggerNova();
   }
 
   // Coup absorbé par le bouclier : pas de vie perdue, réaction plus légère qu'un vrai impact.
@@ -542,6 +563,11 @@ export function createGame({ input, audio, music, nameInputEl }) {
         g.pauseStage = "menu";
         return;
       }
+      // "NovaTrigger" : jeton générique posé par le bouton tactile dédié
+      // (main.js), consommé exactement comme une touche clavier.
+      if (!g.clearingScreen && (consumeJustPressed(input, "Space") || consumeJustPressed(input, "NovaTrigger"))) {
+        tryUseNova();
+      }
     }
 
     // Vagues / transition "saut spatial"
@@ -617,6 +643,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
     }
 
     resolveCollisions();
+    // Après resolveCollisions() : un tir qui a touché ce frame est déjà
+    // désactivé, donc jamais compté comme un graze en plus d'un vrai coup.
+    updateGraze(g, dt, player, projectiles, enemies, particles, audio);
   }
 
   function selectPauseOption(index) {
@@ -797,6 +826,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
       drawProjectiles(ctx, projectiles);
       drawPlayer(ctx, player);
       hud.drawGameHud(ctx, g, player.lives);
+      hud.drawNovaGauge(ctx, g.novaStock, g.novaMax, g.novaProgress);
       if (g.boss) hud.drawBossHealthBar(ctx, g.boss);
       hud.drawBuffIndicator(ctx, player.buff);
       hud.drawShieldIndicator(ctx, player.shield);
@@ -866,6 +896,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
     MODE,
     get mode() {
       return g.mode;
+    },
+    get novaStock() {
+      return g.novaStock;
     },
     update,
     draw,

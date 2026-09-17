@@ -23,6 +23,7 @@ function makePool(size, radius, color, shape = "dot") {
       damage: 1,
       maxDamage: 0, // >0 seulement pour les plombs (dégâts décroissants) — voir firePlayerPellets/updateProjectiles/drawPool
       turnRate: 0, // rad/s — courbe la trajectoire (tirs ennemis uniquement, voir fireEnemyBullet)
+      grazed: false, // pool ennemi uniquement (voir graze.js) — un tir ne graze qu'une fois pendant toute sa vie
     })),
   };
 }
@@ -53,6 +54,7 @@ function spawnInto(pool, x, y, vx, vy, colorOverride = null, damage = 1, turnRat
   b.colorOverride = colorOverride;
   b.damage = damage;
   b.turnRate = turnRate;
+  b.grazed = false;
   return b;
 }
 

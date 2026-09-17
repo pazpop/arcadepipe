@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.42";
+export const VERSION = "2.43";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -96,10 +96,11 @@ export function bulletSpeedFactor(wave) {
 
 // Bonus temporaires lâchés par les ennemis détruits. "power" : dégâts
 // renforcés, tir plus lent. "rapid" : tir très rapide, dégâts réduits.
-// "nova" : instantané, détruit tous les ennemis à l'écran (pas le boss).
 // "shield" : absorbe un nombre fixe de coups (shieldHits), pas temporisé.
+// NOVA n'en fait plus partie : ressource stockable rechargée par le graze,
+// pas un drop (voir NOVA plus bas et graze.js).
 export const POWERUP = {
-  duration: 20, // secondes d'effet une fois ramassé (sans effet sur "nova"/"shield")
+  duration: 20, // secondes d'effet une fois ramassé (sans effet sur "shield")
   shieldHits: 3, // nombre de coups absorbés avant que le bouclier se brise
   dropChanceNormal: 0.08,
   dropChanceElite: 0.25,
@@ -115,10 +116,9 @@ export const POWERUP = {
     // "power" : un tir plus engageant, pas un simple "tire plus fort partout".
     shotgun: { fireCooldownMul: 1.35, damage: 2, color: "#d4a24c", label: "CHEVROTINE", effect: "cône de plombs, dégâts décroissants avec la distance" },
     shield: { color: "#5ec8ff", label: "BOUCLIER", effect: "absorbe les prochains coups" },
-    nova: { instant: true, color: "#ffffff", label: "NOVA", effect: "détruit tous les ennemis à l'écran" },
   },
-  // Poids relatifs (pickPowerupType() dans game.js) — nova doit rester nettement plus rare.
-  typeWeights: { power: 0.3, rapid: 0.3, shotgun: 0.16, shield: 0.16, nova: 0.08 },
+  // Poids relatifs (pickPowerupType() dans game.js).
+  typeWeights: { power: 0.3, rapid: 0.3, shotgun: 0.2, shield: 0.2 },
 };
 
 export const BOSS = {
@@ -170,4 +170,32 @@ export const INPUT = {
   // Décalage horizontal (pas vertical) : le vaisseau "précède" le doigt, qui
   // ne masque plus la zone d'où viennent les tirs ennemis.
   touchXOffset: 28,
+};
+
+// Frôlement des tirs ennemis (graze.js) : récompense l'esquive serrée plutôt
+// que large, alimente la jauge NOVA (voir NOVA ci-dessous).
+export const GRAZE = {
+  // Rayon total depuis le centre du vaisseau — nettement plus grand que
+  // PLAYER.hitboxRadius (2.2, volontairement minuscule façon danmaku), proche
+  // de la moitié de la largeur du sprite (PLAYER.w=14) pour que le frôlement
+  // se déclenche au ras de la silhouette visible, pas seulement au ras du hitbox.
+  radius: 7,
+  // Le corps du kamikaze (seul ennemi qui ne tire jamais, fireChance:0 dans
+  // enemies.js) peut regrazer après ce délai — poursuite prolongée, contrairement
+  // à un tir qui ne graze qu'une fois pendant toute sa vie (voir `grazed` sur
+  // les projectiles dans projectiles.js).
+  kamikazeCooldown: 1.5,
+  baseScore: 15, // multiplié par la taille de la chaîne courante (voir graze.js)
+  grazePerCharge: 20, // nombre de grazes pour remplir une charge NOVA
+};
+
+// NOVA : ressource stockable rechargée par le graze (au lieu d'un drop à
+// effet immédiat) — voir triggerNova/tryUseNova dans game.js.
+export const NOVA = {
+  color: "#ffffff",
+  baseMaxStock: 1,
+  // 2e charge disponible dès la vague du 2e combat de boss — dérivé de
+  // DIFFICULTY.bossWaveEvery (comme isFirstBoss dans boss.js) plutôt qu'un
+  // numéro de vague en dur.
+  extraStockFromBossCount: 2,
 };

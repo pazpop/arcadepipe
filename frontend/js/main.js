@@ -26,6 +26,7 @@ const sfxVolumeEl = document.getElementById("sfx-volume");
 const autoFireToggle = document.getElementById("autofire-toggle");
 const helpBtn = document.getElementById("help-btn");
 const speedBtn = document.getElementById("speed-btn");
+const novaBtn = document.getElementById("nova-btn");
 const versionLabel = document.getElementById("version-label");
 if (versionLabel) versionLabel.textContent = `v${VERSION}`;
 
@@ -192,6 +193,15 @@ if (speedBtn) {
   });
 }
 
+// --- Bouton NOVA (tactile) : pose un jeton générique dans input.justPressed,
+// consommé exactement comme une touche clavier (voir game.js). ---
+if (novaBtn) {
+  novaBtn.addEventListener("click", () => {
+    audio.ensure();
+    input.justPressed.add("NovaTrigger");
+  });
+}
+
 // --- Mute (M) et bascule CRT (C) ---
 window.addEventListener("keydown", (e) => {
   if (e.code === "KeyM") {
@@ -253,6 +263,7 @@ function loop(timestamp) {
   lastTime = timestamp;
   game.update(realDt * gameSpeed);
   game.draw(ctx);
+  if (novaBtn) novaBtn.classList.toggle("hidden", !(game.mode === game.MODE.PLAYING && game.novaStock > 0));
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);

@@ -5,6 +5,12 @@
 export const RES_W = 480;
 export const RES_H = 270;
 
+// Majeure figée à 2, sous-version = nombre de commits git (`git rev-list
+// --count HEAD`) au moment du commit — jamais choisie à la main, donc
+// toujours à jour sans y penser. Affichée au menu principal et aux crédits
+// (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
+export const VERSION = "2.26";
+
 export const PALETTE = {
   bgDeep: "#05060f",
   bgZones: ["#05060f", "#0a0614", "#060f0a", "#0f0605"],

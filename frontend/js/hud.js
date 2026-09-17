@@ -1,6 +1,6 @@
 // Tout le texte/UI du jeu — le petit canvas interne + `image-rendering:
 // pixelated` suffit à un rendu "façon bitmap" sans dessiner une police pixel par pixel.
-import { RES_W, RES_H, PALETTE, POWERUP } from "./config.js";
+import { RES_W, RES_H, PALETTE, POWERUP, VERSION } from "./config.js";
 
 // Point dans un rectangle {x,y,w,h} centré sur (x,y) — même test répété par
 // toutes les fonctions hitTest* ci-dessous (menu, pause, confirmation,
@@ -188,6 +188,8 @@ export function drawTitleScreen(ctx, elapsed, selected) {
       alpha: 0.8,
     });
   }
+  // Discret, coin bas droit — juste assez visible pour repérer une mise à jour.
+  text(ctx, `v${VERSION}`, RES_W - 4, RES_H - 6, { size: 6, align: "right", alpha: 0.4 });
   ctx.restore();
 }
 
@@ -248,7 +250,7 @@ export function drawLeaderboardScreen(ctx, scores, revealCount, gamesPlayed) {
 export const CREDITS_LINES = [
   "ARCADEPIPE",
   "STARFIGHTER",
-  "v2.0",
+  `v${VERSION}`,
   "",
   "UN JEU DÉVELOPPÉ PAR PAZPOP",
   "",

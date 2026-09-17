@@ -11,7 +11,7 @@ Endpoints:
 import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, field_validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
@@ -109,9 +109,7 @@ def health():
 
 @app.get("/api/scores", response_model=list[ScoreOut])
 @limiter.limit("60/minute")
-def list_scores(request: Request, limit: int = 10):
-    if limit < 1 or limit > 100:
-        raise HTTPException(status_code=400, detail="limit doit être entre 1 et 100")
+def list_scores(request: Request, limit: int = Query(default=10, ge=1, le=100)):
     return database.get_top_scores(limit=limit)
 
 

@@ -92,6 +92,8 @@ Ce repo s'arrête là — il ne connaît ni VPS ni serveur cible. L'instance `ar
 
 - [ ] Sauvegardes DB ([Litestream](https://litestream.io/) ou cron) — **reporté volontairement** : pas de vraie perte critique en cas d'incident pour un classement de jeu perso, pas prioritaire pour l'instant
 - [ ] Score authentifié (jeton signé émis au début de la partie, exigé à la soumission) — pas urgent, le score non authentifié est un risque assumé (voir Sécurité)
+- [ ] Scan de vulnérabilités des images Docker ([Trivy](https://trivy.dev/), en CI juste après le build) — les images sont poussées sur GHCR sans jamais vérifier les CVE connues de leurs dépendances/images de base
+- [ ] [Dependabot](https://docs.github.com/fr/code-security/dependabot) sur `backend/requirements.txt` et les actions GitHub — pas urgent, mise à jour manuelle des dépendances pour l'instant
 
 ## Structure
 

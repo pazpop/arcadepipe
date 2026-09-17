@@ -88,7 +88,7 @@ Comment les couleurs et les formes sont décidées et générées.
 ## Décor
 
 - [x] Fond étoilé sur plusieurs couches qui défilent à des vitesses différentes (effet de profondeur).
-- [x] Éléments de décor occasionnels et discrets (planètes, galaxies lointaines) qui apparaissent de temps en temps sans jamais gêner la lisibilité.
+- [x] Éléments de décor occasionnels et discrets (planètes, galaxies, trous noirs lointains — silhouette générée au canvas : vide sombre + anneau lumineux, pas d'image) qui apparaissent de temps en temps sans jamais gêner la lisibilité.
 - [x] Décor spécifique qui apparaît pendant les combats de boss et disparaît proprement (avec une petite animation) une fois le boss vaincu.
 
 ## Audio

@@ -1,5 +1,5 @@
 // Fond spatial parallaxe multi-couches : étoiles lentes/rapides + planètes/
-// galaxies occasionnelles.
+// galaxies/trous noirs occasionnels.
 import { RES_W, RES_H, PALETTE } from "./config.js";
 
 // Couche rapide/opaque (alpha 0.9) retirée : gênait la lecture des tirs en combat.
@@ -22,11 +22,16 @@ function makeStar(layer, randomX) {
 // un élément de gameplay : toutes les couleurs de gameplay de ce jeu sont
 // pleinement saturées, donc un décor terne reste reconnaissable comme
 // "arrière-plan" quelle que soit la teinte qu'il tire.
+// TEMPORAIRE : trou noir à 60% de chance (demande explicite, le temps de le
+// voir facilement en jeu) — remettre roll < 0.08 une fois validé, avec
+// galaxie/planète qui se repartagent le reste à 50/50 comme avant.
 function makeCelestial() {
-  const isGalaxy = Math.random() < 0.5;
-  const radius = isGalaxy ? 26 + Math.random() * 18 : 12 + Math.random() * 22;
+  const roll = Math.random();
+  const type = roll < 0.6 ? "blackhole" : roll < 0.8 ? "galaxy" : "planet";
+  const radius =
+    type === "blackhole" ? 28 + Math.random() * 20 : type === "galaxy" ? 26 + Math.random() * 18 : 12 + Math.random() * 22;
   return {
-    type: isGalaxy ? "galaxy" : "planet",
+    type,
     x: RES_W + radius + 20,
     y: radius + Math.random() * (RES_H - radius * 2),
     radius,
@@ -132,7 +137,7 @@ function drawCelestial(ctx, c) {
     ctx.beginPath();
     ctx.ellipse(c.x, c.y, c.radius * 1.5, c.radius * 0.35, -0.4, 0, Math.PI * 2);
     ctx.stroke();
-  } else {
+  } else if (c.type === "galaxy") {
     ctx.globalAlpha = alpha * 0.35; // discret, pour rester "loin"
     ctx.translate(c.x, c.y);
     ctx.rotate(c.rotation);
@@ -147,6 +152,42 @@ function drawCelestial(ctx, c) {
     ctx.beginPath();
     ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
     ctx.fill();
+  } else {
+    // Trou noir façon Gargantua (Interstellar) : un vide sombre entouré d'un
+    // disque d'accrétion lumineux. Le disque est dessiné deux fois — une
+    // fois à plat (vu presque de profil, partiellement avalé par le vide
+    // dessiné par-dessus) et une fois en anneau complet autour du vide, pour
+    // approximer la lentille gravitationnelle (le disque qui semble
+    // "s'enrouler" au-dessus/en dessous) sans vrai calcul optique.
+    ctx.globalAlpha = alpha * 0.55;
+    ctx.translate(c.x, c.y);
+    ctx.rotate(c.rotation);
+    const diskColor = `hsl(${c.hue}, 30%, 62%)`;
+
+    ctx.strokeStyle = diskColor;
+    ctx.shadowColor = diskColor;
+    ctx.shadowBlur = 6;
+    ctx.lineWidth = c.radius * 0.16;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, c.radius * 1.7, c.radius * 0.32, 0, 0, Math.PI * 2);
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+    const voidGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, c.radius);
+    voidGrad.addColorStop(0, `hsl(${c.hue}, 15%, 2%)`);
+    voidGrad.addColorStop(1, "#000000");
+    ctx.fillStyle = voidGrad;
+    ctx.beginPath();
+    ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.strokeStyle = diskColor;
+    ctx.shadowColor = diskColor;
+    ctx.shadowBlur = 5;
+    ctx.lineWidth = c.radius * 0.1;
+    ctx.beginPath();
+    ctx.ellipse(0, 0, c.radius * 1.15, c.radius * 1.02, 0, 0, Math.PI * 2);
+    ctx.stroke();
   }
   ctx.restore();
 }

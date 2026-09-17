@@ -2,7 +2,7 @@
 
 Mini jeu vidéo (*The Last Starfighter*) avec leaderboard — shoot'em up à défilement horizontal, pixel art généré par code, jouable directement dans le navigateur. Conçu par [pazpop](https://github.com/pazpop) avec [Claude](https://claude.com).
 
-Ce repo contient uniquement le jeu (backend + frontend) — `docker-compose.standalone.yml` (voir plus bas) suffit à le faire tourner n'importe où, sans dépendance externe. Une instance publique tourne sur **https://arcadepipe.pazpop.net**, déployée depuis un repo d'infra séparé ([`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner)) — voir *CI/CD* pour le détail de cette séparation.
+Ce repo contient uniquement le jeu (backend + frontend) — `docker-compose.yml` (voir plus bas) suffit à le faire tourner n'importe où, sans dépendance externe. Une instance publique tourne sur **https://arcadepipe.pazpop.net**, déployée depuis un repo d'infra séparé ([`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner)) — voir *CI/CD* pour le détail de cette séparation.
 
 ![Capture d'écran d'ArcadePipe en jeu](docs/screenshot.png)
 
@@ -27,7 +27,7 @@ flowchart LR
     Backend --> DB[(SQLite)]
 ```
 
-Ce diagramme correspond à `docker-compose.standalone.yml` (voir *Docker*) : Caddy sert le jeu et route lui-même `/api/*` vers le backend, sans reverse-proxy externe. L'instance publique (`arcadepipe.pazpop.net`) ajoute Traefik devant (TLS, routage par nom d'hôte entre plusieurs jeux) — géré entièrement par le repo d'infra séparé, invisible depuis ce repo-ci.
+Ce diagramme correspond à `docker-compose.yml` (voir *Docker*) : Caddy sert le jeu et route lui-même `/api/*` vers le backend, sans reverse-proxy externe. L'instance publique (`arcadepipe.pazpop.net`) ajoute Traefik devant (TLS, routage par nom d'hôte entre plusieurs jeux) — géré entièrement par le repo d'infra séparé, invisible depuis ce repo-ci.
 
 ## Lancer en local
 
@@ -41,10 +41,10 @@ cd frontend && python -m http.server 5500   # http://localhost:5500
 
 ## Docker
 
-`docker-compose.standalone.yml`, à la racine, fait tourner tout le jeu (backend + frontend) sans aucune dépendance externe — publie directement le port 80 et garde toutes les protections de sécurité (non-root, rootfs read-only, `cap_drop: ALL`, rate limiting, CORS). Caddy (frontend) route lui-même `/api/*` vers le backend, pas besoin d'un reverse-proxy en plus.
+`docker-compose.yml`, à la racine, fait tourner tout le jeu (backend + frontend) sans aucune dépendance externe — publie directement le port 80 et garde toutes les protections de sécurité (non-root, rootfs read-only, `cap_drop: ALL`, rate limiting, CORS). Caddy (frontend) route lui-même `/api/*` vers le backend, pas besoin d'un reverse-proxy en plus.
 
 ```bash
-docker compose -f docker-compose.standalone.yml up --build -d
+docker compose up --build -d
 # -> http://localhost
 ```
 
@@ -107,7 +107,7 @@ await page.evaluate(async () => {
 - CORS restreint (`ALLOWED_ORIGINS`, jamais `"*"`), requêtes SQL paramétrées, entrées validées (Pydantic)
 - Nom de joueur jamais inséré dans du HTML (rendu Canvas côté client, API JSON côté serveur) — aucune surface XSS, sans échappement explicite à maintenir
 - **Rate limiting** (`slowapi`, par IP réelle via `X-Forwarded-For` si un reverse-proxy de confiance le pose devant, sinon l'IP de connexion directe) : `POST /api/scores` à 5/minute, `GET /api/scores` à 60/minute (lecture bon marché mais toujours limitée, en défense en profondeur)
-- Backend **et** frontend non-root, rootfs read-only, `cap_drop: ALL` (voir `docker-compose.standalone.yml` — le frontend garde `NET_BIND_SERVICE`, seule capacité nécessaire pour qu'un Caddy non-root se lie au port 80)
+- Backend **et** frontend non-root, rootfs read-only, `cap_drop: ALL` (voir `docker-compose.yml` — le frontend garde `NET_BIND_SERVICE`, seule capacité nécessaire pour qu'un Caddy non-root se lie au port 80)
 - **Non fait volontairement** : score non authentifié (triche possible via `curl`, juste borné à 999999) ; en-têtes de sécurité HTTP additionnels (HSTS, CSP...) laissés au reverse-proxy de qui déploie ce jeu (l'instance `arcadepipe.pazpop.net` les pose via Traefik, dans son repo d'infra séparé) plutôt qu'imposés ici
 
 ## Données collectées
@@ -142,7 +142,7 @@ arcadepipe/
 │   └── music/    # playlist de .xm — voir Crédits
 ├── e2e/        # tests bout-en-bout Playwright — voir section Tests
 ├── .github/workflows/  # CI/CD (lint + build + push GHCR + notification de déploiement)
-└── docker-compose.standalone.yml  # seul fichier de déploiement Docker de ce repo — voir section Docker
+└── docker-compose.yml  # seul fichier de déploiement Docker de ce repo — voir section Docker
 ```
 
 ## Crédits

@@ -56,20 +56,7 @@ C'est le seul fichier de déploiement Docker de ce repo — celui qui ajoute Tra
 
 ## Tests
 
-Backend — logique pure (`test_main.py` : validation des scores, `get_client_ip`) + intégration HTTP (`test_api.py` : vraies routes FastAPI via `TestClient`, DB SQLite temporaire par test) :
-
-```bash
-cd backend && pip install -r requirements-dev.txt && pytest   # 25 tests
-```
-```bash
-cd frontend/js && node --test   # 9 tests, aucune dépendance npm (Node ≥ 18)
-```
-
-Lint backend (voir `backend/pyproject.toml`, vérifié en CI avant chaque build — voir CI/CD) :
-
-```bash
-cd backend && ruff check .   # inclus dans requirements-dev.txt ci-dessus
-```
+Voir [`backend/README.md`](backend/README.md) (pytest, lint) et [`frontend/README.md`](frontend/README.md) (`node --test`).
 
 ### Tests bout-en-bout (Playwright)
 
@@ -110,8 +97,8 @@ Ce repo s'arrête là — il ne connaît ni VPS ni serveur cible. L'instance `ar
 
 ```
 arcadepipe/
-├── backend/    # FastAPI + SQLite + Dockerfile
-├── frontend/   # Dockerfile (Caddy = serveur de fichiers statiques)
+├── backend/    # FastAPI + SQLite + Dockerfile — voir backend/README.md
+├── frontend/   # Dockerfile (Caddy = serveur de fichiers statiques) — voir frontend/README.md
 │   ├── index.html, css/style.css
 │   ├── js/       # config, assets (sprites générés), moteur de jeu (modules ES6)
 │   │   └── audio/  # sfx.js (synthèse), music.js + leaderboard.js (intégrations)

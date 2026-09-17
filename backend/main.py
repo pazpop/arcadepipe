@@ -42,14 +42,21 @@ app.add_middleware(
 
 
 def get_client_ip(request: Request) -> str:
-    # Traefik écrase X-Forwarded-For par défaut quand aucun trustedIPs
-    # n'est configuré (voir traefik.yml, repo infra) : la valeur envoyée
-    # par le client n'est pas fiable, donc Traefik la remplace par l'IP
-    # qu'il observe réellement avant de transmettre la requête. C'est
-    # pourquoi on lit la DERNIÈRE IP de la chaîne : c'est celle ajoutée
-    # par le proxy de confiance, jamais celle envoyée par le client.
-    # Si la configuration Traefik change (notamment ajout de trustedIPs),
-    # revalider ce point avant tout redéploiement.
+    # Fiable seulement parce qu'un reverse-proxy de confiance se trouve TOUJOURS
+    # devant cette API, quel que soit le déploiement :
+    #  - Instance publique (repo infra séparé) : Traefik écrase X-Forwarded-For
+    #    par défaut quand aucun trustedIPs n'est configuré (voir traefik.yml) —
+    #    la valeur envoyée par le client est remplacée par l'IP qu'il observe
+    #    réellement avant de transmettre la requête. Revalider ce point avant
+    #    tout redéploiement si trustedIPs est un jour ajouté.
+    #  - Déploiement autonome (docker-compose.yml de ce repo, Caddy en frontal) :
+    #    même garantie par défaut — `reverse_proxy` dans le Caddyfile fixe lui
+    #    aussi X-Forwarded-For à l'IP réellement observée, sans faire confiance
+    #    à une valeur déjà présente dans la requête entrante.
+    # Dans les deux cas, c'est pourquoi on lit la DERNIÈRE IP de la chaîne :
+    # c'est celle ajoutée par le proxy de confiance, jamais celle envoyée par
+    # le client. Sans reverse-proxy devant (accès direct au port 8000), cette
+    # fonction ne serait plus fiable — ce n'est pas un déploiement supporté.
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
         return forwarded.split(",")[-1].strip()

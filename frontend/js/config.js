@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.47";
+export const VERSION = "2.48";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -226,9 +226,15 @@ export const BONUS_LEVEL = {
   // petite montée en difficulté dans le niveau bonus lui-même, pas juste une
   // suite de portes identiques.
   ringTighten: 0.6,
-  // Silhouette d'arrière-plan très lente, désaturée comme tout le reste du
-  // décor (voir Charte graphique dans GAMEPLAY.md) — un clin d'œil, pas un
-  // élément de jeu.
-  whaleSpeed: 14,
+  // Silhouette d'arrière-plan désaturée comme tout le reste du décor (voir
+  // Charte graphique dans GAMEPLAY.md) — un clin d'œil, pas un élément de
+  // jeu. Démarre juste hors écran (pas loin derrière) à une vitesse qui la
+  // fait traverser en ~10-13s : trop lente/trop loin au premier essai, à
+  // peine sa queue était visible avant la fin du niveau.
+  whaleSpeed: 55,
+  // Entrée en douceur du vaisseau (glissée depuis la gauche, comme au tout
+  // début d'une partie) + message explicatif — aucun anneau ne spawn avant
+  // la fin de cette phase (voir spawnTimer initial dans createBonusLevel).
+  introDuration: 3,
   warp: 3, // vitesse du défilement de fond pendant le niveau (effet "tunnel"), modeste comparé au x10 du saut spatial entre vagues
 };

@@ -267,9 +267,17 @@ window.addEventListener("keydown", (e) => {
 });
 
 // --- Pause auto quand l'onglet/app passe en arrière-plan (mobile : ne pas
-// perdre de vies pendant l'absence).
+// perdre de vies pendant l'absence) + reprise de l'AudioContext au retour.
+// Certains navigateurs suspendent le contexte audio après un moment en
+// arrière-plan (économie d'énergie) sans jamais le reprendre eux-mêmes —
+// sans ce resume() explicite, revenir sur l'onglet laissait la musique
+// silencieuse en permanence tant qu'aucun contrôle du panneau n'était touché.
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) game.pause();
+  if (document.hidden) {
+    game.pause();
+  } else {
+    audio.ensure();
+  }
 });
 
 // --- Boucle principale ---

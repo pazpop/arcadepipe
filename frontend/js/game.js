@@ -540,6 +540,19 @@ export function createGame({ input, audio, music, nameInputEl }) {
   // doigt comme en jeu normal.
   function updateBonusLevelShip(dt) {
     const targetX = RES_W * 0.18;
+    const bl = g.bonusLevel;
+    if (bl.introTimer > 0) {
+      // Glissée d'entrée (même principe que updateShipIntro, début de
+      // partie) : interpolation directe sur une durée fixe, pas le suivi par
+      // vitesse ci-dessous (bien trop rapide pour rester visible sur
+      // BONUS_LEVEL.introDuration). y immobile pendant la glissée — le
+      // contrôle reprend sans saut une fois l'intro terminée.
+      const t = Math.min(1, 1 - Math.max(0, bl.introTimer) / BONUS_LEVEL.introDuration);
+      const eased = 1 - Math.pow(1 - t, 3); // ease-out cubic
+      player.x = -20 + (targetX + 20) * eased;
+      player.y = RES_H / 2;
+      return;
+    }
     const dx = targetX - player.x;
     const maxStep = PLAYER.speed * dt;
     player.x = Math.abs(dx) <= maxStep ? targetX : player.x + Math.sign(dx) * maxStep;
@@ -650,7 +663,11 @@ export function createGame({ input, audio, music, nameInputEl }) {
         if (bonusCycle > 0 && nextWave !== g.bonusLevelLastWave && g.score >= bonusRequiredScore) {
           g.bonusLevelLastWave = nextWave;
           g.bonusLevel = createBonusLevel();
-          g.banner = { text: "NIVEAU BONUS ! TRAVERSE LES ANNEAUX", timer: 2.4 };
+          // Glissée d'entrée du vaisseau (voir updateBonusLevelShip) — même
+          // point de départ que l'intro de vague 1, le message explicatif
+          // s'affiche pendant cette même phase (drawBonusLevelIntro).
+          player.x = -20;
+          player.y = RES_H / 2;
           setEnemiesLeaving(enemies);
           for (const b of projectiles.enemy.items) b.active = false;
           for (const pu of powerups.items) pu.active = false;
@@ -902,6 +919,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
       hud.drawBuffIndicator(ctx, player.buff);
       hud.drawShieldIndicator(ctx, player.shield);
       hud.drawBanner(ctx, g.banner);
+      if (g.bonusLevel && g.bonusLevel.introTimer > 0) hud.drawBonusLevelIntro(ctx, g.bonusLevel.introTimer);
       hud.drawControlHint(ctx, g.controlHint);
       hud.drawFlash(ctx, g.flash);
       if (g.mode === MODE.PAUSED) {

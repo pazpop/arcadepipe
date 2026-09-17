@@ -75,7 +75,7 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] Un combat de boss revient à intervalle régulier (une vague sur un certain nombre).
 - [x] Transition animée entre deux vagues (effet de "saut" visuel) plutôt qu'un changement brutal.
 - [x] Bonus de score si une vague entière se termine sans avoir perdu de vie.
-- [x] **Niveau bonus** offert tous les N vagues (avant chaque multiple, ex. vague 10, 20, 30) si le score atteint un seuil qui grimpe à chaque cycle (le premier reste volontairement facile à atteindre, une "vitrine" plutôt qu'un défi réservé aux runs déjà excellentes) : traverser une série d'anneaux (vaisseau piloté normalement, x verrouillé) plutôt que combattre, aucune vie ne peut être perdue. Récompense proportionnelle au nombre d'anneaux réussis, jamais tout-ou-rien — remplit la jauge NOVA. Un easter egg discret (silhouette désaturée en arrière-plan, jamais annoncée) traverse le fond une fois par niveau.
+- [x] **Niveau bonus** offert tous les N vagues (avant chaque multiple, ex. vague 10, 20, 30) si le score atteint un seuil qui grimpe à chaque cycle (le premier reste volontairement facile à atteindre, une "vitrine" plutôt qu'un défi réservé aux runs déjà excellentes) : traverser une série d'anneaux (vaisseau piloté normalement, x verrouillé) plutôt que combattre, aucune vie ne peut être perdue. Récompense proportionnelle au nombre d'anneaux réussis, jamais tout-ou-rien — remplit la jauge NOVA. Entrée en douceur (même glissée que le tout début d'une partie) accompagnée d'un court message expliquant pourquoi ce niveau apparaît et quoi faire, avant le premier anneau. Un easter egg discret (silhouette désaturée en arrière-plan, jamais annoncée, calée pour être bien visible tôt dans le niveau plutôt qu'à peine entrevue) traverse le fond une fois par niveau.
 
 ## Effets ("game feel" — ce qui rend les impacts satisfaisants)
 
@@ -102,6 +102,7 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] Changement de musique en fondu (le son baisse puis remonte) plutôt qu'une coupure nette, pour éviter un clic audible désagréable.
 - [x] L'intensité d'un bruitage suit celle de son effet visuel — le NOVA (écran qui tremble fort, tout l'écran nettoyé d'un coup) a son propre son "large" (bruit filtré + sub grave), pas le même son qu'une explosion d'ennemi normal, sinon l'impact paraît muet malgré l'écran qui vibre.
 - [x] Un easter egg pur son (aucun effet de jeu) caché derrière une séquence de touches connue des joueurs de jeux vidéo — jamais indiqué en jeu, à découvrir.
+- [x] Le contexte audio est explicitement repris quand l'onglet redevient visible (pas seulement au premier geste) — certains navigateurs le suspendent d'eux-mêmes après un moment en arrière-plan sans jamais le reprendre, ce qui coupait la musique en permanence tant qu'aucun contrôle du panneau n'était touché.
 
 ## Interface & menus
 
@@ -120,6 +121,7 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] Les scores sont envoyés à un vrai serveur et lus depuis ce serveur (pas seulement stockés sur l'appareil du joueur), donc partagés entre tous les joueurs.
 - [x] Un compteur du nombre total de parties jouées, toutes personnes confondues.
 - [x] Si le serveur est injoignable, l'écran de classement l'affiche proprement (liste vide) plutôt que de planter ou de bloquer le jeu.
+- [ ] Distance parcourue durant la run (en années-lumière, à définir comment la convertir depuis une mesure de jeu réelle — ex: temps de survie × vitesse de défilement) affichée au classement, aux côtés du score/vague/kills actuels — pas encore fait, idée notée.
 
 ## Accessibilité & mobile
 
@@ -155,3 +157,15 @@ Un exemple concret de problème rencontré pendant le développement, pour illus
 **La correction.** Un simple compteur ("jeton de version"), incrémenté à chaque nouvelle demande de chargement. Quand une réponse réseau arrive, le code vérifie que son jeton correspond toujours à la demande la plus récente avant de l'appliquer — sinon il l'ignore, en considérant qu'une demande plus récente l'a déjà remplacée.
 
 **La leçon générale**, au-delà de ce bug précis : dès que deux opérations asynchrones (réseau, minuteur, animation...) peuvent être déclenchées par le même événement et modifient le même état, il faut un moyen de savoir laquelle est "la plus récente" avant d'appliquer son résultat — sinon c'est l'ordre d'arrivée, imprévisible, qui décide à la place du code plutôt que la logique voulue. Ce même correctif a d'ailleurs été réappliqué presque à l'identique ailleurs dans ce projet (l'écran de classement) dès qu'un cas similaire a été repéré, une fois le schéma reconnu.
+
+### Deuxième round : le même symptôme, une toute autre cause
+
+Un correctif qui semble complet peut ne l'être qu'à moitié — même symptôme signalé ("la musique finit par se taire"), cause totalement différente la deuxième fois.
+
+**Le symptôme, à nouveau.** Après le correctif du jeton de version ci-dessus, le silence revenait quand même, mais seulement après une session de jeu assez longue (beaucoup de changements de piste). Le correctif précédent n'était donc pas faux, juste incomplet : il couvrait une cause, pas toutes.
+
+**La vraie cause, cette fois.** La lecture des fichiers musicaux passe par une bibliothèque tierce (lecteur de format tracker, exécutée dans un thread audio séparé) qui gère elle-même sa mémoire "à la main" (allocation/libération explicites, comme en C). À chaque changement de piste, le code de cette bibliothèque libérait deux mauvaises variables (jamais définies nulle part, donc rien à libérer en pratique) au lieu de celles réellement utilisées — et le fichier audio chargé en mémoire n'était, lui, jamais libéré du tout. Résultat : une petite fuite de mémoire à *chaque* changement de piste, invisible au début, jusqu'à épuiser l'espace disponible après assez de changements cumulés sur une session longue — à ce moment-là, le chargement d'une nouvelle piste échouait silencieusement, sans qu'aucun code du projet n'écoute cet échec pour réagir.
+
+**La correction.** Libérer les bonnes variables (celles réellement allouées), libérer aussi le fichier chargé une fois qu'il n'est plus utile, et — en filet de sécurité — écouter l'événement d'échec de la bibliothèque pour passer à une autre piste plutôt que de rester silencieux indéfiniment si ça se reproduit un jour pour une autre raison.
+
+**La leçon générale** : un bug corrigé une fois peut avoir plusieurs causes indépendantes derrière le même symptôme observable. "Le bug est reproduit, donc le correctif précédent était faux" est une conclusion trop rapide — vérifier d'abord si le correctif précédent couvrait vraiment *tous* les chemins qui mènent au même symptôme, pas juste celui identifié en premier.

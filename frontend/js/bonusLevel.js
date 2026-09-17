@@ -1,6 +1,6 @@
 // Niveau bonus : traverser une série d'anneaux plutôt que combattre. Offert
-// une fois par partie (voir g.bonusLevelDone dans game.js) si le score
-// atteint BONUS_LEVEL.scoreThreshold avant BONUS_LEVEL.triggerWave.
+// une fois par cycle (voir g.bonusLevelLastWave dans game.js) si le score
+// atteint le seuil du cycle en cours avant BONUS_LEVEL.everyNWaves.
 import { RES_W, RES_H, PALETTE, BONUS_LEVEL } from "./config.js";
 import { spawnFlashBurst } from "./particles.js";
 
@@ -10,11 +10,15 @@ export function createBonusLevel() {
     spawnedCount: 0,
     resolvedCount: 0,
     passedCount: 0,
-    spawnTimer: 0.6, // petit délai avant le premier anneau, le temps de comprendre ce qui se passe
+    // Aucun anneau avant la fin de l'intro (glissée du vaisseau + message
+    // explicatif, voir updateBonusLevelShip/drawBonusLevelIntro) — le temps
+    // de comprendre ce qui se passe avant que ça commence pour de vrai.
+    spawnTimer: BONUS_LEVEL.introDuration,
+    introTimer: BONUS_LEVEL.introDuration,
     finished: false,
-    // Silhouette d'arrière-plan (easter egg) : traverse une seule fois,
-    // calée pour croiser à peu près le milieu du niveau.
-    whaleX: RES_W + 260,
+    // Silhouette d'arrière-plan (easter egg) — démarre tout près pour être
+    // bien visible dès le début du niveau, pas juste sa queue à la toute fin.
+    whaleX: RES_W + 40,
     whaleY: RES_H * (0.2 + Math.random() * 0.2),
   };
 }
@@ -42,6 +46,8 @@ export function bonusLevelRewardFraction(bl) {
 
 export function updateBonusLevel(bl, dt, player, particles, audio) {
   if (bl.finished) return;
+
+  if (bl.introTimer > 0) bl.introTimer -= dt;
 
   bl.spawnTimer -= dt;
   if (bl.spawnTimer <= 0 && bl.spawnedCount < BONUS_LEVEL.ringCount) {
@@ -83,7 +89,7 @@ export function updateBonusLevel(bl, dt, player, particles, audio) {
 function drawWhale(ctx, x, y) {
   if (x < -200 || x > RES_W + 200) return;
   ctx.save();
-  ctx.globalAlpha = 0.22;
+  ctx.globalAlpha = 0.3;
   ctx.fillStyle = "#4a6fa5"; // désaturé, cohérent avec le reste du décor (voir Charte graphique)
   ctx.beginPath();
   ctx.ellipse(x, y, 70, 26, 0, 0, Math.PI * 2);

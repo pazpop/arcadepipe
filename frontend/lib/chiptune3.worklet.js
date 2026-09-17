@@ -216,6 +216,13 @@ class MPT extends AudioWorkletProcessor {
 		const ptrToFile = libopenmpt._malloc(byteArray.byteLength)
 		libopenmpt.HEAPU8.set(byteArray, ptrToFile)
 		this.modulePtr = libopenmpt._openmpt_module_create_from_memory(ptrToFile, byteArray.byteLength, 0, 0, 0)
+		// libopenmpt copie ce dont il a besoin en interne à la création : le
+		// buffer source n'est plus utile après cet appel, qu'il ait réussi ou
+		// non. Jamais libéré avant ce correctif -> fuite d'un fichier .xm
+		// entier (dizaines/centaines de Ko) à CHAQUE changement de piste,
+		// jusqu'à épuiser le tas WASM sur une session longue (_malloc finit
+		// par échouer, la musique s'arrête et ne revient jamais).
+		libopenmpt._free(ptrToFile)
 
 		if(this.modulePtr === 0) {
 			// could not create module
@@ -250,13 +257,17 @@ class MPT extends AudioWorkletProcessor {
 			libopenmpt._openmpt_module_destroy(this.modulePtr)
 			this.modulePtr = 0
 		}
-		if (this.leftBufferPtr != 0) {
-			libopenmpt._free(this.leftBufferPtr)
-			this.leftBufferPtr = 0
+		// Corrigé : play() alloue this.leftPtr/this.rightPtr, pas
+		// leftBufferPtr/rightBufferPtr (jamais définis nulle part) — cette
+		// fonction ne libérait donc jamais les vrais buffers alloués à
+		// chaque piste, deuxième fuite en plus de ptrToFile (voir play()).
+		if (this.leftPtr) {
+			libopenmpt._free(this.leftPtr)
+			this.leftPtr = 0
 		}
-		if (this.rightBufferPtr != 0) {
-			libopenmpt._free(this.rightBufferPtr)
-			this.rightBufferPtr = 0
+		if (this.rightPtr) {
+			libopenmpt._free(this.rightPtr)
+			this.rightPtr = 0
 		}
 		this.channels = 0
 	}

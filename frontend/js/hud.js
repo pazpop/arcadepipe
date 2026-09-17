@@ -178,6 +178,33 @@ export function drawBanner(ctx, banner) {
   });
 }
 
+// Message d'intro du niveau bonus (voir BONUS_LEVEL.introDuration dans
+// config.js) — pendant que le vaisseau glisse depuis la gauche, avant que le
+// premier anneau n'apparaisse. Fondu de sortie dans les 0.6 dernières
+// secondes plutôt qu'une coupure nette.
+export function drawBonusLevelIntro(ctx, timer) {
+  const alpha = Math.min(1, timer / 0.6);
+  text(ctx, "NIVEAU BONUS DÉBLOQUÉ !", RES_W / 2, RES_H * 0.3, {
+    size: 13,
+    align: "center",
+    color: PALETTE.gold,
+    glow: PALETTE.gold,
+    alpha,
+  });
+  text(ctx, "Score suffisant atteint pour le découvrir", RES_W / 2, RES_H * 0.3 + 18, {
+    size: 8,
+    align: "center",
+    alpha: alpha * 0.85,
+  });
+  text(ctx, "Traverse les anneaux pour charger ta jauge NOVA !", RES_W / 2, RES_H * 0.3 + 32, {
+    size: 8,
+    align: "center",
+    color: NOVA.color,
+    glow: NOVA.color,
+    alpha,
+  });
+}
+
 export function drawControlHint(ctx, timer) {
   if (timer <= 0) return;
   text(ctx, "MAINTIENS CLIC / DOIGT POUR TIRER", RES_W / 2, RES_H - 16, {

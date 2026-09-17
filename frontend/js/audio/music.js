@@ -21,6 +21,16 @@ export class MusicPlayer {
     // (`this.destination` reste `false`) — sans cette ligne, la musique jouerait en silence.
     this.player.gain.connect(audioContext.destination);
     this.player.onEnded(() => this.playRandom());
+    // Filet de sécurité : un échec de CHARGEMENT réseau ("Load") est déjà
+    // couvert par le rattrapage de volume dans _loadCurrent (voir plus bas)
+    // — pas de nouvelle tentative ici pour ne jamais boucler sur une vraie
+    // coupure réseau persistante. Un échec de CRÉATION du module côté worklet
+    // ("ptr", voir chiptune3.worklet.js) est un événement ponctuel plutôt
+    // qu'une condition qui se répète : là, retenter avec une autre piste
+    // vaut mieux qu'un silence permanent.
+    this.player.onError((e) => {
+      if (e && e.type !== "Load") this.playRandom();
+    });
     this.started = false;
     this.paused = false;
     this.muted = this._readBool(STORAGE_KEYS.muted, false);

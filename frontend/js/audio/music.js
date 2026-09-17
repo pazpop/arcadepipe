@@ -34,6 +34,14 @@ export class MusicPlayer {
     this.volume = this._readFloat(STORAGE_KEYS.volume, AUDIO.masterVolume);
     this.trackIndex = this._readInt(STORAGE_KEYS.track, 0);
     if (this.trackIndex < 0 || this.trackIndex >= AUDIO.tracks.length) this.trackIndex = 0;
+    // Incrémenté à chaque _loadCurrent() : le geste qui démarre l'audio
+    // (start(), sur le premier clic) et celui qui lance la partie
+    // (playRandom(), sur ce même clic — voir game.js:startRun) partent tous
+    // les deux une requête fetch() en parallèle. Sans ce jeton, la réponse
+    // arrivée en second gagne toujours, quelle que soit la piste réellement
+    // voulue en dernier — d'où l'impression que la playlist aléatoire ne se
+    // lance "parfois" pas : la piste par défaut gagnait la course.
+    this._loadToken = 0;
   }
 
   _readBool(key, fallback) {
@@ -79,10 +87,37 @@ export class MusicPlayer {
     return AUDIO.tracks[this.trackIndex];
   }
 
+  // Ne passe plus par player.load() (fetch + play immédiat) : on fait le
+  // fetch nous-mêmes pour pouvoir (1) ignorer une réponse arrivée après
+  // qu'une piste plus récente a été demandée entretemps (jeton _loadToken —
+  // voir constructeur) et (2) couper le volume à zéro le temps de la
+  // bascule, pour éviter le clic audible quand libopenmpt tranche net
+  // l'ancien module au profit du nouveau, au beau milieu du signal.
   _loadCurrent() {
-    this.player.load(this.currentTrack.file);
+    const token = ++this._loadToken;
+    const track = this.currentTrack;
     this.paused = false;
-    this._applyGain();
+
+    const g = this.player.gain.gain;
+    const now = this.player.context.currentTime;
+    g.cancelScheduledValues(now);
+    g.setValueAtTime(g.value, now);
+    g.linearRampToValueAtTime(0, now + 0.02);
+
+    fetch(track.file)
+      .then((r) => r.arrayBuffer())
+      .then((buf) => {
+        if (token !== this._loadToken) return; // supplantée par une piste demandée depuis
+        this.player.play(buf);
+        const target = this.muted ? 0 : this.volume;
+        const t = this.player.context.currentTime;
+        g.cancelScheduledValues(t);
+        g.setValueAtTime(0, t);
+        g.linearRampToValueAtTime(target, t + 0.03);
+      })
+      .catch(() => {
+        if (token === this._loadToken) this.player.fireEvent("onError", { type: "Load" });
+      });
   }
 
   start() {

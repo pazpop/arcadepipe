@@ -4,7 +4,7 @@
 
 Mini jeu vidéo (*The Last Starfighter*) avec leaderboard — shoot'em up à défilement horizontal, pixel art généré par code, jouable directement dans le navigateur. Conçu par [pazpop](https://github.com/pazpop) avec [Claude](https://claude.com).
 
-Ce repo contient uniquement le jeu (backend + frontend) — `docker-compose.yml` (voir plus bas) suffit à le faire tourner n'importe où, sans dépendance externe. Une instance publique tourne sur **https://arcadepipe.pazpop.net**, déployée depuis un repo d'infra séparé ([`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner)) — voir *CI/CD* pour le détail de cette séparation.
+Ce repo contient uniquement le jeu (backend + frontend), déployable n'importe où avec `docker-compose.yml` (voir plus bas), sans dépendance externe. L'instance publique, **https://arcadepipe.pazpop.net**, est déployée séparément depuis [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner) — voir *CI/CD* pour le détail de cette séparation.
 
 ![Capture d'écran d'ArcadePipe en jeu](assets/screenshot.png)
 

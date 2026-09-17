@@ -1,6 +1,18 @@
 // Tout le texte/UI du jeu — le petit canvas interne + `image-rendering:
 // pixelated` suffit à un rendu "façon bitmap" sans dessiner une police pixel par pixel.
 import { RES_W, RES_H, PALETTE, POWERUP, VERSION } from "./config.js";
+import { drawPowerupIcon } from "./powerups.js";
+
+// Version courte de POWERUP.types[type].effect pour la légende de l'écran
+// Aide — le texte complet (utilisé par drawBuffIndicator en jeu) est trop
+// long pour tenir sur une ligne à cette résolution.
+const BONUS_SHORT_EFFECT = {
+  power: "dégâts renforcés, tir plus lent",
+  rapid: "tir très rapide, dégâts réduits",
+  shotgun: "cône de plombs, portée courte",
+  shield: "absorbe des coups",
+  nova: "nettoie l'écran",
+};
 
 // Point dans un rectangle {x,y,w,h} centré sur (x,y) — même test répété par
 // toutes les fonctions hitTest* ci-dessous (menu, pause, confirmation,
@@ -445,6 +457,24 @@ export function drawInfoScreen(ctx, content) {
       y += sectionGap;
     }
   });
+
+  // Légende des bonus (menu Aide uniquement) : icône + couleur identiques à
+  // celles du bonus qui tombe en jeu (drawPowerupIcon, partagé avec
+  // drawPowerups dans powerups.js) — le joueur associe visuellement
+  // l'apparence à l'effet sans avoir à ramasser chaque bonus pour vérifier.
+  if (content.showBonusLegend) {
+    const legendY = 144;
+    text(ctx, "BONUS", RES_W / 2, legendY, { size: 9, align: "center", color: PALETTE.player, glow: PALETTE.player });
+    const iconX = RES_W * 0.5 - 150;
+    const labelX = iconX + 10;
+    const rowH = 14;
+    Object.keys(POWERUP.types).forEach((type, i) => {
+      const y = legendY + 16 + i * rowH;
+      const def = POWERUP.types[type];
+      drawPowerupIcon(ctx, iconX, y, type, 4);
+      text(ctx, `${def.label} — ${BONUS_SHORT_EFFECT[type]}`, labelX, y, { size: 7, align: "left", color: def.color });
+    });
+  }
 
   const r = infoContinueRect();
   text(ctx, "▶ CONTINUER", r.x, r.y, {

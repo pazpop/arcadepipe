@@ -77,10 +77,10 @@ const SHIP_INTRO_DURATION = 1.8;
 // "Aide"/menu/pause (g.helpReturnTo indique où revenir en le fermant).
 const HELP_INFO = {
   title: "AIDE",
+  showBonusLegend: true, // dessine icône + couleur de chaque bonus (voir drawInfoScreen dans hud.js) à la place d'une ligne "BONUS" ici
   sections: [
     { heading: "DÉPLACEMENT", detail: "Souris ou doigt : dirige le vaisseau" },
     { heading: "TIR", detail: 'Maintiens le clic, ou coche "TIR AUTO" (bas à gauche)' },
-    { heading: "BONUS", detail: "Ennemis détruits : PUISSANCE/RAFALE/CHEVROTINE/BOUCLIER, rarement NOVA" },
     { heading: "BOSS", detail: "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie" },
     { heading: "MUSIQUE", detail: "Playlist aléatoire, réglable en bas à gauche" },
   ],

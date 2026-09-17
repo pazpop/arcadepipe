@@ -41,23 +41,32 @@ export function updatePowerups(pool, dt) {
   }
 }
 
+// Losange coloré (couleur de POWERUP.types[type]) — le même dessin sert au
+// bonus qui tombe en jeu (drawPowerups ci-dessous) et à sa légende dans le
+// menu Aide (voir drawInfoScreen dans hud.js), pour garantir qu'ils restent
+// visuellement identiques sans dupliquer le dessin.
+export function drawPowerupIcon(ctx, x, y, type, size = POWERUP.radius) {
+  const def = POWERUP.types[type];
+  ctx.save();
+  ctx.translate(x, y);
+  ctx.rotate(Math.PI / 4);
+  ctx.fillStyle = def.color;
+  ctx.shadowColor = def.color;
+  ctx.shadowBlur = 6;
+  ctx.fillRect(-size, -size, size * 2, size * 2);
+  ctx.restore();
+}
+
 export function drawPowerups(ctx, pool) {
   for (const p of pool.items) {
     if (!p.active) continue;
-    const def = POWERUP.types[p.type];
     // Clignote juste avant d'expirer pour prévenir que la fenêtre se referme.
     const remaining = POWERUP.lifetime - p.elapsed;
     const alpha = remaining < 2 ? 0.4 + 0.6 * (Math.sin(p.elapsed * 16) * 0.5 + 0.5) : 1;
     const pulse = 1 + Math.sin(p.elapsed * 5) * 0.15;
     ctx.save();
     ctx.globalAlpha = alpha;
-    ctx.translate(p.x, p.y);
-    ctx.rotate(Math.PI / 4);
-    ctx.fillStyle = def.color;
-    ctx.shadowColor = def.color;
-    ctx.shadowBlur = 6;
-    const r = POWERUP.radius * pulse;
-    ctx.fillRect(-r, -r, r * 2, r * 2);
+    drawPowerupIcon(ctx, p.x, p.y, p.type, POWERUP.radius * pulse);
     ctx.restore();
   }
 }

@@ -29,6 +29,11 @@ export class MusicPlayer {
     // qu'une condition qui se répète : là, retenter avec une autre piste
     // vaut mieux qu'un silence permanent.
     this.player.onError((e) => {
+      // Log volontairement gardé (pas juste en dev) : le bug "musique
+      // silencieuse au bout d'un moment" a déjà résisté à deux correctifs —
+      // savoir QUELLE branche se déclenche la prochaine fois vaut mieux que
+      // deviner une 3e fois à l'aveugle.
+      console.warn("[music] onError", e);
       if (e && e.type !== "Load") this.playRandom();
     });
     this.started = false;
@@ -111,8 +116,9 @@ export class MusicPlayer {
         g.setValueAtTime(0, t);
         g.linearRampToValueAtTime(target, t + 0.03);
       })
-      .catch(() => {
+      .catch((err) => {
         if (token !== this._loadToken) return; // supplantée, la piste plus récente gère déjà le volume
+        console.warn("[music] échec de chargement", track.file, err); // voir le commentaire sur onError plus haut
         // Le fondu de sortie a déjà coupé le son avant même de savoir si le
         // chargement allait réussir (voir plus haut) — sans ce filet, un
         // simple raté réseau laissait la musique silencieuse en permanence :

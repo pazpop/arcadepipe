@@ -4,6 +4,9 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.52] - 2026-09-17
+- Audio : filet de sécurité supplémentaire contre le bug de musique silencieuse (toujours signalé en v2.50 malgré deux correctifs précédents) — reprise périodique de l'AudioContext (pas seulement au retour d'onglet, certains navigateurs le suspendent même onglet actif) + logs de diagnostic sur les deux chemins d'échec restants, pour savoir enfin lequel se déclenche si ça se reproduit plutôt que deviner à l'aveugle.
+
 ## [2.51] - 2026-09-17
 - Nettoyage : relecture complète du repo (revue demandée explicitement) — élimination de vrais doublons de code (glissée d'entrée dupliquée dans game.js, création de bruit filtré dupliquée 3x dans sfx.js, génération/rendu de listes de menu dupliqués 3x dans hud.js, vérification "1er boss" dupliquée dans boss.js), un `let`→`const`, simplification d'une ternaire imbriquée peu lisible (Konami code). Aucun changement de comportement (vérifié par tests + captures d'écran avant/après).
 

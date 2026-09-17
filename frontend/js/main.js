@@ -287,6 +287,22 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
+// --- Filet de sécurité supplémentaire : reprise périodique de l'AudioContext.
+// Le resume() sur visibilitychange (ci-dessus) ne couvre que le cas "onglet
+// caché puis revisible" — certains navigateurs/réglages d'économie d'énergie
+// suspendent le contexte après un moment d'inactivité audio perçue MÊME
+// onglet actif au premier plan, sans qu'aucun événement ne le signale. Coût
+// négligeable (une lecture de propriété par frame) pour ne plus dépendre
+// d'un déclencheur précis. Log une seule fois par reprise, pour savoir si ça
+// arrive vraiment en pratique plutôt que de deviner à l'aveugle si le
+// silence recommence malgré ça.
+function watchAudioContext() {
+  if (audio.ctx.state === "suspended" && music.started) {
+    console.warn("[audio] AudioContext suspendu de façon inattendue (onglet actif) — reprise automatique.");
+    audio.ensure();
+  }
+}
+
 // --- Boucle principale ---
 let lastTime = 0;
 function loop(timestamp) {
@@ -294,6 +310,7 @@ function loop(timestamp) {
   lastTime = timestamp;
   game.update(realDt * gameSpeed);
   game.draw(ctx);
+  watchAudioContext();
   if (novaBtn) {
     novaBtn.classList.toggle("hidden", !(game.mode === game.MODE.PLAYING && game.novaStock > 0 && !game.inBonusLevel));
   }

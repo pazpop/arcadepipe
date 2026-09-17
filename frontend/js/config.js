@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.33";
+export const VERSION = "2.34";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -152,7 +152,7 @@ export const STORAGE_KEYS = {
   gameSpeed: "arcadepipe_game_speed",
 };
 
-// Multiplicateurs de vitesse de jeu proposés par le bouton "VITESSE" (panneau
+// Multiplicateurs de vitesse de jeu proposés par le bouton "VITESSE DU JEU" (panneau
 // bas gauche) — voir main.js. N'affecte que le rythme du jeu (dt), jamais
 // l'audio (musique/bruitages tournent sur leur propre horloge réelle).
 export const GAME_SPEEDS = [1, 1.5, 2];

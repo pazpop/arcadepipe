@@ -1,6 +1,6 @@
 // Point d'entrée : bootstrapping (canvas, entrées, audio) + boucle
 // requestAnimationFrame avec delta-time borné.
-import { RES_W, RES_H, STORAGE_KEYS, GAME_SPEEDS } from "./config.js";
+import { RES_W, RES_H, STORAGE_KEYS, GAME_SPEEDS, VERSION } from "./config.js";
 import { createInput, canvasToLogical } from "./input.js";
 import { AudioEngine } from "./audio/sfx.js";
 import { MusicPlayer } from "./audio/music.js";
@@ -26,6 +26,8 @@ const sfxVolumeEl = document.getElementById("sfx-volume");
 const autoFireToggle = document.getElementById("autofire-toggle");
 const helpBtn = document.getElementById("help-btn");
 const speedBtn = document.getElementById("speed-btn");
+const versionLabel = document.getElementById("version-label");
+if (versionLabel) versionLabel.textContent = `v${VERSION}`;
 
 const input = createInput(canvas);
 const audio = new AudioEngine();

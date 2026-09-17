@@ -103,7 +103,8 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] L'écran d'aide s'affiche automatiquement lors de la toute première partie jouée, puis reste accessible à la demande ensuite via un bouton.
 - [x] La saisie du pseudo de fin de partie fonctionne même sur les téléphones où le clavier virtuel ne s'ouvre pas automatiquement (bouton de validation tactile en secours).
 - [x] Légende visuelle des bonus dans l'écran Aide (icône + couleur réelles de chaque bonus, pas juste une liste de noms) — le joueur associe l'apparence à l'effet sans avoir à tout ramasser pour vérifier.
-- [x] Réglage de la vitesse du jeu (x1/x1.5/x2, bouton dans le panneau en bas à gauche, préférence mémorisée) — accélère tout ce qui dépend du temps de façon uniforme (donc la difficulté relative ne change pas), sans jamais affecter la musique ni les bruitages (qui tournent sur leur propre horloge audio).
+- [x] Réglage de la vitesse du jeu (x1/x1.5/x2, bouton "VITESSE DU JEU" dans le panneau en bas à gauche, préférence mémorisée) — accélère tout ce qui dépend du temps de façon uniforme (donc la difficulté relative ne change pas), sans jamais affecter la musique ni les bruitages (qui tournent sur leur propre horloge audio).
+- [x] Panneau bas gauche organisé en items clairs plutôt qu'un groupe "options" fourre-tout : Musique, Bruitages, Vitesse du jeu, Tir automatique, Aide, puis le numéro de version — chacun sa propre ligne, dans l'ordre où un joueur les cherche.
 - [x] Lien vers le code source (GitHub) dans les crédits.
 - [x] Numéro de version affiché dans le jeu (détail plus bas).
 

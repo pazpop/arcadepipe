@@ -208,6 +208,15 @@ html, body {
   accent-color: #4ee1ff;
 }
 
+/* Numéro de version, discret — en complément de celui déjà dans le canvas
+   (js/hud.js), qui reste seul visible quand ce panneau est replié. */
+.mc-version {
+  text-align: center;
+  font-size: 8px;
+  color: #cfe8ff;
+  opacity: 0.5;
+}
+
 @media (max-width: 480px) {
   #mc-wrap {
     bottom: 4px;

@@ -797,6 +797,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
       drawProjectiles(ctx, projectiles);
       drawPlayer(ctx, player);
       hud.drawGameHud(ctx, g, player.lives);
+      if (g.boss) hud.drawBossHealthBar(ctx, g.boss);
       hud.drawBuffIndicator(ctx, player.buff);
       hud.drawShieldIndicator(ctx, player.shield);
       hud.drawBanner(ctx, g.banner);

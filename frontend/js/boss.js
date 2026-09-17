@@ -171,7 +171,7 @@ export function hitsBossHull(boss, px, py, radius) {
   return Math.abs(dy) <= hullHalfHeightAt(dx / scale) * scale + radius;
 }
 
-function bossHealthFraction(boss) {
+export function bossHealthFraction(boss) {
   const total = boss.weakPoints.reduce((s, p) => s + p.maxHp, 0);
   const remaining = boss.weakPoints.reduce((s, p) => s + Math.max(0, p.hp), 0);
   return total === 0 ? 0 : remaining / total;
@@ -225,15 +225,5 @@ export function drawBoss(ctx, boss) {
     ctx.globalAlpha = 1;
     ctx.shadowBlur = 0;
   }
-
-  // Barre de vie du boss, alignée sur sizeScale (largeur réellement affichée).
-  const frac = bossHealthFraction(boss);
-  const barW = hull.width * boss.sizeScale;
-  const barX = boss.x - barW / 2;
-  const barY = boss.y - (hull.height * boss.sizeScale) / 2 - 10;
-  ctx.fillStyle = "#2a0a10";
-  ctx.fillRect(barX, barY, barW, 3);
-  ctx.fillStyle = PALETTE.bossWeakOn;
-  ctx.fillRect(barX, barY, barW * frac, 3);
   ctx.restore();
 }

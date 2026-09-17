@@ -2,6 +2,7 @@
 // pixelated` suffit à un rendu "façon bitmap" sans dessiner une police pixel par pixel.
 import { RES_W, RES_H, PALETTE, POWERUP, VERSION } from "./config.js";
 import { drawPowerupIcon } from "./powerups.js";
+import { bossHealthFraction } from "./boss.js";
 
 // Version courte de POWERUP.types[type].effect pour la légende de l'écran
 // Aide — le texte complet (utilisé par drawBuffIndicator en jeu) est trop
@@ -72,6 +73,27 @@ export function drawGameHud(ctx, s, lives) {
     color: PALETTE.danger,
     glow: PALETTE.danger,
   });
+}
+
+// Barre de vie du boss : pleine largeur, fixe tout en bas de l'écran plutôt
+// qu'accrochée à sa position (petite, se déplaçait avec lui) — convention
+// classique de combat de boss, plus facile à surveiller du coin de l'œil
+// pendant qu'on esquive.
+export function drawBossHealthBar(ctx, boss) {
+  if (!boss || boss.victory) return;
+  const frac = bossHealthFraction(boss);
+  const margin = 6;
+  const h = 5;
+  const barY = RES_H - h - 4;
+  const barW = RES_W - margin * 2;
+  ctx.save();
+  ctx.fillStyle = "#2a0a10";
+  ctx.fillRect(margin, barY, barW, h);
+  ctx.fillStyle = PALETTE.bossWeakOn;
+  ctx.shadowColor = PALETTE.bossWeakOn;
+  ctx.shadowBlur = 4;
+  ctx.fillRect(margin, barY, barW * frac, h);
+  ctx.restore();
 }
 
 export function drawBuffIndicator(ctx, buff) {

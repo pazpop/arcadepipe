@@ -60,7 +60,7 @@ Comment les couleurs et les formes sont décidées et générées.
 
 ## Boss
 
-- [x] Le combat de boss se joue sur plusieurs "points faibles" à détruire un par un, plutôt qu'une seule barre de vie globale.
+- [x] Le combat de boss se joue sur plusieurs "points faibles" à détruire un par un (pas une simple jauge à vider) — une barre de vie globale reste affichée en plus, pleine largeur et fixe tout en bas de l'écran (convention classique de combat de boss), pour suivre la progression globale du regard sans avoir à la chercher près du boss.
 - [x] Les tirs du boss deviennent plus nombreux et plus rapides à mesure que ses points faibles sont détruits — le combat monte en intensité progressivement.
 - [x] Le tout premier combat de boss rencontré est volontairement plus facile (moins de vie, tirs plus lents) que les suivants, le temps que le joueur en comprenne le fonctionnement.
 - [x] Vaincre un boss donne une vie supplémentaire et un gros bonus de score.
@@ -137,3 +137,17 @@ Comment les couleurs et les formes sont décidées et générées.
 
 - [x] Tests automatiques sur la logique du jeu qui ne dépend pas de l'affichage (calculs, règles), rapides à exécuter.
 - [x] Tests automatiques qui pilotent un vrai navigateur pour vérifier les scénarios plus longs à atteindre normalement (obtenir un bonus, rencontrer un boss), en accélérant temporairement certains réglages le temps du test seulement.
+
+## Retour d'expérience : un vrai bug rencontré
+
+Un exemple concret de problème rencontré pendant le développement, pour illustrer une vraie démarche de résolution plutôt qu'une liste de fonctionnalités.
+
+**Le symptôme.** La musique devait piocher une piste au hasard à chaque nouvelle partie, sans jamais rejouer deux fois de suite le même morceau. En pratique, c'était aléatoire au sens "parfois ça marche, parfois non" : de temps en temps, la même musique restait bloquée d'une partie à l'autre, sans erreur ni message nulle part.
+
+**Première fausse piste.** Le tirage aléatoire lui-même semblait correct en le relisant (une boucle qui retire un nouvel index tant qu'il retombe sur celui déjà en cours). Le bug n'était donc pas dans "quelle piste choisir", mais ailleurs dans la chaîne.
+
+**La vraie cause.** Deux bouts de code différents, déclenchés par le *même* geste du joueur (le tout premier clic sur "Jouer"), lançaient chacun leur propre chargement de musique en parallèle : l'un démarre l'audio en général (au tout premier clic/touche, obligatoire dans un navigateur), l'autre lance une piste aléatoire spécifiquement au début d'une partie. Chacun déclenche une requête réseau pour charger un fichier différent. Comme ce sont deux requêtes séparées, rien ne garantit laquelle répond en dernier — et c'est toujours la dernière réponse arrivée qui "gagne" et devient la musique réellement jouée, peu importe laquelle des deux était censée être la bonne. Résultat : parfois la piste "par défaut" gagnait la course et écrasait le tirage aléatoire, silencieusement.
+
+**La correction.** Un simple compteur ("jeton de version"), incrémenté à chaque nouvelle demande de chargement. Quand une réponse réseau arrive, le code vérifie que son jeton correspond toujours à la demande la plus récente avant de l'appliquer — sinon il l'ignore, en considérant qu'une demande plus récente l'a déjà remplacée.
+
+**La leçon générale**, au-delà de ce bug précis : dès que deux opérations asynchrones (réseau, minuteur, animation...) peuvent être déclenchées par le même événement et modifient le même état, il faut un moyen de savoir laquelle est "la plus récente" avant d'appliquer son résultat — sinon c'est l'ordre d'arrivée, imprévisible, qui décide à la place du code plutôt que la logique voulue. Ce même correctif a d'ailleurs été réappliqué presque à l'identique ailleurs dans ce projet (l'écran de classement) dès qu'un cas similaire a été repéré, une fois le schéma reconnu.

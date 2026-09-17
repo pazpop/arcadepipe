@@ -37,6 +37,10 @@ function makeCelestial() {
     radius,
     speed: 1.5 + Math.random() * 3, // lent (vs étoiles) pour rester "loin" visuellement
     hue: Math.random() * 360,
+    // Disque d'accrétion : toujours blanc-chaud/orangé (chauffé par friction),
+    // jamais une teinte aléatoire comme planète/galaxie — sinon ça ressemble à
+    // un néon plutôt qu'à de la matière en fusion.
+    hotHue: 15 + Math.random() * 35,
     rotation: Math.random() * Math.PI * 2,
   };
 }
@@ -153,40 +157,45 @@ function drawCelestial(ctx, c) {
     ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
     ctx.fill();
   } else {
-    // Trou noir façon Gargantua (Interstellar) : un vide sombre entouré d'un
-    // disque d'accrétion lumineux. Le disque est dessiné deux fois — une
-    // fois à plat (vu presque de profil, partiellement avalé par le vide
-    // dessiné par-dessus) et une fois en anneau complet autour du vide, pour
-    // approximer la lentille gravitationnelle (le disque qui semble
-    // "s'enrouler" au-dessus/en dessous) sans vrai calcul optique.
-    ctx.globalAlpha = alpha * 0.55;
+    // Trou noir façon Gargantua (Interstellar) : un vide entouré d'un disque
+    // de gaz chauffé par friction (blanc-chaud → orangé, teinte fixe : un
+    // disque d'accrétion n'a rien d'aléatoire, contrairement au hue de
+    // planète/galaxie ci-dessus). Le disque à plat est le motif dominant
+    // (trait large, cœur blanc + halo orangé pour simuler un dégradé,
+    // impossible nativement sur un tracé 2D) ; l'anneau autour du vide,
+    // volontairement plus fin et discret, approxime juste la lentille
+    // gravitationnelle sans dupliquer le disque en second anneau de même poids.
     ctx.translate(c.x, c.y);
     ctx.rotate(c.rotation);
-    const diskColor = `hsl(${c.hue}, 30%, 62%)`;
 
-    ctx.strokeStyle = diskColor;
-    ctx.shadowColor = diskColor;
-    ctx.shadowBlur = 6;
-    ctx.lineWidth = c.radius * 0.16;
+    ctx.globalAlpha = alpha * 0.6;
+    ctx.strokeStyle = `hsl(${c.hotHue}, 90%, 50%)`;
+    ctx.shadowColor = ctx.strokeStyle;
+    ctx.shadowBlur = c.radius * 0.4;
+    ctx.lineWidth = c.radius * 0.3;
     ctx.beginPath();
-    ctx.ellipse(0, 0, c.radius * 1.7, c.radius * 0.32, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, c.radius * 1.75, c.radius * 0.3, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.globalAlpha = alpha * 0.85;
+    ctx.shadowBlur = c.radius * 0.15;
+    ctx.strokeStyle = `hsl(${c.hotHue + 20}, 100%, 85%)`;
+    ctx.lineWidth = c.radius * 0.08;
     ctx.stroke();
 
     ctx.shadowBlur = 0;
-    const voidGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, c.radius);
-    voidGrad.addColorStop(0, `hsl(${c.hue}, 15%, 2%)`);
-    voidGrad.addColorStop(1, "#000000");
-    ctx.fillStyle = voidGrad;
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = "#000000";
     ctx.beginPath();
     ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
     ctx.fill();
 
-    ctx.strokeStyle = diskColor;
-    ctx.shadowColor = diskColor;
-    ctx.shadowBlur = 5;
-    ctx.lineWidth = c.radius * 0.1;
+    ctx.globalAlpha = alpha * 0.4;
+    ctx.strokeStyle = `hsl(${c.hotHue}, 80%, 60%)`;
+    ctx.shadowColor = ctx.strokeStyle;
+    ctx.shadowBlur = c.radius * 0.2;
+    ctx.lineWidth = c.radius * 0.05;
     ctx.beginPath();
-    ctx.ellipse(0, 0, c.radius * 1.15, c.radius * 1.02, 0, 0, Math.PI * 2);
+    ctx.ellipse(0, 0, c.radius * 1.08, c.radius * 1.0, 0, 0, Math.PI * 2);
     ctx.stroke();
   }
   ctx.restore();

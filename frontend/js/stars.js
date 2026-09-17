@@ -36,8 +36,11 @@ function makeCelestial() {
   };
 }
 
+// Court (était 8-20s) : le fond restait trop souvent totalement vide entre
+// deux corps célestes — quelques secondes suffisent à ne pas donner
+// l'impression qu'ils s'enchaînent sans respiration.
 function nextCelestialDelay() {
-  return 8 + Math.random() * 12;
+  return 2 + Math.random() * 3;
 }
 
 // Décor de boss "Étoile Noire" : fixe pendant le combat, s'échappe vers la

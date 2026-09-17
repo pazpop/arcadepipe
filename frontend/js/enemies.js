@@ -47,8 +47,8 @@ export function createEnemyPool() {
 function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
   const stats = TYPE_STATS[type];
   // Le gunner reste de type "normal" (même silhouette, juste la palette qui
-  // change — voir ENEMY_GUNNER_PALETTE dans assets.js) mais encaisse plus
-  // pour justifier qu'il tire, façon élite (voir GUNNER_HP_BONUS plus bas).
+  // change — voir ENEMY_GUNNER_PALETTE dans assets.js) mais encaisse un peu
+  // plus pour justifier qu'il tire (voir GUNNER_HP_BONUS plus bas).
   const hp = gunner ? stats.hp + GUNNER_HP_BONUS : stats.hp;
   const en = acquireSlot(pool);
   if (!en) return null;
@@ -74,10 +74,9 @@ function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
 // aussi (plus lent/moins fréquent qu'une élite).
 const GUNNER_MIN_WAVE = 5;
 const GUNNER_CHANCE = 0.22;
-// +2 PV par rapport à un normal (1 -> 3, autant qu'une élite) — encaisse
-// plusieurs tirs comme elle, affiche donc les mêmes pastilles de PV
-// au-dessus du sprite (voir drawEnemies, maxHp > 1).
-const GUNNER_HP_BONUS = 2;
+// +1 PV par rapport à un normal (1 -> 2) — encaisse un coup de plus pour
+// justifier qu'il tire, sans être aussi résistant qu'une élite (3 PV).
+const GUNNER_HP_BONUS = 1;
 
 // Dès la vague 4, une petite chance de tomber sur un kamikaze plutôt qu'un
 // ennemi normal — exclusif avec élite/gunner (voir spawnEnemyWave).
@@ -259,14 +258,6 @@ export function drawEnemies(ctx, pool) {
       ctx.restore();
     } else {
       drawWithGlow(ctx, sprite, en.x, en.y, glow, 0.3);
-    }
-    if (en.maxHp > 1) {
-      ctx.save();
-      ctx.fillStyle = glow;
-      for (let i = 0; i < en.hp; i++) {
-        ctx.fillRect(en.x - (en.maxHp - 1) * 3 + i * 6 - 1, en.y - sprite.height / 2 - 5, 2, 2);
-      }
-      ctx.restore();
     }
   }
 }

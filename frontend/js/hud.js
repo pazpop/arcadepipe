@@ -17,13 +17,16 @@ const BONUS_SHORT_EFFECT = {
 
 // Légende des ennemis (menu Aide, colonne droite) — boss volontairement
 // exclu (sa propre section "BOSS" plus haut suffit, ses patterns changent en
-// combat). Sprite réel (assets.js) + même couleur que enemyGlowColor
-// (enemies.js), pas une réinterprétation.
+// combat, et il n'a plus vraiment de "PV" au sens d'un ennemi normal). Sprite
+// réel (assets.js) + même couleur que enemyGlowColor (enemies.js), pas une
+// réinterprétation. PV recopiés à la main depuis TYPE_STATS/GUNNER_HP_BONUS
+// (enemies.js) — pas de pastilles en jeu depuis leur retrait, donc c'est ici
+// leur seule indication visible pour le joueur.
 const ENEMY_LEGEND = [
-  { spriteKey: "enemyNormal", color: PALETTE.enemyNormal, text: "FACILE — pas de tir, ligne droite" },
-  { spriteKey: "enemyGunner", color: PALETTE.enemyGunner, text: "MOYEN — tire visé (vague 5+)" },
-  { spriteKey: "enemyElite", color: PALETTE.enemyElite, text: "ÉLITE — tire visé, ondule" },
-  { spriteKey: "enemyKamikaze", color: PALETTE.danger, text: "KAMIKAZE — fonce sur toi (vague 4+)" },
+  { spriteKey: "enemyNormal", color: PALETTE.enemyNormal, text: "FACILE — 1 PV, pas de tir, ligne droite" },
+  { spriteKey: "enemyGunner", color: PALETTE.enemyGunner, text: "MOYEN — 2 PV, tire visé (vague 5+)" },
+  { spriteKey: "enemyElite", color: PALETTE.enemyElite, text: "ÉLITE — 3 PV, tire visé, ondule" },
+  { spriteKey: "enemyKamikaze", color: PALETTE.danger, text: "KAMIKAZE — 1 PV, fonce sur toi (vague 4+)" },
 ];
 
 // Point dans un rectangle {x,y,w,h} centré sur (x,y) — même test répété par

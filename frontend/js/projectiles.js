@@ -61,15 +61,15 @@ export function firePlayerBullet(projectiles, x, y, speed, damage = 1, color = n
 }
 
 // Dégâts perdus par seconde de vol — avec `damage` initial (POWERUP.types.shotgun),
-// un plomb s'éteint en ~0.33s, soit une portée courte à bulletSpeed (voir
-// PLAYER.bulletSpeed) : fort à bout portant, négligeable après quelques dizaines de pixels.
-const PELLET_DAMAGE_DECAY = 6;
+// un plomb s'éteint en ~0.67s, soit ~170px à bulletSpeed (voir PLAYER.bulletSpeed,
+// un peu plus du tiers de l'écran) : fort à bout portant, négligeable au-delà.
+const PELLET_DAMAGE_DECAY = 3;
 
 // Cône de plombs (bonus CHEVROTINE) : `count` plombs répartis sur `spreadRad`
 // radians autour de l'axe horizontal. Dégâts décroissants gérés dans
 // updateProjectiles ; le fondu visuel (drawPool) suit la même valeur, donc
 // toujours synchronisé avec la perte de puissance réelle.
-export function firePlayerPellets(projectiles, x, y, speed, damage, color, count = 6, spreadRad = Math.PI / 6) {
+export function firePlayerPellets(projectiles, x, y, speed, damage, color, count = 6, spreadRad = Math.PI / 4) {
   const start = -spreadRad / 2;
   for (let i = 0; i < count; i++) {
     const a = count === 1 ? 0 : start + (spreadRad * i) / (count - 1);

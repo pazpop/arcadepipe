@@ -1,4 +1,13 @@
-FROM python:3.11-slim
+# Épinglé par digest (pas juste par tag) : "3.11-slim" est un tag flottant —
+# la même chaîne pointe vers une image différente à chaque republication en
+# amont (patch de sécu, changement de base Debian...). Le digest, lui, ne
+# change jamais pour un même contenu : reproductible, et impossible à
+# remplacer silencieusement par une image compromise portant le même tag.
+# Contrepartie assumée : plus de mise à jour automatique à chaque rebuild —
+# Dependabot (.github/dependabot.yml, écosystème "docker") ouvre une PR
+# quand une nouvelle version de digest existe pour ce tag, donc rien à
+# traquer à la main.
+FROM python:3.11-slim@sha256:9534e5a8e315485d4061ed659af0fd78a284c015f9b73661b41d6bab25604534
 
 WORKDIR /app
 

@@ -82,7 +82,11 @@ cd e2e && npm install && npm run install-browsers && npm test
 
 ## CI/CD
 
-`.github/workflows/deploy.yml` : sur push vers `main`, lint (`ruff`) puis build + push des images vers GHCR (tags `:latest` et `:<sha>`, public — aucune authentification requise pour `docker pull` où que ce soit).
+`.github/workflows/deploy.yml` : sur push vers `main`, lint (`ruff`) + audit des dépendances (`pip-audit`, contre les CVE connues) puis build + push des images vers GHCR (tags `:latest` et `:<sha>`, public — aucune authentification requise pour `docker pull` où que ce soit).
+
+- Actions GitHub épinglées par SHA de commit (pas par tag `vX`) : un tag peut être redéplacé vers un autre commit sans que rien ne change ici — le SHA est immuable.
+- Images de base (`python:3.11-slim`, `caddy:2-alpine`) épinglées par digest dans les Dockerfiles, pour la même raison.
+- [Dependabot](.github/dependabot.yml) ouvre une PR à chaque mise à jour disponible (`pip`, `github-actions`, `docker`) — aucune veille manuelle nécessaire malgré les pins par SHA/digest.
 
 Ce repo s'arrête là — il ne connaît ni VPS ni serveur cible. L'instance `arcadepipe.pazpop.net` est déployée par un repo d'infra séparé ([`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner)), notifié via un événement `repository_dispatch` une fois les images publiées (voir le CI/CD de ce repo-là pour le détail). Un fork ou un usage communautaire n'a pas ce déclenchement (secret absent) et n'en a pas besoin — voir *Docker* ci-dessus pour se déployer soi-même.
 
@@ -92,8 +96,7 @@ Ce repo s'arrête là — il ne connaît ni VPS ni serveur cible. L'instance `ar
 
 - [ ] Sauvegardes DB ([Litestream](https://litestream.io/) ou cron) — **reporté volontairement** : pas de vraie perte critique en cas d'incident pour un classement de jeu perso, pas prioritaire pour l'instant
 - [ ] Score authentifié (jeton signé émis au début de la partie, exigé à la soumission) — pas urgent, le score non authentifié est un risque assumé (voir Sécurité)
-- [ ] Scan de vulnérabilités des images Docker ([Trivy](https://trivy.dev/), en CI juste après le build) — les images sont poussées sur GHCR sans jamais vérifier les CVE connues de leurs dépendances/images de base
-- [ ] [Dependabot](https://docs.github.com/fr/code-security/dependabot) sur `backend/requirements.txt` et les actions GitHub — pas urgent, mise à jour manuelle des dépendances pour l'instant
+- [ ] Scan de vulnérabilités des **images construites** ([Trivy](https://trivy.dev/), en CI juste après le build) — `pip-audit` couvre les dépendances Python déclarées, mais pas les paquets système de l'image finale (ex: libs Debian de `python:3.11-slim`)
 
 ## Structure
 

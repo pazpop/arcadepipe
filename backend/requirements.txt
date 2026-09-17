@@ -1,4 +1,10 @@
-fastapi==0.115.0
+fastapi==0.141.1
+# Dépendance transitive de fastapi, mais épinglée explicitement ici : sans ce
+# pin, `pip install -r requirements.txt` résout la version MINIMALE acceptée
+# par fastapi (>=0.46.0, sans plafond), pas la plus récente — trouvé en
+# ajoutant pip-audit au CI (voir deploy.yml) : ça laissait passer 14 CVE
+# connues (PYSEC-2026-1941 et consorts) sur les versions 0.x de starlette.
+starlette==1.3.1
 uvicorn[standard]==0.30.6
 pydantic==2.9.2
 slowapi==0.1.10

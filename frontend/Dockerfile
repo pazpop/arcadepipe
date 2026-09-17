@@ -3,7 +3,10 @@
 # d'image entre ce conteneur et le reverse proxy de l'étape 4. Caddyfile
 # personnalisé (compression) plutôt que celui par défaut de l'image, vu la
 # taille de lib/libopenmpt.worklet.js.
-FROM caddy:2-alpine
+# Épinglé par digest (pas juste par tag) : "2-alpine" est un tag flottant —
+# même raisonnement que backend/Dockerfile. Dependabot (écosystème "docker")
+# ouvre une PR à chaque nouveau digest disponible pour ce tag.
+FROM caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
 
 # setcap donne au binaire caddy la capacité de se lier au port 80 (<1024)
 # sans être root — indispensable puisqu'on abandonne root plus bas. libcap

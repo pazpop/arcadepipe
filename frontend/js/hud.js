@@ -69,8 +69,8 @@ export function drawGameHud(ctx, s, lives) {
   text(ctx, "♥".repeat(Math.max(0, lives)), RES_W - 8, 10, {
     size: 8,
     align: "right",
-    color: PALETTE.enemyNormal,
-    glow: PALETTE.enemyNormal,
+    color: PALETTE.danger,
+    glow: PALETTE.danger,
   });
 }
 
@@ -102,8 +102,8 @@ export function drawBanner(ctx, banner) {
   text(ctx, banner.text, RES_W / 2, RES_H * 0.22, {
     size: 14,
     align: "center",
-    color: PALETTE.enemyNormal,
-    glow: PALETTE.enemyNormal,
+    color: PALETTE.danger,
+    glow: PALETTE.danger,
     alpha: Math.min(1, banner.timer),
   });
 }
@@ -366,8 +366,8 @@ export function drawConfirmQuitScreen(ctx, selected) {
   text(ctx, "QUITTER LA PARTIE ?", RES_W / 2, RES_H * 0.38, {
     size: 14,
     align: "center",
-    color: PALETTE.enemyNormal,
-    glow: PALETTE.enemyNormal,
+    color: PALETTE.danger,
+    glow: PALETTE.danger,
   });
   text(ctx, "TA PROGRESSION ACTUELLE SERA PERDUE.", RES_W / 2, RES_H * 0.38 + 18, {
     size: 8,
@@ -489,7 +489,7 @@ export function drawInfoScreen(ctx, content) {
 // --- Game over / saisie du nom ---
 
 export function drawGameOverScreen(ctx, score, wave, kills) {
-  text(ctx, "GAME OVER", RES_W / 2, RES_H * 0.28, { size: 20, align: "center", color: PALETTE.enemyNormal, glow: PALETTE.enemyNormal });
+  text(ctx, "GAME OVER", RES_W / 2, RES_H * 0.28, { size: 20, align: "center", color: PALETTE.danger, glow: PALETTE.danger });
   text(ctx, `SCORE ${score}  ·  VAGUE ${wave}  ·  ${kills} ENNEMIS`, RES_W / 2, RES_H * 0.28 + 22, { size: 10, align: "center" });
 }
 

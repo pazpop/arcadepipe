@@ -17,12 +17,11 @@ function makeStar(layer, randomX) {
 }
 
 // Planète/galaxie occasionnelle en fond, une à la fois, fondu en entrée/sortie.
-// Teinte restreinte au vert (90-150°) : seule plage inutilisée ailleurs dans
-// le jeu, pour ne jamais se confondre avec un élément de gameplay.
-const CELESTIAL_HUE_MIN = 90;
-const CELESTIAL_HUE_MAX = 150;
-
-// 1 chance sur 2 (pas 1/3) : sinon trop rare pour apparaître sur une partie normale.
+// Teinte tirée sur tout le cercle chromatique — c'est la désaturation dans
+// drawCelestial (pas une teinte réservée) qui l'empêche de se confondre avec
+// un élément de gameplay : toutes les couleurs de gameplay de ce jeu sont
+// pleinement saturées, donc un décor terne reste reconnaissable comme
+// "arrière-plan" quelle que soit la teinte qu'il tire.
 function makeCelestial() {
   const isGalaxy = Math.random() < 0.5;
   const radius = isGalaxy ? 26 + Math.random() * 18 : 12 + Math.random() * 22;
@@ -32,7 +31,7 @@ function makeCelestial() {
     y: radius + Math.random() * (RES_H - radius * 2),
     radius,
     speed: 1.5 + Math.random() * 3, // lent (vs étoiles) pour rester "loin" visuellement
-    hue: CELESTIAL_HUE_MIN + Math.floor(Math.random() * (CELESTIAL_HUE_MAX - CELESTIAL_HUE_MIN)),
+    hue: Math.random() * 360,
     rotation: Math.random() * Math.PI * 2,
   };
 }
@@ -119,13 +118,13 @@ function drawCelestial(ctx, c) {
       c.x - c.radius * 0.3, c.y - c.radius * 0.3, c.radius * 0.1,
       c.x, c.y, c.radius
     );
-    grad.addColorStop(0, `hsl(${c.hue}, 70%, 65%)`);
-    grad.addColorStop(1, `hsl(${c.hue}, 55%, 22%)`);
+    grad.addColorStop(0, `hsl(${c.hue}, 28%, 65%)`);
+    grad.addColorStop(1, `hsl(${c.hue}, 22%, 22%)`);
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = `hsla(${c.hue}, 40%, 80%, 0.5)`;
+    ctx.strokeStyle = `hsla(${c.hue}, 18%, 80%, 0.5)`;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.ellipse(c.x, c.y, c.radius * 1.5, c.radius * 0.35, -0.4, 0, Math.PI * 2);
@@ -138,9 +137,9 @@ function drawCelestial(ctx, c) {
     // Dégradé en espace local (après transform) pour rester centré malgré
     // rotation/scale.
     const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, c.radius);
-    grad.addColorStop(0, `hsla(${c.hue}, 80%, 85%, 0.9)`);
-    grad.addColorStop(0.4, `hsla(${c.hue}, 70%, 60%, 0.5)`);
-    grad.addColorStop(1, `hsla(${c.hue}, 60%, 40%, 0)`);
+    grad.addColorStop(0, `hsla(${c.hue}, 32%, 85%, 0.9)`);
+    grad.addColorStop(0.4, `hsla(${c.hue}, 26%, 60%, 0.5)`);
+    grad.addColorStop(1, `hsla(${c.hue}, 20%, 40%, 0)`);
     ctx.fillStyle = grad;
     ctx.beginPath();
     ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
@@ -150,8 +149,8 @@ function drawCelestial(ctx, c) {
 }
 
 // Silhouette dessinée au canvas (pas un sprite), cohérent avec planètes/
-// galaxies ci-dessus. Teintes grises, hors de la plage verte des corps
-// célestes (CELESTIAL_HUE_MIN/MAX).
+// galaxies ci-dessus. Teintes grises très désaturées (S=12%, même principe
+// que drawCelestial : jamais assez vif pour rivaliser avec le gameplay).
 function drawDeathStar(ctx, ds) {
   const r = ds.radius;
   // Fondu seulement en sortie (fuite) : apparaît déjà "installé" au début du combat.

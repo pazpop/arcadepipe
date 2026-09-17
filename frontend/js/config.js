@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.30";
+export const VERSION = "2.31";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -22,9 +22,17 @@ export const PALETTE = {
   // Bleu-indigo (pas jaune-orangé, trop proche de bulletPlayer) : seule
   // teinte encore libre dans la palette du jeu.
   bulletEnemy2: "#5a7dff",
-  enemyNormal: "#ff5d73",
-  enemyElite: "#c86bff",
-  boss: "#ffcc33",
+  // Rouge d'alerte générique (HUD : vies, bannières, avertissements) —
+  // distinct de la couleur des ennemis "faciles" depuis que celle-ci est
+  // passée au vert (code couleur par palier ci-dessous), les deux usages
+  // n'ont plus de raison de partager la même valeur.
+  danger: "#ff5d73",
+  // Code couleur par palier de menace façon jeu de rôle (vert < jaune <
+  // violet < or) — voir GAMEPLAY.md, section Charte graphique.
+  enemyNormal: "#27be4d", // facile
+  enemyGunner: "#beb227", // moyen (variante d'ennemi normal qui tire aussi, dès la vague 5)
+  enemyElite: "#c86bff", // difficile
+  boss: "#ffcc33", // or — 4e et dernier palier du code couleur ci-dessus
   bossWeakOn: "#fff44a", // jaune vif — doit trancher net avec la coque du boss
   bossWeakHit: "#ff9a3d", // encaissé un coup, pas encore critique
   bossWeakCritical: "#ff4d4d", // sur le point de céder
@@ -84,8 +92,8 @@ export function bulletSpeedFactor(wave) {
 export const POWERUP = {
   duration: 20, // secondes d'effet une fois ramassé (sans effet sur "nova"/"shield")
   shieldHits: 3, // nombre de coups absorbés avant que le bouclier se brise
-  dropChanceNormal: 0.05,
-  dropChanceElite: 0.18,
+  dropChanceNormal: 0.08,
+  dropChanceElite: 0.25,
   fallSpeed: 26,
   radius: 5,
   lifetime: 9, // disparaît si non ramassé
@@ -101,9 +109,7 @@ export const POWERUP = {
     nova: { instant: true, color: "#ffffff", label: "NOVA", effect: "détruit tous les ennemis à l'écran" },
   },
   // Poids relatifs (pickPowerupType() dans game.js) — nova doit rester nettement plus rare.
-  // TEMPORAIRE : shotgun boosté pour faciliter les tests du nouveau bonus —
-  // à rééquilibrer (retour vers ~0.16) une fois validé en jeu.
-  typeWeights: { power: 0.15, rapid: 0.15, shotgun: 0.55, shield: 0.1, nova: 0.05 },
+  typeWeights: { power: 0.3, rapid: 0.3, shotgun: 0.16, shield: 0.16, nova: 0.08 },
 };
 
 export const BOSS = {

@@ -156,11 +156,20 @@ export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
   }
 }
 
+// Couleur du palier de menace (facile/moyen/difficile — voir PALETTE dans
+// config.js) — partagée entre le rendu (sprite/glow) et les explosions, pour
+// qu'un vaisseau jaune explose en jaune plutôt qu'en vert par défaut.
+export function enemyGlowColor(en) {
+  if (en.type === "elite") return PALETTE.enemyElite;
+  return en.gunner ? PALETTE.enemyGunner : PALETTE.enemyNormal;
+}
+
 export function damageEnemy(en, particlePool, amount = 1) {
   en.hp -= amount;
+  const color = enemyGlowColor(en);
   if (en.hp <= 0) {
     en.active = false;
-    spawnExplosion(particlePool, en.x, en.y, en.type === "elite" ? 24 : 14, PALETTE[`enemy${en.type === "elite" ? "Elite" : "Normal"}`]);
+    spawnExplosion(particlePool, en.x, en.y, en.type === "elite" ? 24 : 14, color);
     spawnFlashBurst(particlePool, en.x, en.y, en.type === "elite" ? 10 : 6);
     return true; // détruit
   }
@@ -176,8 +185,8 @@ export function drawEnemies(ctx, pool) {
   const sprites = buildSprites();
   for (const en of pool.items) {
     if (!en.active) continue;
-    const sprite = en.type === "elite" ? sprites.enemyElite : sprites.enemyNormal;
-    const glow = en.type === "elite" ? PALETTE.enemyElite : PALETTE.enemyNormal;
+    const sprite = en.type === "elite" ? sprites.enemyElite : en.gunner ? sprites.enemyGunner : sprites.enemyNormal;
+    const glow = enemyGlowColor(en);
     drawWithGlow(ctx, sprite, en.x, en.y, glow, 0.3);
     if (en.maxHp > 1) {
       ctx.save();

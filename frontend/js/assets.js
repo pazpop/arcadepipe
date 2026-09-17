@@ -47,7 +47,7 @@ const PLAYER_PALETTE = {
   f: "#2ec4ff", // liseré d'armure, accent vif
 };
 
-// --- Ennemi normal : chasseur trapu rouge/rose, cockpit + tuyère ---
+// --- Ennemi normal : chasseur trapu vert (palier "facile"), cockpit + tuyère ---
 const ENEMY_NORMAL_ROWS = [
   "...............",
   "......aaa......",
@@ -60,9 +60,20 @@ const ENEMY_NORMAL_ROWS = [
   "...............",
 ];
 const ENEMY_NORMAL_PALETTE = {
-  a: "#7a1220",
-  b: "#c62a3f",
-  c: "#ff8fa3",
+  a: "#13712b",
+  b: "#27be4d",
+  c: "#99ffb3",
+  d: "#7de0ff",
+  e: "#ffb347",
+};
+
+// Même silhouette que l'ennemi normal (ENEMY_NORMAL_ROWS) — seule la palette
+// change (jaune au lieu de vert), pour signaler le palier "moyen" (variante
+// qui tire aussi, voir GUNNER_MIN_WAVE dans enemies.js) sans redessiner une forme.
+const ENEMY_GUNNER_PALETTE = {
+  a: "#716a13",
+  b: "#beb227",
+  c: "#fff799",
   d: "#7de0ff",
   e: "#ffb347",
 };
@@ -126,6 +137,7 @@ export function buildSprites() {
   cache = {
     player: pixelsToCanvas(PLAYER_ROWS, PLAYER_PALETTE, 1),
     enemyNormal: pixelsToCanvas(ENEMY_NORMAL_ROWS, ENEMY_NORMAL_PALETTE, 1),
+    enemyGunner: pixelsToCanvas(ENEMY_NORMAL_ROWS, ENEMY_GUNNER_PALETTE, 1),
     enemyElite: pixelsToCanvas(ENEMY_ELITE_ROWS, ENEMY_ELITE_PALETTE, 1),
     bossHull: pixelsToCanvas(BOSS_HULL_ROWS, BOSS_HULL_PALETTE, 2),
   };

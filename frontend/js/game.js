@@ -5,7 +5,7 @@ import { createStarfield, updateStarfield, drawStarfield, spawnDeathStarBackdrop
 import { createPlayer, resetPlayer, updatePlayer, hitPlayer, drawPlayer, applyPowerup, applyShield } from "./player.js";
 import { createProjectiles, updateProjectiles, drawProjectiles } from "./projectiles.js";
 import { createParticlePool, updateParticles, drawParticles, spawnExplosion, spawnFlashBurst, spawnSpark } from "./particles.js";
-import { createEnemyPool, spawnEnemyWave, updateEnemies, setEnemiesLeaving, damageEnemy, pointsFor, drawEnemies } from "./enemies.js";
+import { createEnemyPool, spawnEnemyWave, updateEnemies, setEnemiesLeaving, damageEnemy, pointsFor, drawEnemies, enemyGlowColor } from "./enemies.js";
 import { spawnBoss, updateBoss, hitBossWeakPoint, hitsBossHull, drawBoss } from "./boss.js";
 import { createPowerupPool, spawnPowerup, updatePowerups, drawPowerups } from "./powerups.js";
 import { circlesOverlap } from "./collisions.js";
@@ -393,7 +393,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
       if (!en.active) continue;
       if (circlesOverlap(en.x, en.y, en.radius, player.x, player.y, PLAYER.hitboxRadius)) {
         en.active = false;
-        spawnExplosion(particles, en.x, en.y, 8, PALETTE.enemyNormal);
+        spawnExplosion(particles, en.x, en.y, 8, enemyGlowColor(en));
         applyHitToPlayer();
       }
     }
@@ -432,7 +432,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     for (const en of enemies.items) {
       if (!en.active) continue;
       en.active = false;
-      spawnExplosion(particles, en.x, en.y, en.type === "elite" ? 20 : 12, PALETTE[`enemy${en.type === "elite" ? "Elite" : "Normal"}`]);
+      spawnExplosion(particles, en.x, en.y, en.type === "elite" ? 20 : 12, enemyGlowColor(en));
       g.score += pointsFor(en);
       g.waveKills += 1;
       g.enemiesKilled += 1;

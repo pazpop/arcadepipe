@@ -10,3 +10,9 @@ line-length = 110
 # pas besoin d'activer les dizaines de familles de règles plus strictes
 # (docstrings, complexité, etc.) pour un backend aussi petit.
 extend-select = ["I"]
+
+[tool.pytest.ini_options]
+# tests/ n'a pas de __init__.py : sans ça, pytest n'ajoute que tests/ à
+# sys.path (mode "prepend" par défaut), pas backend/ — "import database"
+# et "from main import ..." échoueraient sinon.
+pythonpath = ["."]

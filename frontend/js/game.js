@@ -1,6 +1,6 @@
 // Machine à états du jeu : menu, partie, pause, saisie du nom, classement,
 // crédits — et gestion des vagues/transitions pendant l'état "playing".
-import { RES_W, RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, STORAGE_KEYS } from "./config.js";
+import { RES_W, RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS } from "./config.js";
 import { createStarfield, updateStarfield, drawStarfield, spawnDeathStarBackdrop, triggerDeathStarLeave } from "./stars.js";
 import { createPlayer, resetPlayer, updatePlayer, hitPlayer, drawPlayer, applyPowerup, applyShield } from "./player.js";
 import { createProjectiles, updateProjectiles, drawProjectiles } from "./projectiles.js";
@@ -9,6 +9,7 @@ import { createEnemyPool, spawnEnemyWave, updateEnemies, setEnemiesLeaving, dama
 import { spawnBoss, updateBoss, hitBossWeakPoint, hitsBossHull, drawBoss } from "./boss.js";
 import { createPowerupPool, spawnPowerup, updatePowerups, drawPowerups } from "./powerups.js";
 import { updateGraze, novaMaxForWave } from "./graze.js";
+import { createBonusLevel, updateBonusLevel, drawBonusLevel, bonusLevelRewardFraction } from "./bonusLevel.js";
 import { circlesOverlap } from "./collisions.js";
 import { consumeJustPressed, clearJustPressed } from "./input.js";
 import { fetchTopScores, submitScore, recordGamePlayed, fetchGamesPlayedCount } from "./audio/leaderboard.js";
@@ -84,7 +85,7 @@ const HELP_INFO = {
     {
       heading: "TIR",
       detail:
-        'Maintiens le clic, ou coche "TIR AUTO" (bas à gauche). NOVA (ESPACE ou bouton bas droite) une fois la jauge pleine — frôle les tirs ennemis pour la charger.',
+        'Maintiens le clic, ou coche "TIR AUTO" (bas à gauche). NOVA (ESPACE ou bouton bas droite) une fois la jauge pleine — frôle les tirs ET les vaisseaux ennemis (pas le boss) pour la charger, prends des risques !',
     },
     { heading: "BOSS", detail: "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie" },
     { heading: "MUSIQUE", detail: "Playlist aléatoire, réglable en bas à gauche" },
@@ -130,6 +131,8 @@ export function createGame({ input, audio, music, nameInputEl }) {
     hitStop: 0,
     banner: null,
     boss: null,
+    bonusLevel: null, // niveau bonus en cours (voir bonusLevel.js) — null hors de ce niveau
+    bonusLevelLastWave: 0, // dernière vague pour laquelle le niveau bonus a été offert (évite un double déclenchement)
     clearingScreen: false,
     controlHint: 0,
     dying: false, // séquence cinématique (ralenti) entre la mort et l'écran GAME OVER
@@ -230,6 +233,8 @@ export function createGame({ input, audio, music, nameInputEl }) {
     g.warp = 1;
     g.novaStock = 0; // vide au début d'une partie — la première charge doit être gagnée (voir graze.js)
     g.novaProgress = 0;
+    g.bonusLevel = null;
+    g.bonusLevelLastWave = 0;
     g.mode = MODE.PLAYING;
     g.controlHint = 4;
     startWave(1);
@@ -456,7 +461,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
       spawnSpark(particles, eb.x, eb.y, 3);
     }
     if (killed > 0) {
-      audio.playExplosion();
+      audio.playNovaBlast();
       g.flash = Math.max(g.flash, 0.7);
       triggerShake(12);
       g.banner = { text: "NOVA !", timer: 1.2 };
@@ -470,6 +475,16 @@ export function createGame({ input, audio, music, nameInputEl }) {
     if (g.novaStock <= 0) return;
     g.novaStock -= 1;
     triggerNova();
+  }
+
+  // Récompense du niveau bonus (bonusLevel.js) : ajoutée à la jauge déjà en
+  // cours plutôt que de l'écraser (un run imparfait ne fait jamais reculer ce
+  // qui était déjà acquis par le graze), plafonnée au max courant.
+  function applyNovaReward(frac) {
+    const max = g.novaMax;
+    let units = Math.min(max, g.novaStock + g.novaProgress + frac * max);
+    g.novaStock = Math.floor(units);
+    g.novaProgress = units - g.novaStock;
   }
 
   // Coup absorbé par le bouclier : pas de vie perdue, réaction plus légère qu'un vrai impact.
@@ -519,6 +534,20 @@ export function createGame({ input, audio, music, nameInputEl }) {
     }
   }
 
+  // Niveau bonus : x verrouillé (rail plutôt que déplacement libre, le
+  // franchissement d'un anneau se juge au croisement de ce plan fixe — voir
+  // updateBonusLevel dans bonusLevel.js), y toujours piloté par la souris/le
+  // doigt comme en jeu normal.
+  function updateBonusLevelShip(dt) {
+    const targetX = RES_W * 0.18;
+    const dx = targetX - player.x;
+    const maxStep = PLAYER.speed * dt;
+    player.x = Math.abs(dx) <= maxStep ? targetX : player.x + Math.sign(dx) * maxStep;
+    const dy = input.y - player.y;
+    player.y = Math.abs(dy) <= maxStep ? input.y : player.y + Math.sign(dy) * maxStep;
+    player.y = Math.max(6, Math.min(RES_H - 6, player.y));
+  }
+
   // --- Update par état ---
 
   function updatePlayingMode(dt) {
@@ -542,20 +571,24 @@ export function createGame({ input, audio, music, nameInputEl }) {
         g.shake = 0;
         return;
       }
-    } else if (g.shipIntro) {
-      updateShipIntro(dt);
     } else {
-      updatePlayer(
-        player,
-        input,
-        projectiles,
-        dt,
-        (colorKey) => {
-          if (colorKey === "shotgun") audio.playShotgunBlast();
-          else audio.playPlayerShot(colorKey);
-        },
-        !g.clearingScreen
-      );
+      if (g.shipIntro) {
+        updateShipIntro(dt);
+      } else if (g.bonusLevel) {
+        updateBonusLevelShip(dt);
+      } else {
+        updatePlayer(
+          player,
+          input,
+          projectiles,
+          dt,
+          (colorKey) => {
+            if (colorKey === "shotgun") audio.playShotgunBlast();
+            else audio.playPlayerShot(colorKey);
+          },
+          !g.clearingScreen
+        );
+      }
 
       if (consumeJustPressed(input, "KeyP") || consumeJustPressed(input, "Escape")) {
         g.mode = MODE.PAUSED;
@@ -564,8 +597,10 @@ export function createGame({ input, audio, music, nameInputEl }) {
         return;
       }
       // "NovaTrigger" : jeton générique posé par le bouton tactile dédié
-      // (main.js), consommé exactement comme une touche clavier.
-      if (!g.clearingScreen && (consumeJustPressed(input, "Space") || consumeJustPressed(input, "NovaTrigger"))) {
+      // (main.js), consommé exactement comme une touche clavier. Inutile
+      // pendant le niveau bonus (aucun ennemi normal à l'écran) — évite de
+      // gâcher une charge sans effet.
+      if (!g.clearingScreen && !g.bonusLevel && (consumeJustPressed(input, "Space") || consumeJustPressed(input, "NovaTrigger"))) {
         tryUseNova();
       }
     }
@@ -582,10 +617,45 @@ export function createGame({ input, audio, music, nameInputEl }) {
         g.warpSoundPlayed = false;
         startWave(g.wave + 1);
       }
+    } else if (g.bonusLevel) {
+      g.clearingScreen = true; // pas de tir pendant le niveau bonus, comme pendant un saut spatial
+      g.warp = BONUS_LEVEL.warp;
+      updateBonusLevel(g.bonusLevel, dt, player, particles, audio);
+      if (g.bonusLevel.finished) {
+        const frac = bonusLevelRewardFraction(g.bonusLevel);
+        const passed = g.bonusLevel.passedCount;
+        applyNovaReward(frac);
+        g.bonusLevel = null;
+        g.warp = 1;
+        g.clearingScreen = false;
+        g.waveBreakDuration = DIFFICULTY.waveBreakDuration;
+        g.waveBreak = g.waveBreakDuration;
+        g.banner = {
+          text: `NIVEAU BONUS TERMINÉ : ${passed}/${BONUS_LEVEL.ringCount} ANNEAUX — NOVA +${Math.round(frac * 100)}%`,
+          timer: g.waveBreakDuration,
+        };
+        if (!g.warpSoundPlayed) {
+          audio.playWarpTransition();
+          g.warpSoundPlayed = true;
+        }
+      }
     } else {
       g.clearingScreen = false;
       const waveDone = g.boss ? g.boss.victory : g.waveKills >= g.waveKillTarget;
       if (waveDone) {
+        const nextWave = g.wave + 1;
+        const bonusCycle = nextWave % BONUS_LEVEL.everyNWaves === 0 ? nextWave / BONUS_LEVEL.everyNWaves : 0;
+        const bonusRequiredScore =
+          bonusCycle === 1 ? BONUS_LEVEL.firstScoreThreshold : BONUS_LEVEL.scoreThreshold * bonusCycle;
+        if (bonusCycle > 0 && nextWave !== g.bonusLevelLastWave && g.score >= bonusRequiredScore) {
+          g.bonusLevelLastWave = nextWave;
+          g.bonusLevel = createBonusLevel();
+          g.banner = { text: "NIVEAU BONUS ! TRAVERSE LES ANNEAUX", timer: 2.4 };
+          setEnemiesLeaving(enemies);
+          for (const b of projectiles.enemy.items) b.active = false;
+          for (const pu of powerups.items) pu.active = false;
+          return;
+        }
         // Plus long après un boss (bossWaveBreakDuration) — le temps que le
         // décor et les derniers ennemis en fuite quittent l'écran.
         g.waveBreakDuration = g.boss ? DIFFICULTY.bossWaveBreakDuration : DIFFICULTY.waveBreakDuration;
@@ -634,7 +704,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
 
     if (g.boss) {
       updateBoss(g.boss, dt, projectiles, player, particles);
-    } else if (g.waveBreak <= 0) {
+    } else if (g.waveBreak <= 0 && !g.bonusLevel) {
       g.spawnTimer -= dt;
       if (g.spawnTimer <= 0) {
         spawnEnemyWave(enemies, g.wave, eliteChance());
@@ -821,6 +891,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     if (g.mode === MODE.PLAYING || g.mode === MODE.PAUSED || g.mode === MODE.GAME_OVER) {
       drawEnemies(ctx, enemies);
       if (g.boss) drawBoss(ctx, g.boss);
+      if (g.bonusLevel) drawBonusLevel(ctx, g.bonusLevel);
       drawPowerups(ctx, powerups);
       drawParticles(ctx, particles);
       drawProjectiles(ctx, projectiles);

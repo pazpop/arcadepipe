@@ -1,6 +1,6 @@
 // Tout le texte/UI du jeu — le petit canvas interne + `image-rendering:
 // pixelated` suffit à un rendu "façon bitmap" sans dessiner une police pixel par pixel.
-import { RES_W, RES_H, PALETTE, POWERUP, NOVA, VERSION } from "./config.js";
+import { RES_W, RES_H, PALETTE, POWERUP, NOVA, BONUS_LEVEL, VERSION } from "./config.js";
 import { drawPowerupIcon } from "./powerups.js";
 import { bossHealthFraction } from "./boss.js";
 import { buildSprites, drawWithGlow } from "./assets.js";
@@ -71,7 +71,13 @@ export function drawGameHud(ctx, s, lives) {
   // Compteur de kills/objectif à côté de la vague — masqué en vague de boss
   // (victoire = coque, pas un total de kills). Même ligne que "VAGUE" pour
   // ne pas empiéter sur l'indicateur de buff/bouclier.
-  if (s.boss) {
+  if (s.bonusLevel) {
+    text(ctx, `NIVEAU BONUS — ANNEAUX ${s.bonusLevel.passedCount}/${BONUS_LEVEL.ringCount}`, RES_W / 2, 10, {
+      size: 8,
+      align: "center",
+      color: NOVA.color,
+    });
+  } else if (s.boss) {
     text(ctx, `VAGUE ${s.wave}`, RES_W / 2, 10, { size: 8, align: "center" });
   } else {
     const kills = String(Math.min(s.waveKills, s.waveKillTarget)).padStart(2, "0");

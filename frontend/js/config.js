@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.45";
+export const VERSION = "2.46";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -199,4 +199,36 @@ export const NOVA = {
   // DIFFICULTY.bossWaveEvery (comme isFirstBoss dans boss.js) plutôt qu'un
   // numéro de vague en dur.
   extraStockFromBossCount: 2,
+};
+
+// Niveau bonus (bonusLevel.js) : offert tous les `everyNWaves` (avant la
+// vague 10, 20, 30...) si le score atteint le seuil du cycle en cours à la
+// fin de la vague précédente — traverser des anneaux au lieu de combattre,
+// récompense proportionnelle au nombre d'anneaux réussis (voir
+// bonusLevelRewardFraction), jamais de vie en jeu. Le seuil grimpe à chaque
+// cycle (scoreThreshold * numéro du cycle, sauf le 1er — voir
+// firstScoreThreshold) : sans ça, une fois dépassé une première fois il
+// resterait trivial à re-déclencher pour le reste de la partie.
+export const BONUS_LEVEL = {
+  everyNWaves: 10,
+  // Seuil du tout premier niveau bonus (vague 10), volontairement bas et
+  // indépendant de la formule des cycles suivants — sert de "vitrine" que la
+  // plupart des joueurs peuvent atteindre, pas juste les runs déjà excellentes.
+  firstScoreThreshold: 1500,
+  scoreThreshold: 4000,
+  ringCount: 10,
+  ringSpeed: 110,
+  ringSpawnInterval: 1.3,
+  ringOuterRadius: 22,
+  ringInnerRadius: 13,
+  ringInnerRadiusMin: 7,
+  // Rétrécit légèrement à chaque anneau (jusqu'au plancher ci-dessus) — une
+  // petite montée en difficulté dans le niveau bonus lui-même, pas juste une
+  // suite de portes identiques.
+  ringTighten: 0.6,
+  // Silhouette d'arrière-plan très lente, désaturée comme tout le reste du
+  // décor (voir Charte graphique dans GAMEPLAY.md) — un clin d'œil, pas un
+  // élément de jeu.
+  whaleSpeed: 14,
+  warp: 3, // vitesse du défilement de fond pendant le niveau (effet "tunnel"), modeste comparé au x10 du saut spatial entre vagues
 };

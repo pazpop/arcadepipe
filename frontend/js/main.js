@@ -202,6 +202,22 @@ if (novaBtn) {
   });
 }
 
+// --- Konami code (easter egg, aucun effet de jeu — juste un son) ---
+const KONAMI_SEQUENCE = [
+  "ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown",
+  "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight",
+  "KeyB", "KeyA",
+];
+let konamiProgress = 0;
+window.addEventListener("keydown", (e) => {
+  konamiProgress = e.code === KONAMI_SEQUENCE[konamiProgress] ? konamiProgress + 1 : e.code === KONAMI_SEQUENCE[0] ? 1 : 0;
+  if (konamiProgress === KONAMI_SEQUENCE.length) {
+    konamiProgress = 0;
+    audio.ensure();
+    audio.playKonami();
+  }
+});
+
 // --- Mute (M) et bascule CRT (C) ---
 window.addEventListener("keydown", (e) => {
   if (e.code === "KeyM") {

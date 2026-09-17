@@ -157,6 +157,47 @@ export class AudioEngine {
     osc.stop(now + duration + 0.05);
   }
 
+  // NOVA : explosion nettement plus "large" qu'un impact normal
+  // (playExplosion) — bruit filtré plus long + un sub grave en dessous pour
+  // le poids. L'écran tremble déjà fort (triggerShake dans game.js), le son
+  // doit suivre sinon l'effet paraît muet malgré l'écran qui vibre.
+  playNovaBlast() {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const duration = 0.6;
+
+    const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(500, now);
+    filter.frequency.exponentialRampToValueAtTime(20, now + duration);
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0, now);
+    noiseGain.gain.linearRampToValueAtTime(0.32, now + 0.008);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.master);
+    noise.start(now);
+    noise.stop(now + duration);
+
+    // Sub grave : c'est lui qui donne le "poids" qu'un simple bruit filtré n'a pas.
+    const sub = this.ctx.createOscillator();
+    sub.type = "sine";
+    sub.frequency.setValueAtTime(90, now);
+    sub.frequency.exponentialRampToValueAtTime(28, now + duration * 0.8);
+    const subGain = this._envGain(duration * 0.85, 0.3, 0.005, duration * 0.5);
+    sub.connect(subGain);
+    subGain.connect(this.master);
+    sub.start(now);
+    sub.stop(now + duration);
+  }
+
   playBossHit() {
     this._tone({ type: "sawtooth", startFreq: 300, endFreq: 60, duration: 0.2, gain: 0.15 });
   }
@@ -213,6 +254,38 @@ export class AudioEngine {
   playGraze(tier = 1) {
     const freq = 900 + Math.min(tier, 8) * 90;
     this._tone({ type: "sine", startFreq: freq, endFreq: freq * 1.15, duration: 0.045, gain: 0.05 });
+  }
+
+  // Anneau du niveau bonus (bonusLevel.js) réussi : note franche, un peu plus
+  // riche que le "tic" du graze — un vrai petit succès à chaque passage.
+  playRingPass(tier = 1) {
+    const freq = 700 + Math.min(tier, 10) * 40;
+    this._tone({ type: "triangle", startFreq: freq, endFreq: freq * 1.3, duration: 0.09, gain: 0.09 });
+  }
+
+  // Anneau raté : sourd et bref, jamais punitif (aucune vie ne peut être
+  // perdue dans le niveau bonus) — juste un accusé de réception discret.
+  playRingMiss() {
+    this._tone({ type: "sine", startFreq: 220, endFreq: 140, duration: 0.08, gain: 0.05 });
+  }
+
+  // Konami code (↑↑↓↓←→←→BA, voir main.js) : petit arpège montant façon
+  // jingle "code accepté" — plus festif que playPowerup, réservé à ce secret.
+  playKonami() {
+    if (!this.ctx) return;
+    const now = this.ctx.currentTime;
+    const notes = [523, 659, 784, 1047, 1319]; // do-mi-sol-do-mi, octave au-dessus
+    notes.forEach((freq, i) => {
+      const start = now + i * 0.08;
+      const osc = this.ctx.createOscillator();
+      const g = this._envGain(0.16, 0.14, 0.005, 0.1);
+      osc.type = "square";
+      osc.frequency.setValueAtTime(freq, start);
+      osc.connect(g);
+      g.connect(this.master);
+      osc.start(start);
+      osc.stop(start + 0.18);
+    });
   }
 
   // Ramassage de bonus : deux notes montantes, timbre franc et positif, distinct des tirs/impacts.

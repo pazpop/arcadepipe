@@ -54,8 +54,8 @@ Comment les couleurs et les formes sont décidées et générées.
 
 - [x] Plusieurs types d'ennemis avec des statistiques différentes (résistance, vitesse, valeur en points, capacité à tirer ou non).
 - [x] Un type d'ennemi plus rare et plus résistant, qui devient de plus en plus fréquent à mesure que la partie avance.
-- [x] À partir d'un certain stade de la partie, une partie des ennemis "normaux" se met aussi à tirer (avant ce stade, seul le type rare tirait).
-- [x] Un type d'ennemi qui ne tire jamais mais fonce directement sur le joueur (poursuite avec vitesse de rotation plafonnée — insistant mais esquivable en bougeant), plutôt distinctif visuellement (couleur/silhouette/orientation selon sa trajectoire réelle) pour bien signaler que c'est une menace différente des autres.
+- [x] À partir d'un certain stade de la partie, une partie des ennemis "normaux" se met aussi à tirer (avant ce stade, seul le type rare tirait) — cette variante encaisse aussi plus de coups que le normal (autant que le type rare), pour justifier qu'elle tire : elle affiche donc les mêmes petites pastilles de PV au-dessus du sprite.
+- [x] Un type d'ennemi qui ne tire jamais mais fonce directement sur le joueur (poursuite avec vitesse de rotation plafonnée — insistant mais esquivable en bougeant), plutôt distinctif visuellement (couleur/silhouette/orientation selon sa trajectoire réelle) pour bien signaler que c'est une menace différente des autres. Plafonné en nombre simultané à l'écran — plusieurs à la fois dans une vague déjà chargée devenait vraiment dur à esquiver, vu que c'est le seul type qui poursuit activement plutôt que suivre une trajectoire fixe.
 - [x] Les ennemis n'apparaissent que dans une zone définie de l'écran (pas n'importe où), ce qui garde l'écran lisible même sur un petit écran de téléphone — une fois apparus, ils peuvent ensuite se déplacer librement.
 - [x] Même système de stock d'objets réutilisables que pour les projectiles.
 
@@ -75,6 +75,7 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] Un combat de boss revient à intervalle régulier (une vague sur un certain nombre).
 - [x] Transition animée entre deux vagues (effet de "saut" visuel) plutôt qu'un changement brutal.
 - [x] Bonus de score si une vague entière se termine sans avoir perdu de vie.
+- [x] **Niveau bonus** offert tous les N vagues (avant chaque multiple, ex. vague 10, 20, 30) si le score atteint un seuil qui grimpe à chaque cycle (le premier reste volontairement facile à atteindre, une "vitrine" plutôt qu'un défi réservé aux runs déjà excellentes) : traverser une série d'anneaux (vaisseau piloté normalement, x verrouillé) plutôt que combattre, aucune vie ne peut être perdue. Récompense proportionnelle au nombre d'anneaux réussis, jamais tout-ou-rien — remplit la jauge NOVA. Un easter egg discret (silhouette désaturée en arrière-plan, jamais annoncée) traverse le fond une fois par niveau.
 
 ## Effets ("game feel" — ce qui rend les impacts satisfaisants)
 
@@ -99,6 +100,8 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] Musique et bruitages partagent le même circuit audio interne plutôt que d'en avoir chacun un séparé (nécessaire pour que le son fonctionne correctement sur certains navigateurs mobiles).
 - [x] Réglages de volume séparés pour la musique et les bruitages, plus une coupure du son complète — tout est mémorisé d'une visite à l'autre.
 - [x] Changement de musique en fondu (le son baisse puis remonte) plutôt qu'une coupure nette, pour éviter un clic audible désagréable.
+- [x] L'intensité d'un bruitage suit celle de son effet visuel — le NOVA (écran qui tremble fort, tout l'écran nettoyé d'un coup) a son propre son "large" (bruit filtré + sub grave), pas le même son qu'une explosion d'ennemi normal, sinon l'impact paraît muet malgré l'écran qui vibre.
+- [x] Un easter egg pur son (aucun effet de jeu) caché derrière une séquence de touches connue des joueurs de jeux vidéo — jamais indiqué en jeu, à découvrir.
 
 ## Interface & menus
 

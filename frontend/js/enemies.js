@@ -46,6 +46,10 @@ export function createEnemyPool() {
 
 function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
   const stats = TYPE_STATS[type];
+  // Le gunner reste de type "normal" (même silhouette, juste la palette qui
+  // change — voir ENEMY_GUNNER_PALETTE dans assets.js) mais encaisse plus
+  // pour justifier qu'il tire, façon élite (voir GUNNER_HP_BONUS plus bas).
+  const hp = gunner ? stats.hp + GUNNER_HP_BONUS : stats.hp;
   const en = acquireSlot(pool);
   if (!en) return null;
   en.active = true;
@@ -55,8 +59,8 @@ function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
   en.vx = vx;
   en.vy = vy;
   en.wobbleSeed = Math.random() * Math.PI * 2;
-  en.hp = stats.hp;
-  en.maxHp = stats.hp;
+  en.hp = hp;
+  en.maxHp = hp;
   en.radius = stats.radius;
   en.fireTimer = 0.6 + Math.random() * 0.8;
   en.elapsed = 0;
@@ -70,11 +74,19 @@ function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
 // aussi (plus lent/moins fréquent qu'une élite).
 const GUNNER_MIN_WAVE = 5;
 const GUNNER_CHANCE = 0.22;
+// +2 PV par rapport à un normal (1 -> 3, autant qu'une élite) — encaisse
+// plusieurs tirs comme elle, affiche donc les mêmes pastilles de PV
+// au-dessus du sprite (voir drawEnemies, maxHp > 1).
+const GUNNER_HP_BONUS = 2;
 
 // Dès la vague 4, une petite chance de tomber sur un kamikaze plutôt qu'un
 // ennemi normal — exclusif avec élite/gunner (voir spawnEnemyWave).
 const KAMIKAZE_MIN_WAVE = 4;
 const KAMIKAZE_CHANCE = 0.12;
+// Plafond de kamikazes actifs simultanément — plusieurs à la fois dans une
+// vague déjà chargée en ennemis/tirs devenait vraiment dur à esquiver, vu
+// qu'ils poursuivent activement plutôt que suivre une trajectoire fixe.
+const KAMIKAZE_MAX_ACTIVE = 2;
 
 // Pas de vraie physique de collision — juste un espacement à la génération
 // pour éviter qu'ils apparaissent superposés (tous dans le même tiers d'écran).
@@ -91,11 +103,23 @@ function tooCloseToActive(pool, x, y, minGap) {
   return false;
 }
 
+function countActiveKamikaze(pool) {
+  let count = 0;
+  for (const en of pool.items) {
+    if (en.active && en.type === "kamikaze" && !en.leaving) count++;
+  }
+  return count;
+}
+
 // Entrée par la droite par défaut, ou par le haut/bas (dans le tiers droit
 // de l'écran) pour varier les angles d'approche.
 export function spawnEnemyWave(pool, waveNumber, eliteChance) {
   const isElite = waveNumber >= 3 && Math.random() < eliteChance;
-  const isKamikaze = !isElite && waveNumber >= KAMIKAZE_MIN_WAVE && Math.random() < KAMIKAZE_CHANCE;
+  const isKamikaze =
+    !isElite &&
+    waveNumber >= KAMIKAZE_MIN_WAVE &&
+    Math.random() < KAMIKAZE_CHANCE &&
+    countActiveKamikaze(pool) < KAMIKAZE_MAX_ACTIVE;
   const type = isElite ? "elite" : isKamikaze ? "kamikaze" : "normal";
   const isGunner = !isElite && !isKamikaze && waveNumber >= GUNNER_MIN_WAVE && Math.random() < GUNNER_CHANCE;
   const stats = TYPE_STATS[type];

@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.43";
+export const VERSION = "2.44";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -192,7 +192,7 @@ export const GRAZE = {
 // NOVA : ressource stockable rechargée par le graze (au lieu d'un drop à
 // effet immédiat) — voir triggerNova/tryUseNova dans game.js.
 export const NOVA = {
-  color: "#ffffff",
+  color: PALETTE.gold,
   baseMaxStock: 1,
   // 2e charge disponible dès la vague du 2e combat de boss — dérivé de
   // DIFFICULTY.bossWaveEvery (comme isFirstBoss dans boss.js) plutôt qu'un

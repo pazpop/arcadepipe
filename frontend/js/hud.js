@@ -87,18 +87,17 @@ export function drawGameHud(ctx, s, lives) {
 }
 
 // Jauge NOVA : une pastille par charge dispo (pleine/vide) + une fine barre
-// de progression vers la prochaine sous la dernière pastille vide — sous les
-// vies (RES_H y=10), aligné à droite comme elles, pour rester dans le même
-// coin de l'œil plutôt que d'ajouter un endroit de plus à surveiller.
+// de progression vers la prochaine sous la dernière pastille vide — en haut
+// à gauche, sous le score, symétrique des vies (haut à droite).
 export function drawNovaGauge(ctx, stock, max, progress) {
   if (max <= 0) return;
   const color = NOVA.color;
   const y = 20;
   let pips = "";
   for (let i = 0; i < max; i++) pips += i < stock ? "●" : "○";
-  text(ctx, `NOVA ${pips}`, RES_W - 8, y, {
+  text(ctx, `NOVA ${pips}`, 8, y, {
     size: 7,
-    align: "right",
+    align: "left",
     color,
     glow: stock > 0 ? color : null,
     alpha: stock > 0 ? 1 : 0.6,
@@ -106,7 +105,7 @@ export function drawNovaGauge(ctx, stock, max, progress) {
   if (stock < max) {
     const barW = 36;
     const barH = 2;
-    const barX = RES_W - 8 - barW;
+    const barX = 8;
     const barY = y + 6;
     ctx.save();
     ctx.fillStyle = "rgba(255,255,255,0.15)";
@@ -120,7 +119,8 @@ export function drawNovaGauge(ctx, stock, max, progress) {
 // Barre de vie du boss : pleine largeur, fixe tout en bas de l'écran plutôt
 // qu'accrochée à sa position (petite, se déplaçait avec lui) — convention
 // classique de combat de boss, plus facile à surveiller du coin de l'œil
-// pendant qu'on esquive.
+// pendant qu'on esquive. Rouge — distinct du jaune/or de sa coque et de ses
+// points faibles (PALETTE.boss/bossWeakOn), jamais réutilisé ailleurs.
 export function drawBossHealthBar(ctx, boss) {
   if (!boss || boss.victory) return;
   const frac = bossHealthFraction(boss);
@@ -131,8 +131,8 @@ export function drawBossHealthBar(ctx, boss) {
   ctx.save();
   ctx.fillStyle = "#2a0a10";
   ctx.fillRect(margin, barY, barW, h);
-  ctx.fillStyle = PALETTE.bossWeakOn;
-  ctx.shadowColor = PALETTE.bossWeakOn;
+  ctx.fillStyle = PALETTE.danger;
+  ctx.shadowColor = PALETTE.danger;
   ctx.shadowBlur = 4;
   ctx.fillRect(margin, barY, barW * frac, h);
   ctx.restore();

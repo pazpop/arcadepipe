@@ -103,7 +103,7 @@ Ce repo s'arrête là — il ne connaît ni VPS ni serveur cible. L'instance `ar
 ```
 arcadepipe/
 ├── backend/    # FastAPI + SQLite + Dockerfile — voir backend/README.md
-├── frontend/   # Dockerfile (Caddy = serveur de fichiers statiques) — voir frontend/README.md
+├── frontend/   # Dockerfile (Caddy = serveur de fichiers statiques) — voir frontend/README.md, et frontend/GAMEPLAY.md pour le détail du gameplay implémenté
 │   ├── index.html, css/style.css
 │   ├── js/       # config, assets (sprites générés), moteur de jeu (modules ES6)
 │   │   └── audio/  # sfx.js (synthèse), music.js + leaderboard.js (intégrations)

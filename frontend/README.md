@@ -2,6 +2,8 @@
 
 JS vanilla (modules ES6) + Canvas 2D — shoot'em up à défilement horizontal, pixel art généré par code.
 
+Ce que le jeu implémente, système par système : [`GAMEPLAY.md`](GAMEPLAY.md).
+
 ## Lancer en local
 
 ```bash

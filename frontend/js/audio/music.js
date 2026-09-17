@@ -14,7 +14,7 @@ export class MusicPlayer {
     this.player = new ChiptuneJsPlayer({
       repeatCount: 0,
       stereoSeparation: 100,
-      interpolationFilter: 4,
+      interpolationFilter: 4, // cubique (openmpt : 1=aucun, 2=linéaire, 4=cubique, 8=sinc) — bon compromis qualité/coût
       context: audioContext,
     });
     // Avec un contexte externe, chiptune3 ne connecte pas sa sortie lui-même

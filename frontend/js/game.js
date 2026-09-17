@@ -149,6 +149,8 @@ export function createGame({ input, audio, music, nameInputEl }) {
     g.hitStop = Math.max(g.hitStop, REDUCED_MOTION ? 0 : amount);
   }
 
+  // Probabilité qu'un ennemi normal soit une élite à la place — monte avec
+  // la vague, plafonnée à 25% pour ne jamais dominer le flux d'ennemis normaux.
   function eliteChance() {
     return Math.min(0.25, 0.06 + g.wave * 0.015);
   }
@@ -348,12 +350,12 @@ export function createGame({ input, audio, music, nameInputEl }) {
         if (res) {
           b.active = false;
           if (res === true) {
-            g.score += 300;
+            g.score += 300; // vaut un ennemi élite (TYPE_STATS.elite.points dans enemies.js)
             triggerShake(6);
             triggerHitStop(0.06);
             audio.playExplosion();
             if (g.boss.victory) {
-              g.score += 1000;
+              g.score += 1000; // bonus de victoire, nettement au-dessus d'un point faible pour marquer l'accomplissement
               player.lives = Math.min(PLAYER.maxLives, player.lives + 1); // récompense de victoire, plafonnée
               g.flash = Math.max(g.flash, 0.6);
               triggerShake(14);
@@ -399,6 +401,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     // Ramassage des bonus
     for (const pu of powerups.items) {
       if (!pu.active) continue;
+      // +3 : marge généreuse, ramasser un bonus doit être plus tolérant qu'encaisser un tir.
       if (circlesOverlap(pu.x, pu.y, POWERUP.radius, player.x, player.y, PLAYER.hitboxRadius + 3)) {
         pu.active = false;
         audio.playPowerup();

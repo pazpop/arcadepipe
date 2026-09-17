@@ -157,7 +157,7 @@ export function hitBossWeakPoint(boss, px, py, radius, particlePool, damage = 1)
 function hullHalfHeightAt(dx) {
   const localX = 14.5 + dx / 2; // repère de la grille (0..29), avant mise à l'échelle x2
   const t = Math.max(0, Math.min(1, localX / 29));
-  return 2 * (1 + t * 6.6);
+  return 2 * (1 + t * 6.6); // demi-hauteur : 1 à la colonne 0, 7.6 à la colonne 29 (grille), ×2 pour l'échelle du sprite
 }
 
 export function hitsBossHull(boss, px, py, radius) {

@@ -2,10 +2,7 @@
 // galaxies occasionnelles.
 import { RES_W, RES_H, PALETTE } from "./config.js";
 
-// La couche rapide/opaque (alpha 0.9) a été retirée : trop lumineuse et trop
-// proche, elle gênait la lecture des tirs/ennemis en plein combat — on garde
-// seulement les couches plus discrètes qui donnent l'impression de fond
-// lointain.
+// Couche rapide/opaque (alpha 0.9) retirée : gênait la lecture des tirs en combat.
 const LAYERS = [
   { count: 40, speedMin: 8, speedMax: 20, size: 1, alpha: 0.35 },
   { count: 35, speedMin: 25, speedMax: 55, size: 1, alpha: 0.55 },
@@ -19,19 +16,13 @@ function makeStar(layer, randomX) {
   };
 }
 
-// Planètes/galaxies très occasionnelles, tout au fond — une seule à la fois,
-// longue pause entre deux apparitions ("parfois"), fondu en entrée/sortie
-// d'écran plutôt qu'un pop-in/pop-out brutal comme les étoiles.
-//
-// La teinte est volontairement restreinte au vert (90-150°) — aucune autre
-// couleur du jeu (vaisseau, tirs, ennemis, bonus...) n'utilise cette plage,
-// donc un corps céleste ne peut jamais se confondre avec un élément de jeu.
+// Planète/galaxie occasionnelle en fond, une à la fois, fondu en entrée/sortie.
+// Teinte restreinte au vert (90-150°) : seule plage inutilisée ailleurs dans
+// le jeu, pour ne jamais se confondre avec un élément de gameplay.
 const CELESTIAL_HUE_MIN = 90;
 const CELESTIAL_HUE_MAX = 150;
 
-// Une chance sur deux plutôt qu'un tiers — avec la longue pause entre deux
-// apparitions (nextCelestialDelay), une galaxie trop rare pouvait ne
-// carrément jamais apparaître sur une partie normale.
+// 1 chance sur 2 (pas 1/3) : sinon trop rare pour apparaître sur une partie normale.
 function makeCelestial() {
   const isGalaxy = Math.random() < 0.5;
   const radius = isGalaxy ? 26 + Math.random() * 18 : 12 + Math.random() * 22;
@@ -40,9 +31,7 @@ function makeCelestial() {
     x: RES_W + radius + 20,
     y: radius + Math.random() * (RES_H - radius * 2),
     radius,
-    // Plus lent qu'avant (3-8) — donne une vraie impression de fond
-    // lointain plutôt qu'un objet qui défile presque comme les étoiles.
-    speed: 1.5 + Math.random() * 3,
+    speed: 1.5 + Math.random() * 3, // lent (vs étoiles) pour rester "loin" visuellement
     hue: CELESTIAL_HUE_MIN + Math.floor(Math.random() * (CELESTIAL_HUE_MAX - CELESTIAL_HUE_MIN)),
     rotation: Math.random() * Math.PI * 2,
   };
@@ -52,14 +41,9 @@ function nextCelestialDelay() {
   return 8 + Math.random() * 12;
 }
 
-// Décor de boss façon "Étoile Noire" : apparaît fixe en fond pendant tout
-// le combat (voir spawnDeathStarBackdrop, appelé depuis startWave dans
-// game.js), puis s'échappe vers la gauche au même rythme que le fond
-// étoilé une fois le boss vaincu (triggerDeathStarLeave) — à une vitesse de
-// base bien supérieure à celle des étoiles/corps célestes ambiants, pour
-// être certain d'avoir quitté l'écran avant l'arrivée des ennemis normaux
-// de la vague suivante (voir aussi DIFFICULTY.bossWaveBreakDuration, un peu
-// plus long qu'un saut spatial normal pour lui laisser le temps).
+// Décor de boss "Étoile Noire" : fixe pendant le combat, s'échappe vers la
+// gauche à la victoire (triggerDeathStarLeave) — vitesse élevée pour avoir
+// quitté l'écran avant la vague suivante (voir DIFFICULTY.bossWaveBreakDuration).
 const DEATH_STAR_LEAVE_SPEED = 70;
 
 export function spawnDeathStarBackdrop(field) {
@@ -68,12 +52,8 @@ export function spawnDeathStarBackdrop(field) {
     y: RES_H * 0.38,
     radius: 40 + Math.random() * 14,
     leaving: false,
-    // Variable à chaque boss (teinte très désaturée — reste "métallique",
-    // ne rivalise jamais avec les couleurs vives du jeu), tranchée pas
-    // toujours présente ni parfaitement horizontale, cratère positionné
-    // différemment : à la fois pour donner l'impression d'une structure
-    // différente à chaque combat, et pour s'écarter davantage d'un design
-    // trop reconnaissable.
+    // Varie à chaque boss (teinte désaturée, tranchée optionnelle, cratère
+    // déplacé) pour ne pas être identique à chaque combat.
     hue: Math.random() * 360,
     hasTrench: Math.random() < 0.6,
     trenchTilt: (Math.random() - 0.5) * 0.3,
@@ -116,14 +96,12 @@ export function updateStarfield(field, dt, warp) {
       field.deathStar.x -= DEATH_STAR_LEAVE_SPEED * warp * dt;
       if (field.deathStar.x < -field.deathStar.radius * 2) field.deathStar = null;
     }
-    // Sinon : reste parfaitement immobile pendant tout le combat — un
-    // décor qui dériverait pendant qu'on affronte le boss distrairait plus
-    // qu'il n'ajouterait d'ambiance.
+    // Sinon : immobile pendant le combat (dériver distrairait plus qu'autre chose).
   }
 }
 
-// Fondu doux basé sur la distance aux deux bords d'écran plutôt que sur un
-// minuteur — reste cohérent quelle que soit la vitesse du corps ou du warp.
+// Fondu basé sur la distance aux bords (pas un minuteur) : reste cohérent
+// quel que soit le warp.
 function celestialAlpha(c) {
   const fadeDist = c.radius * 2.5;
   const fadeIn = Math.min(1, (RES_W + c.radius - c.x) / fadeDist);
@@ -136,7 +114,7 @@ function drawCelestial(ctx, c) {
   if (alpha <= 0.01) return;
   ctx.save();
   if (c.type === "planet") {
-    ctx.globalAlpha = alpha * 0.5; // plus discret qu'avant (0.65) — renforce l'impression d'éloignement
+    ctx.globalAlpha = alpha * 0.5; // discret, pour rester "loin"
     const grad = ctx.createRadialGradient(
       c.x - c.radius * 0.3, c.y - c.radius * 0.3, c.radius * 0.1,
       c.x, c.y, c.radius
@@ -153,12 +131,12 @@ function drawCelestial(ctx, c) {
     ctx.ellipse(c.x, c.y, c.radius * 1.5, c.radius * 0.35, -0.4, 0, Math.PI * 2);
     ctx.stroke();
   } else {
-    ctx.globalAlpha = alpha * 0.35; // plus discret qu'avant (0.45) — renforce l'impression d'éloignement
+    ctx.globalAlpha = alpha * 0.35; // discret, pour rester "loin"
     ctx.translate(c.x, c.y);
     ctx.rotate(c.rotation);
     ctx.scale(1, 0.35);
-    // Dégradé défini dans l'espace local (après transform) pour rester centré
-    // sur l'arc malgré la rotation/mise à l'échelle qui suit.
+    // Dégradé en espace local (après transform) pour rester centré malgré
+    // rotation/scale.
     const grad = ctx.createRadialGradient(0, 0, 0, 0, 0, c.radius);
     grad.addColorStop(0, `hsla(${c.hue}, 80%, 85%, 0.9)`);
     grad.addColorStop(0.4, `hsla(${c.hue}, 70%, 60%, 0.5)`);
@@ -171,22 +149,17 @@ function drawCelestial(ctx, c) {
   ctx.restore();
 }
 
-// Silhouette simple (sphère + tranchée équatoriale + antenne/parabole) à la
-// détente canvas plutôt qu'un sprite pixel-art — cohérent avec la façon
-// dont planètes/galaxies sont déjà dessinées dans ce fichier. Teintes
-// grises/sombres, volontairement hors de la plage verte des corps célestes
-// ambiants (voir CELESTIAL_HUE_MIN/MAX) et de toute autre couleur du jeu.
+// Silhouette dessinée au canvas (pas un sprite), cohérent avec planètes/
+// galaxies ci-dessus. Teintes grises, hors de la plage verte des corps
+// célestes (CELESTIAL_HUE_MIN/MAX).
 function drawDeathStar(ctx, ds) {
   const r = ds.radius;
-  // Fondu seulement en sortie d'écran (bord gauche) pendant la fuite — pas
-  // de fondu d'entrée, il apparaît déjà "installé" au début du combat.
+  // Fondu seulement en sortie (fuite) : apparaît déjà "installé" au début du combat.
   const alpha = ds.leaving ? Math.max(0, Math.min(1, (ds.x + r * 1.5) / (r * 1.5))) : 1;
   if (alpha <= 0.01) return;
   ctx.save();
   ctx.globalAlpha = alpha * 0.9;
-  // Teinte très désaturée (S=12%) — reste "métallique" comme avant, jamais
-  // assez vive pour rivaliser avec une couleur de gameplay, mais différente
-  // à chaque boss (voir ds.hue dans spawnDeathStarBackdrop).
+  // Désaturée (S=12%) pour rester "métallique", teinte différente à chaque boss (ds.hue).
   const grad = ctx.createRadialGradient(ds.x - r * 0.3, ds.y - r * 0.3, r * 0.15, ds.x, ds.y, r);
   grad.addColorStop(0, `hsl(${ds.hue}, 12%, 42%)`);
   grad.addColorStop(0.6, `hsl(${ds.hue}, 12%, 23%)`);
@@ -195,8 +168,7 @@ function drawDeathStar(ctx, ds) {
   ctx.beginPath();
   ctx.arc(ds.x, ds.y, r, 0, Math.PI * 2);
   ctx.fill();
-  // Tranchée équatoriale — pas systématique, légèrement inclinée plutôt que
-  // parfaitement horizontale (voir ds.hasTrench/trenchTilt).
+  // Tranchée équatoriale, optionnelle et légèrement inclinée (ds.hasTrench/trenchTilt).
   if (ds.hasTrench) {
     ctx.strokeStyle = `hsla(${ds.hue}, 10%, 4%, 0.75)`;
     ctx.lineWidth = Math.max(1, r * 0.045);
@@ -205,8 +177,7 @@ function drawDeathStar(ctx, ds) {
     ctx.lineTo(ds.x + r, ds.y + r * (0.12 + ds.trenchTilt));
     ctx.stroke();
   }
-  // Point faible/cratère — position variable autour du centre plutôt que
-  // toujours en haut à gauche (voir ds.craterAngle/craterDist).
+  // Cratère, position variable autour du centre (ds.craterAngle/craterDist).
   const cx = ds.x + Math.cos(ds.craterAngle) * r * ds.craterDist;
   const cy = ds.y + Math.sin(ds.craterAngle) * r * ds.craterDist;
   ctx.fillStyle = `hsla(${ds.hue}, 10%, 6%, 0.85)`;

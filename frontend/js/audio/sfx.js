@@ -1,16 +1,12 @@
 // Synthèse audio 100% Web Audio API — aucun fichier son. Chaque effet crée
-// ses propres oscillateurs/noeuds à la volée puis les jette (pas de buffers
-// préchargés, pas de mémoire audio retenue) ; des rampes de gain de 5-10ms
-// évitent tout clic/pop au démarrage et à l'arrêt. Le contexte audio gère
-// nativement une bonne douzaine de voix simultanées sans latence perceptible,
-// largement au-dessus des 8 voix demandées.
+// ses propres oscillateurs/noeuds à la volée puis les jette. Rampes de gain
+// de 5-10ms pour éviter tout clic au démarrage/arrêt.
 import { STORAGE_KEYS } from "../config.js";
 
 export class AudioEngine {
-  // Le contexte est créé tout de suite (pas besoin d'un geste utilisateur
-  // pour le CRÉER, seulement pour le RESUME — voir ensure()) : le lecteur de
-  // musique (audio/music.js) partage ce même contexte plutôt que d'en créer
-  // un second, ce qui évitait auparavant à celui-ci d'être débloqué côté iOS.
+  // Contexte créé tout de suite (geste utilisateur requis seulement pour le
+  // RESUME, voir ensure()) — partagé avec le lecteur de musique (music.js)
+  // plutôt qu'un second contexte.
   constructor() {
     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
     this.master = this.ctx.createGain();
@@ -78,10 +74,9 @@ export class AudioEngine {
     osc.stop(now + duration + 0.02);
   }
 
-  // Tir joueur : "pew" glissé vers le grave. Tir manuel tenu = plusieurs
-  // tirs/seconde, donc au-delà de la simple hauteur on fait aussi varier le
-  // timbre (forme d'onde) et l'amplitude du glissando — une variance de
-  // hauteur seule restait trop reconnaissable/répétitive à cette cadence.
+  // Tir joueur : "pew" glissé vers le grave. À cette cadence (plusieurs
+  // tirs/s), on varie aussi le timbre et l'amplitude du glissando — la
+  // hauteur seule restait trop répétitive.
   playPlayerShot(colorKey = "normal") {
     const waveforms = ["square", "triangle", "sawtooth"];
     const type = waveforms[Math.floor(Math.random() * waveforms.length)];
@@ -98,8 +93,7 @@ export class AudioEngine {
     });
   }
 
-  // Tir ennemi : timbre différent (triangle, fréquence plus basse) pour
-  // qu'on distingue au son qui vient de tirer sans regarder l'écran.
+  // Tir ennemi : timbre différent (triangle, plus grave) pour distinguer au son qui tire.
   playEnemyShot() {
     this._tone({ type: "triangle", startFreq: 600, endFreq: 350, duration: 0.09, gain: 0.08 });
   }
@@ -136,9 +130,8 @@ export class AudioEngine {
     noise.stop(now + duration);
   }
 
-  // Transition "saut spatial" entre deux vagues : glissement montant sur 2s
-  // avec une légère distorsion (waveshaper), synchronisé avec l'accélération
-  // visuelle du fond dans game.js.
+  // Transition "saut spatial" : glissement montant sur 2s avec légère
+  // distorsion, synchronisé avec l'accélération visuelle (game.js).
   playWarpTransition() {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -168,16 +161,13 @@ export class AudioEngine {
     this._tone({ type: "sawtooth", startFreq: 300, endFreq: 60, duration: 0.2, gain: 0.15 });
   }
 
-  // Survol d'un item de menu (souris) : un simple "tic" bref et discret,
-  // pas un vrai son de tir/impact — sert juste de retour sonore léger,
-  // volontairement très peu présent pour ne pas fatiguer en cas de survols
-  // rapides répétés (déclenché à chaque CHANGEMENT d'item, pas en continu).
+  // Survol menu : "tic" bref et discret, retour sonore léger — déclenché à
+  // chaque CHANGEMENT d'item, pas en continu.
   playMenuHover() {
     this._tone({ type: "sine", startFreq: 900, endFreq: 1100, duration: 0.035, gain: 0.05 });
   }
 
-  // Ramassage de bonus : deux notes montantes, timbre franc et positif —
-  // distinct des sons de tir/impact pour se reconnaître sans y penser.
+  // Ramassage de bonus : deux notes montantes, timbre franc et positif, distinct des tirs/impacts.
   playPowerup() {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;

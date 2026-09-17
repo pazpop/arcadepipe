@@ -28,10 +28,8 @@ export function resetPlayer(player) {
   player.shield = 0;
 }
 
-// Ramasser un bonus d'arme (power/rapid) remplace l'effet en cours plutôt
-// que de cumuler — évite d'avoir à gérer l'empilement de deux bonus
-// différents. Le bouclier est indépendant (voir applyShield) : les deux
-// peuvent être actifs en même temps.
+// Ramasser un bonus d'arme remplace l'effet en cours (pas de cumul). Le
+// bouclier est indépendant (applyShield) : les deux peuvent être actifs ensemble.
 export function applyPowerup(player, type) {
   player.buff = { type, timer: POWERUP.duration };
 }
@@ -41,8 +39,7 @@ export function applyShield(player, hits) {
 }
 
 export function updatePlayer(player, input, projectiles, dt, onShotFired, canFire = true) {
-  // Suivi progressif de la cible (souris/tactile) plutôt qu'un snap brutal —
-  // rend le déplacement lisible même à haute fréquence de mouvement du doigt.
+  // Suivi progressif de la cible (pas un snap brutal) — lisible même à haute fréquence de mouvement.
   const dx = input.x - player.x;
   const dy = input.y - player.y;
   const maxStep = PLAYER.speed * dt;
@@ -65,16 +62,11 @@ export function updatePlayer(player, input, projectiles, dt, onShotFired, canFir
   }
   const buffDef = player.buff ? POWERUP.types[player.buff.type] : null;
 
-  // Tir manuel : clic maintenu (souris) ou doigt posé (tactile) — voir
-  // `input.fireHeld` dans input.js. `input.autoFire` (case à cocher UI)
-  // retrouve l'ancien comportement automatique pour qui le préfère.
-  // Cadence plafonnée par fireCooldown, modulée par le bonus actif.
-  // canFire=false (saut spatial entre deux vagues, voir g.clearingScreen
-  // dans game.js) gèle le minuteur plutôt que de le laisser courir dans le
-  // vide : avec le bonus RAFALE (cooldown ~44ms) et rien à tirer pendant
-  // ~2.4s, ça déclenchait des dizaines de sons de tir empilés en même temps
-  // que le son du saut spatial — assez de voix simultanées pour saturer/
-  // distordre l'audio.
+  // Tir manuel : clic/doigt maintenu (input.fireHeld), ou input.autoFire
+  // pour l'ancien comportement auto. Cadence plafonnée par fireCooldown,
+  // modulée par le bonus actif. canFire=false (saut spatial, g.clearingScreen
+  // dans game.js) gèle le minuteur — sinon RAFALE (cooldown ~44ms) accumule
+  // des dizaines de tirs pendant l'attente, saturant l'audio à la reprise.
   if (canFire) {
     player.fireTimer -= dt;
     if (player.alive && (input.fireHeld || input.autoFire) && player.fireTimer <= 0) {
@@ -87,15 +79,13 @@ export function updatePlayer(player, input, projectiles, dt, onShotFired, canFir
   }
 }
 
-// Retourne false (aucun effet, invulnérabilité en cours), "shield" (coup
-// absorbé par le bouclier, aucune vie perdue) ou true (vie perdue).
+// false = invulnérabilité en cours (aucun effet), "shield" = absorbé sans perte de vie, true = vie perdue.
 export function hitPlayer(player) {
   if (player.invuln > 0) return false;
   if (player.shield > 0) {
     player.shield -= 1;
-    // Courte invulnérabilité même sur un coup absorbé — sinon plusieurs
-    // tirs regroupés dans la même frame/collision vident le bouclier d'un
-    // coup au lieu d'un par impact distinct.
+    // Courte invulnérabilité même sur un coup absorbé — sinon plusieurs tirs
+    // dans la même frame vident le bouclier d'un coup.
     player.invuln = PLAYER.shieldHitInvuln;
     return "shield";
   }

@@ -27,14 +27,11 @@ function makePool(size, radius, color, shape = "dot") {
 
 export function createProjectiles() {
   return {
-    // Les tirs du joueur voyagent toujours à l'horizontale (vy=0) — un tiret
-    // allongé se distingue mieux des tirs ronds des ennemis, sans jamais
-    // paraître mal orienté puisqu'il n'y a pas d'autre direction possible.
+    // Tirs du joueur toujours à l'horizontale (vy=0) — un tiret allongé se
+    // distingue mieux des tirs ronds ennemis.
     player: makePool(PLAYER_POOL_SIZE, 1.5, PALETTE.bulletPlayer, "dash"),
-    // "streak" : tiret orienté selon la vitesse propre du tir (les patterns
-    // ennemis partent dans toutes les directions, contrairement au joueur).
-    // Un simple point rond, sans indice de direction/vitesse, donnait
-    // l'impression que les tirs "flottaient" plutôt que d'avoir un élan.
+    // "streak" : tiret orienté selon la vitesse du tir (patterns ennemis
+    // multi-directionnels) — un point rond donnait l'impression de "flotter".
     enemy: makePool(ENEMY_POOL_SIZE, 1.6, PALETTE.bulletEnemy, "streak"),
   };
 }
@@ -57,9 +54,7 @@ export function firePlayerBullet(projectiles, x, y, speed, damage = 1, color = n
   return spawnInto(projectiles.player, x, y, speed, 0, color, damage);
 }
 
-// turnRate (rad/s, optionnel) : courbe la trajectoire au lieu d'une ligne
-// droite — voir patternFan/patternRing dans patterns.js. 0 par défaut
-// (comportement inchangé pour patternAimed/patternSpiralStep).
+// turnRate (rad/s, optionnel) : courbe la trajectoire (patternFan/patternRing). 0 par défaut.
 export function fireEnemyBullet(projectiles, x, y, vx, vy, color = null, turnRate = 0) {
   return spawnInto(projectiles.enemy, x, y, vx, vy, color, 1, turnRate);
 }

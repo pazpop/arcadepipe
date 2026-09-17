@@ -24,13 +24,11 @@ const MODE = {
   CREDITS: "credits",
 };
 
-// Accessibilité : désactive le screen shake pour les joueurs sensibles au
-// mouvement (réglage système, pas une option en jeu).
+// Accessibilité : coupe le screen shake pour les joueurs sensibles au mouvement (réglage système).
 const REDUCED_MOTION =
   typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-// Vibration mobile (Vibration API) : no-op silencieux si indisponible
-// (desktop, Safari/iOS) ou refusée — jamais bloquant pour le jeu.
+// Vibration mobile : no-op silencieux si indisponible ou refusée.
 function vibrate(pattern) {
   try {
     navigator.vibrate?.(pattern);
@@ -39,8 +37,7 @@ function vibrate(pattern) {
   }
 }
 
-// Aides de jeu (première partie, premier boss) — vues une seule fois par
-// navigateur (ensuite accessible à tout moment via le bouton "Aide").
+// Aide vue une fois par navigateur (revoir via le bouton "Aide" ensuite).
 function hasSeenHint(key) {
   try {
     return localStorage.getItem(key) === "1";
@@ -56,8 +53,7 @@ function markHintSeen(key) {
   }
 }
 
-// Pseudo mémorisé d'une partie à l'autre — pré-remplit la saisie du nom
-// (voir handleGameOver) sans empêcher de le modifier avant de valider.
+// Pseudo mémorisé d'une partie à l'autre — pré-remplit la saisie du nom (handleGameOver).
 function readLastPlayerName() {
   try {
     return localStorage.getItem(STORAGE_KEYS.lastPlayerName);
@@ -73,16 +69,12 @@ function saveLastPlayerName(name) {
   }
 }
 
-// Glissée d'entrée du vaisseau (voir startRun/updateShipIntro) : arrive
-// doucement depuis la gauche hors écran plutôt que d'apparaître directement
-// au milieu du combat — les premiers ennemis sont retardés d'autant (voir
-// g.spawnTimer dans startRun) pour laisser le temps à l'animation.
+// Entrée en douceur du vaisseau (startRun/updateShipIntro) : glisse depuis la
+// gauche, premiers ennemis retardés d'autant (g.spawnTimer).
 const SHIP_INTRO_DURATION = 1.8;
 
-// Un seul écran d'aide, organisé par catégories — montré automatiquement à
-// la toute première partie, et accessible à tout moment ensuite via le
-// bouton "Aide" (panneau bas gauche), le menu principal ou la pause
-// (MODE.HELP, g.helpReturnTo indique où revenir en le fermant).
+// Écran d'aide unique par catégories — auto à la 1re partie, sinon via bouton
+// "Aide"/menu/pause (g.helpReturnTo indique où revenir en le fermant).
 const HELP_INFO = {
   title: "AIDE",
   sections: [
@@ -113,7 +105,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
 
     // Partie en cours
     score: 0,
-    enemiesKilled: 0, // total de la partie (contrairement à waveKills, qui se réinitialise à chaque vague) — affiché au Game Over et envoyé au classement
+    enemiesKilled: 0, // total partie (waveKills se réinitialise par vague) — Game Over + classement
     wave: 1,
     waveKills: 0,
     waveKillTarget: DIFFICULTY.baseWaveKills,
@@ -161,8 +153,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     return Math.min(0.25, 0.06 + g.wave * 0.015);
   }
 
-  // Tire un type de bonus selon POWERUP.typeWeights (nova nettement plus
-  // rare que power/rapid) plutôt qu'un simple 50/50.
+  // Tire un type de bonus selon POWERUP.typeWeights (nova bien plus rare que power/rapid).
   function pickPowerupType() {
     const weights = POWERUP.typeWeights;
     const total = Object.values(weights).reduce((s, w) => s + w, 0);
@@ -198,11 +189,8 @@ export function createGame({ input, audio, music, nameInputEl }) {
       spawnDeathStarBackdrop(starfield);
     } else {
       g.banner = { text: `VAGUE ${wave}`, timer: 1.8 };
-      // Filet de sécurité : garantit qu'aucun décor de boss ne traîne au
-      // début d'une vague normale (partie recommencée après un abandon en
-      // plein combat, boss suivant plus loin dans la roadmap, etc.) —
-      // l'effacement animé (triggerDeathStarLeave, sur victoire) reste le
-      // chemin normal, ceci n'est qu'un rattrapage.
+      // Filet de sécurité : évite qu'un décor de boss traîne au début d'une
+      // vague normale (chemin normal = triggerDeathStarLeave à la victoire).
       starfield.deathStar = null;
     }
   }
@@ -227,9 +215,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     g.controlHint = 4;
     startWave(1);
 
-    // Entrée en douceur (vague 1, une fois par partie) : le vaisseau glisse
-    // depuis hors écran à gauche pendant que les premiers ennemis sont
-    // retardés d'autant (au lieu d'arriver instantanément "en plein combat").
+    // Entrée en douceur (vague 1 uniquement) — voir SHIP_INTRO_DURATION.
     g.shipIntro = true;
     g.shipIntroTimer = SHIP_INTRO_DURATION;
     player.x = -20;
@@ -243,13 +229,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
     }
   }
 
-  // Jeton de version : un double-tap sur "Classement" (ou un retour au menu
-  // suivi d'un nouvel appel avant que le premier ait fini de répondre) lance
-  // deux séries de fetch en parallèle. Sans garde, la réponse arrivée en
-  // second gagne toujours, même si elle correspond à l'appel le plus
-  // ancien — un tableau de scores pourrait alors afficher un résultat périmé
-  // par-dessus le plus récent. Même défaut que celui corrigé dans
-  // audio/music.js (_loadToken), appliqué ici à ce deuxième cas.
+  // Jeton de version : un double-tap sur "Classement" lance deux fetch en
+  // parallèle ; sans garde, la réponse arrivée en second gagnerait même si
+  // périmée. Même correctif que _loadToken dans audio/music.js.
   let leaderboardToken = 0;
 
   async function goToLeaderboard(returnTo) {
@@ -280,9 +262,8 @@ export function createGame({ input, audio, music, nameInputEl }) {
   async function handleGameOver() {
     g.mode = MODE.NAME_ENTRY;
     g.nameEntry = readLastPlayerName() || randomPilotName();
-    // Comptabilisée dès la fin de la partie, peu importe si le score
-    // qualifie ou non pour le top — voir POST /api/games côté backend.
-    // Fire-and-forget : un échec réseau ne doit jamais bloquer la suite.
+    // Comptabilisée dès la fin de partie, qualifiée ou non (POST /api/games).
+    // Fire-and-forget : un échec réseau ne doit pas bloquer la suite.
     recordGamePlayed().catch(() => {});
     let qualifies = true;
     try {
@@ -295,22 +276,18 @@ export function createGame({ input, audio, music, nameInputEl }) {
       goToLeaderboard(MODE.MENU);
       return;
     }
-    // focus() ici arrive après un `await` — donc hors du geste utilisateur
-    // synchrone d'origine, ce que la plupart des navigateurs mobiles
-    // refusent pour ouvrir le clavier virtuel (aucune erreur, le clavier ne
-    // s'ouvre juste jamais). D'où le nom aléatoire déjà rempli ci-dessus et
-    // le bouton "VALIDER" tactile (voir hitTestNameEntryValidate) : sur
-    // mobile, on peut valider sans clavier. Sur desktop, focus() marche
-    // toujours et permet de taper par-dessus.
+    // focus() ici est hors du geste utilisateur d'origine (après un await) —
+    // la plupart des mobiles refusent d'ouvrir le clavier virtuel dans ce
+    // cas, sans erreur. D'où le nom aléatoire déjà rempli et le bouton
+    // "VALIDER" tactile (hitTestNameEntryValidate) pour valider sans clavier.
     if (nameInputEl) {
       nameInputEl.value = g.nameEntry;
       nameInputEl.focus();
     }
   }
 
-  // Nom par défaut aléatoire — évite un nom vide/"PILOTE" générique quand la
-  // saisie au clavier échoue (mobile, voir handleGameOver), tout en restant
-  // amusant à garder tel quel plutôt qu'un simple timestamp.
+  // Nom par défaut aléatoire — évite un "PILOTE" générique si le clavier
+  // n'apparaît pas (mobile, voir handleGameOver).
   function randomPilotName() {
     const n = 10 + Math.floor(Math.random() * 90); // 2 chiffres pile : "PILOTE" (6) + "42" = 8 car. max
     return `PILOTE${n}`;
@@ -346,13 +323,11 @@ export function createGame({ input, audio, music, nameInputEl }) {
           g.waveKills += 1;
           g.enemiesKilled += 1;
           audio.playExplosion();
-          // Pas de tremblement d'écran pour un ennemi "classique" détruit —
-          // réservé aux coups encaissés et à la victoire sur un boss, sinon
-          // l'écran tremble en permanence dès qu'on tire.
+          // Pas de shake sur un kill "classique" (réservé aux coups encaissés/
+          // victoire boss), sinon l'écran tremble en permanence.
           triggerHitStop(en.type === "elite" ? 0.05 : 0.03);
-          // Un seul bonus visible à la fois, et aucun tant qu'un est déjà
-          // actif sur le vaisseau — évite le gâchis (bonus qui expirent sans
-          // avoir été vus) et garde le HUD lisible.
+          // Un seul bonus à la fois, aucun si déjà actif — évite le gâchis et
+          // garde le HUD lisible.
           const noBonusInPlay = !player.buff && !player.shield && !powerups.items.some((pu) => pu.active);
           const dropChance = en.type === "elite" ? POWERUP.dropChanceElite : POWERUP.dropChanceNormal;
           if (noBonusInPlay && Math.random() < dropChance) {
@@ -414,10 +389,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
       }
     }
 
-    // Coque du boss vs joueur — foncer dedans doit faire mal, même si seuls
-    // les points faibles TIRÉS endommagent le boss lui-même (voir
-    // hitsBossHull dans boss.js, qui ne touche jamais à ses PV). Rien
-    // pendant le fondu de victoire (la coque se dissipe, plus un obstacle).
+    // Coque du boss vs joueur : foncer dedans fait mal, même si seuls les
+    // points faibles tirés endommagent le boss (hitsBossHull ne touche
+    // jamais ses PV). Rien pendant le fondu de victoire.
     if (g.boss && !g.boss.victory && hitsBossHull(g.boss, player.x, player.y, PLAYER.hitboxRadius)) {
       applyHitToPlayer();
     }
@@ -440,11 +414,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
     }
   }
 
-  // Bonus NOVA : effet instantané, pas un buff temporisé — détruit tout ce
-  // qui est actif dans le pool d'ennemis (normaux + élites) ainsi que tous
-  // leurs tirs en vol (sinon un mur de balles déjà lancé reste mortel
-  // malgré l'écran "nettoyé"), pas le boss lui-même (garder un vrai combat
-  // de boss malgré un ramassage chanceux).
+  // NOVA : effet instantané (pas un buff) — détruit tous les ennemis actifs
+  // et leurs tirs en vol (sinon un mur de balles resterait mortel), jamais
+  // le boss (garde un vrai combat malgré un ramassage chanceux).
   function triggerNova() {
     let killed = 0;
     for (const en of enemies.items) {
@@ -469,8 +441,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     }
   }
 
-  // Coup absorbé par le bouclier : pas de vie perdue, réaction plus légère
-  // qu'un vrai impact (pas de hit-stop/vibration/explosion du vaisseau).
+  // Coup absorbé par le bouclier : pas de vie perdue, réaction plus légère qu'un vrai impact.
   function onShieldHit() {
     triggerShake(4);
     audio.playBossHit();
@@ -485,31 +456,25 @@ export function createGame({ input, audio, music, nameInputEl }) {
     spawnExplosion(particles, player.x, player.y, 18, PALETTE.player);
     spawnFlashBurst(particles, player.x, player.y, 8);
     if (!player.alive && !g.dying) {
-      // Séquence cinématique avant l'écran "GAME OVER" : le temps ralentit
-      // pendant quelques instants (voir le ralenti dans updatePlayingMode)
-      // plutôt que de couper directement vers la saisie du nom.
+      // Séquence cinématique avant "GAME OVER" : ralenti (voir updatePlayingMode)
+      // plutôt qu'une coupure directe.
       g.dying = true;
       g.deathTimer = PLAYER.invulnDuration + 0.2;
       triggerShake(16);
     }
   }
 
-  // Dispatch commun d'un coup reçu par le joueur (tir ennemi, corps
-  // d'ennemi, coque du boss) — bouclier ou vie perdue selon hitPlayer().
-  // Centralisé ici plutôt que répété à chaque source de dégât ci-dessus dans
-  // resolveCollisions().
+  // Dispatch commun d'un coup reçu par le joueur — bouclier ou vie perdue
+  // selon hitPlayer(), centralisé plutôt que répété par source de dégât.
   function applyHitToPlayer() {
     const res = hitPlayer(player);
     if (res === "shield") onShieldHit();
     else if (res) onPlayerHit();
   }
 
-  // Glissée d'entrée du vaisseau (vague 1) : interpole sa position
-  // directement plutôt que de passer par updatePlayer/le suivi de la
-  // souris — évite qu'un mouvement de souris pendant l'animation ne la
-  // court-circuite. La cible du joueur (input.x/y) n'est pas touchée : une
-  // fois l'intro finie, le contrôle reprend normalement là où le doigt/la
-  // souris se trouve déjà, sans saut brutal.
+  // Glissée d'entrée (vague 1) : interpole la position directement (pas via
+  // updatePlayer) pour qu'un mouvement de souris ne la court-circuite pas.
+  // input.x/y n'est pas touché, donc le contrôle reprend sans saut à la fin.
   function updateShipIntro(dt) {
     g.shipIntroTimer -= dt;
     const t = Math.min(1, 1 - Math.max(0, g.shipIntroTimer) / SHIP_INTRO_DURATION);
@@ -525,27 +490,23 @@ export function createGame({ input, audio, music, nameInputEl }) {
   // --- Update par état ---
 
   function updatePlayingMode(dt) {
-    // Micro-gel d'impact sur les coups marquants : dt fortement réduit mais
-    // pas nul (pas de vraie pause, juste un "punch" ressenti) plutôt qu'un
-    // système de timing séparé — voir triggerHitStop().
+    // Micro-gel d'impact : dt réduit mais pas nul (un "punch" ressenti, pas
+    // une vraie pause) — voir triggerHitStop().
     if (g.hitStop > 0) {
       g.hitStop = Math.max(0, g.hitStop - dt);
       dt *= 0.06;
     }
 
     if (g.dying) {
-      // Ralenti cinématique après la mort — beaucoup plus long et prononcé
-      // que le micro-gel d'impact ci-dessus, le monde continue de bouger
-      // (ennemis, tirs, étoiles) mais au ralenti, jusqu'à l'écran GAME OVER.
+      // Ralenti après la mort — plus long/prononcé que le micro-gel
+      // ci-dessus, tout continue de bouger mais au ralenti jusqu'à GAME OVER.
       g.deathTimer -= dt;
       dt *= 0.16;
       if (g.deathTimer <= 0) {
         g.dying = false;
         g.mode = MODE.GAME_OVER;
-        // Rien ne décrémente plus g.shake une fois hors de updatePlayingMode
-        // (updateGameOverMode() ne le fait pas) — sans ça, un reliquat de
-        // tremblement (le ralenti l'atténue mais ne l'annule pas forcément)
-        // resterait figé et secouerait l'écran indéfiniment sur GAME OVER.
+        // Rien ne décrémente g.shake hors de updatePlayingMode — sans ce
+        // reset, un reliquat de tremblement resterait figé sur GAME OVER.
         g.shake = 0;
         return;
       }
@@ -587,19 +548,16 @@ export function createGame({ input, audio, music, nameInputEl }) {
       g.clearingScreen = false;
       const waveDone = g.boss ? g.boss.victory : g.waveKills >= g.waveKillTarget;
       if (waveDone) {
-        // Un peu plus long après un boss (voir DIFFICULTY.bossWaveBreakDuration)
-        // — le temps que le décor "Étoile Noire" et les derniers ennemis en
-        // fuite ci-dessous aient bien quitté l'écran.
+        // Plus long après un boss (bossWaveBreakDuration) — le temps que le
+        // décor et les derniers ennemis en fuite quittent l'écran.
         g.waveBreakDuration = g.boss ? DIFFICULTY.bossWaveBreakDuration : DIFFICULTY.waveBreakDuration;
         g.waveBreak = g.waveBreakDuration;
         g.flash = Math.max(g.flash, 0.3);
         g.banner = { text: `VAGUE ${g.wave} TERMINÉE`, timer: g.waveBreakDuration };
-        // Les tirs/bonus en jeu disparaissent immédiatement (rester actifs
-        // pendant le saut spatial n'aurait pas de sens), mais les vaisseaux
-        // ennemis eux-mêmes défilent vers la gauche comme le fond étoilé
-        // (voir enemyLeaveSpeed dans enemies.js) plutôt que de disparaître
-        // d'un coup — le boss, lui, reste visible jusqu'à startWave (son
-        // explosion de victoire doit rester à l'écran).
+        // Tirs/bonus disparaissent immédiatement, mais les ennemis défilent
+        // vers la gauche comme le fond (enemies.js) plutôt que de disparaître
+        // d'un coup — le boss reste visible jusqu'à startWave (explosion de
+        // victoire à l'écran).
         setEnemiesLeaving(enemies);
         for (const b of projectiles.enemy.items) b.active = false;
         for (const pu of powerups.items) pu.active = false;
@@ -647,8 +605,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
       g.helpReturnTo = MODE.PAUSED;
       g.mode = MODE.HELP;
     } else {
-      // Quitter une partie en cours perd toute la progression — on demande
-      // confirmation plutôt que de trancher sur un simple clic/Entrée.
+      // Quitter perd la progression — confirmation demandée plutôt qu'un simple clic/Entrée.
       g.pauseStage = "confirmQuit";
       g.confirmQuitSelected = 1;
     }
@@ -663,21 +620,16 @@ export function createGame({ input, audio, music, nameInputEl }) {
     }
   }
 
-  // La surbrillance clavier (flèches) est un index qu'on modifie nous-mêmes ;
-  // le survol souris doit faire pareil à chaque frame plutôt que de rester
-  // figé sur la dernière sélection clavier. Pas de survol au tactile (pas de
-  // position avant le tap).
+  // Le survol souris doit suivre chaque frame (sinon reste figé sur la
+  // dernière sélection clavier). Pas de survol au tactile.
   function syncHover(hitTestFn, apply) {
     if (input.isTouch) return;
     const idx = hitTestFn(input.x, input.y);
     if (idx >= 0) apply(idx);
   }
 
-  // Comme syncHover, mais joue un léger "tic" quand le survol change
-  // réellement d'item — pas à chaque frame tant qu'on reste sur le même,
-  // sinon ce serait un bourdonnement continu plutôt qu'un retour ponctuel.
-  // Réservé aux écrans à plusieurs options (menu, pause, confirmation) —
-  // les écrans à bouton unique gardent syncHover() tel quel.
+  // Comme syncHover, mais joue un "tic" seulement quand le survol change
+  // d'item (pas à chaque frame). Réservé aux écrans à plusieurs options.
   function syncHoverWithSound(hitTestFn, getCurrent, setCurrent) {
     if (input.isTouch) return;
     const idx = hitTestFn(input.x, input.y);
@@ -686,17 +638,16 @@ export function createGame({ input, audio, music, nameInputEl }) {
     setCurrent(idx);
   }
 
-  // Referme l'aide et revient là où elle a été ouverte (menu, pause, ou
-  // directement en jeu pour l'aide automatique de la toute première partie).
+  // Referme l'aide et revient là où elle a été ouverte (menu, pause, ou en
+  // jeu pour l'aide auto de la 1re partie).
   function closeHelp() {
     g.mode = g.helpReturnTo;
     if (g.helpReturnTo === MODE.PAUSED) g.pauseStage = "menu";
   }
 
-  // Ouvre l'aide depuis le bouton du panneau (bas gauche), visible aussi
-  // bien au menu qu'en pleine partie — contrairement à l'entrée du menu
-  // pause, ici on n'est pas forcément déjà en pause. Pas d'effet depuis un
-  // écran sans retour cohérent (classement, crédits, saisie du nom...).
+  // Ouvre l'aide depuis le bouton du panneau — pas forcément déjà en pause,
+  // contrairement à l'entrée du menu pause. No-op sur les écrans sans retour
+  // cohérent (classement, crédits...).
   function openHelp() {
     if (g.mode === MODE.MENU || g.mode === MODE.PLAYING || g.mode === MODE.PAUSED) {
       g.helpReturnTo = g.mode;
@@ -790,10 +741,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
     else if (g.mode === MODE.CREDITS) updateCreditsMode(dt);
     // MODE.NAME_ENTRY : piloté par les événements DOM du champ caché (voir main.js)
 
-    // Toute touche "front montant" non consommée par l'état courant (ex:
-    // flèche pressée pendant NAME_ENTRY) ne doit pas fuiter vers l'état
-    // suivant une fois qu'on en change — nettoyage en fin de frame plutôt
-    // qu'en début, pour laisser aux handlers ci-dessus la chance de la lire.
+    // Une touche non consommée par l'état courant ne doit pas fuiter vers
+    // l'état suivant — nettoyage en fin de frame, après que les handlers
+    // ci-dessus aient pu la lire.
     clearJustPressed(input);
   }
 
@@ -812,9 +762,8 @@ export function createGame({ input, audio, music, nameInputEl }) {
       ctx.translate((Math.random() - 0.5) * g.shake, (Math.random() - 0.5) * g.shake);
     }
 
-    // Le classement/crédits gardent un fond uni — le starfield derrière un
-    // tableau de scores nuit à la lisibilité, et resterait figé de toute
-    // façon puisqu'il n'est pas mis à jour dans ces états.
+    // Classement/crédits gardent un fond uni — le starfield nuirait à la
+    // lisibilité et resterait figé (non mis à jour dans ces états).
     const showStarfield =
       g.mode === MODE.PLAYING || g.mode === MODE.PAUSED || g.mode === MODE.GAME_OVER || g.mode === MODE.MENU || g.mode === MODE.HELP;
     if (showStarfield) drawStarfield(ctx, starfield, g.mode === MODE.PLAYING ? g.warp : 1);
@@ -857,8 +806,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     ctx.restore();
   }
 
-  // Pause forcée depuis l'extérieur (ex: onglet/app en arrière-plan côté
-  // main.js) — no-op si une partie n'est pas en cours.
+  // Pause forcée depuis l'extérieur (onglet en arrière-plan, main.js) — no-op hors partie.
   function pause() {
     if (g.mode === MODE.PLAYING) {
       g.mode = MODE.PAUSED;

@@ -10,9 +10,8 @@ const canvas = document.getElementById("game-canvas");
 const ctx = canvas.getContext("2d");
 canvas.width = RES_W;
 canvas.height = RES_H;
-// Sans ça, drawImage (sprites + halo agrandi) est lissé par défaut : à cette
-// résolution interne minuscule, le flou rend les vaisseaux/ennemis en blobs
-// informes avant même la mise à l'échelle CSS "pixelated".
+// Sans ça, drawImage est lissé par défaut — à cette résolution minuscule, ça
+// rend les sprites en blobs flous.
 ctx.imageSmoothingEnabled = false;
 
 const nameInputEl = document.getElementById("name-input");
@@ -33,19 +32,13 @@ const music = new MusicPlayer(audio.ctx); // même AudioContext que les bruitage
 
 const game = createGame({ input, audio, music, nameInputEl });
 
-// Exports simples (pas de window.*) uniquement pour la suite e2e (e2e/) :
-// un test Playwright peut faire `await import("/js/main.js")` et retrouver
-// ces mêmes instances (les modules ES sont mis en cache par URL — un import
-// dynamique déclenché depuis le test récupère le même module déjà évalué,
-// pas une seconde copie), puis idem pour `await import("/js/config.js")`
-// afin de modifier des constantes (taux de drop, difficulté...) le temps
-// d'un test. Rien n'est posé sur `window` : aucune trace supplémentaire
-// dans ce qui est livré, contrairement à un ancien point d'accès de debug.
+// Exports pour la suite e2e (e2e/) : un test Playwright peut faire
+// `await import("/js/main.js")` et retrouver ces mêmes instances (modules ES
+// mis en cache par URL). Rien sur `window`, pas de trace en prod.
 export { music, audio };
 
-// --- Redimensionnement responsive : on garde le ratio 480x270, agrandi au
-// maximum dans la fenêtre, rendu net grâce à `image-rendering: pixelated`
-// (voir css/style.css) plutôt qu'un lissage flou.
+// --- Redimensionnement responsive : ratio 480x270 gardé, agrandi au max, net
+// grâce à `image-rendering: pixelated` (css/style.css).
 function resizeCanvas() {
   const ratio = RES_W / RES_H;
   let w = window.innerWidth;
@@ -61,9 +54,8 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-// --- Audio : un seul démarrage, déclenché par le premier geste utilisateur
-// (règle des navigateurs pour l'AudioContext). Le flux musical ne s'arrête
-// plus jamais ensuite, quel que soit l'écran affiché.
+// --- Audio : démarré une fois, au premier geste utilisateur (règle des
+// navigateurs pour l'AudioContext). Ne s'arrête plus ensuite.
 function beginAudio() {
   audio.ensure(); // reprend le contexte partagé (SFX + musique, voir audio/music.js)
   audio.setMuted(music.muted);
@@ -203,9 +195,8 @@ function toggleCrt() {
 }
 applyCrt(readCrtEnabled());
 
-// --- Saisie du nom (écran de fin de partie) : un vrai <input> caché reçoit
-// le focus pour déclencher le clavier virtuel mobile, sa valeur est
-// répercutée dans le jeu à chaque frappe.
+// --- Saisie du nom : un <input> caché reçoit le focus (clavier virtuel
+// mobile), sa valeur est répercutée dans le jeu à chaque frappe.
 if (nameInputEl) {
   nameInputEl.addEventListener("input", () => {
     game.setNameEntryText(nameInputEl.value);
@@ -220,9 +211,8 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-// --- Pause automatique quand l'onglet/app passe en arrière-plan (surtout
-// mobile : changer d'app en pleine partie ne doit pas faire perdre de vies
-// pendant l'absence).
+// --- Pause auto quand l'onglet/app passe en arrière-plan (mobile : ne pas
+// perdre de vies pendant l'absence).
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) game.pause();
 });

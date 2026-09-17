@@ -8,11 +8,9 @@ import { spawnExplosion, spawnSpark, spawnFlashBurst } from "./particles.js";
 
 const POOL_SIZE = 40;
 
-// Les ennemis n'APPARAISSENT que dans le tiers droit de l'écran (voir
-// spawnEnemyWave) — laisse les 2/3 gauches dégagés à l'apparition, plus
-// lisible sur petit écran (mobile). Une fois apparus, ils suivent leur
-// trajectoire librement sur tout l'écran comme avant ; seule la sortie
-// d'écran (peu importe le bord) les fait disparaître, jamais de rebond.
+// Ennemis n'APPARAISSENT que dans le tiers droit (spawnEnemyWave) — plus
+// lisible sur mobile. Une fois en vol, trajectoire libre sur tout l'écran,
+// disparaît en sortant (jamais de rebond).
 const LEFT_BOUND = (RES_W * 2) / 3;
 
 const TYPE_STATS = {
@@ -62,16 +60,13 @@ function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
   return en;
 }
 
-// À partir de la vague 5, une partie des ennemis normaux devient "gunner" et
-// tire aussi (aimed, plus lent et moins fréquent qu'une élite) — sinon les
-// vagues avancées restent identiques niveau menace hors élites/boss.
+// Dès la vague 5, une partie des ennemis normaux devient "gunner" et tire
+// aussi (plus lent/moins fréquent qu'une élite).
 const GUNNER_MIN_WAVE = 5;
 const GUNNER_CHANCE = 0.22;
 
-// Pas de vraie physique de collision entre ennemis (inutile ici) — juste un
-// espacement à la génération pour éviter qu'ils apparaissent superposés,
-// plus probable maintenant qu'ils apparaissent tous dans le même tiers
-// d'écran (une fois en vol, ils s'écartent naturellement).
+// Pas de vraie physique de collision — juste un espacement à la génération
+// pour éviter qu'ils apparaissent superposés (tous dans le même tiers d'écran).
 const SPAWN_MIN_GAP = 14;
 
 function tooCloseToActive(pool, x, y, minGap) {
@@ -95,8 +90,7 @@ export function spawnEnemyWave(pool, waveNumber, eliteChance) {
   const fromEdge = Math.random() < 0.28 ? (Math.random() < 0.5 ? "top" : "bottom") : "right";
 
   let x, y, vx, vy;
-  // Quelques tentatives pour retomber sur une position pas déjà occupée —
-  // au-delà, on accepte le risque plutôt que de bloquer un spawn.
+  // Quelques tentatives pour une position libre — au-delà, on accepte le risque plutôt que de bloquer le spawn.
   for (let attempt = 0; attempt < 4; attempt++) {
     if (fromEdge === "right") {
       x = RES_W + 10;
@@ -114,19 +108,14 @@ export function spawnEnemyWave(pool, waveNumber, eliteChance) {
   return spawnOne(pool, type, x, y, vx, vy, isGunner);
 }
 
-// Vitesse de base (avant multiplication par le warp du saut spatial, voir
-// setEnemiesLeaving) à laquelle les ennemis en fuite défilent vers la
-// gauche — assez rapide pour avoir quitté l'écran bien avant la fin du
-// saut spatial (warp qui monte jusqu'à x10, voir updatePlayingMode dans
-// game.js), quelle que soit leur position au moment où la vague se termine.
+// Vitesse de base des ennemis en fuite (avant le warp, x10 max — voir
+// updatePlayingMode) : assez rapide pour quitter l'écran bien avant la fin
+// du saut spatial.
 const LEAVE_SPEED = 90;
 
-// Fin de vague : les ennemis encore actifs défilent vers la gauche comme le
-// fond étoilé au lieu de disparaître d'un coup (voir aussi le warp appliqué
-// dans updateEnemies ci-dessous) — bien plus naturel qu'une disparition
-// instantanée, et la vague suivante démarre sans plus aucun ennemi visible
-// une fois le saut spatial terminé (voir aussi le filet de sécurité dans
-// startWave côté game.js).
+// Fin de vague : les ennemis actifs défilent vers la gauche comme le fond
+// (plus naturel qu'une disparition instantanée) — voir aussi le filet de
+// sécurité dans startWave (game.js).
 export function setEnemiesLeaving(pool) {
   for (const en of pool.items) {
     if (!en.active) continue;
@@ -141,25 +130,21 @@ export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
   for (const en of pool.items) {
     if (!en.active) continue;
     en.elapsed += dt;
-    // En fuite (fin de vague) : suit le même rythme que le fond étoilé
-    // (multiplié par le warp du saut spatial), sinon vitesse normale.
+    // En fuite : suit le rythme du fond étoilé (warp), sinon vitesse normale.
     en.x += en.vx * dt * (en.leaving ? warp : 1);
     en.y += en.vy * dt;
-    // Ondulation latérale pour l'élite — trajectoire moins prévisible.
-    // Coupée en fuite : une retraite doit être nette, pas hésitante.
+    // Ondulation latérale pour l'élite (trajectoire moins prévisible), coupée en fuite.
     if (en.type === "elite" && !en.leaving) {
       en.y += Math.sin(en.elapsed * 3 + en.wobbleSeed) * 14 * dt;
     }
-    // Sortie d'écran (n'importe quel bord) -> disparaît, jamais de rebond.
-    // Le confinement ne s'applique qu'à l'apparition (spawnEnemyWave) ; une
-    // fois en vol, la trajectoire traverse librement tout l'écran.
+    // Sortie d'écran (tout bord) -> disparaît, jamais de rebond. Le
+    // confinement ne s'applique qu'à l'apparition (spawnEnemyWave).
     if (en.x < -20 || en.x > RES_W + 20 || en.y < -30 || en.y > RES_H + 30) {
       en.active = false;
       en.leaving = false;
       continue;
     }
-    // En fuite : ne tire plus (on quitte le combat, pas de dernier tir
-    // vache) — voir setEnemiesLeaving.
+    // En fuite : ne tire plus (pas de dernier tir vache).
     if ((en.type === "elite" || en.gunner) && !en.leaving) {
       en.fireTimer -= dt;
       if (en.fireTimer <= 0) {

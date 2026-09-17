@@ -1,8 +1,6 @@
-// Sprites pixel art générés par code (aucun fichier image externe).
-// Chaque sprite est une matrice de caractères (une lettre = une couleur de
-// la palette locale, "." = transparent), convertie une seule fois en canvas
-// offscreen au chargement puis simplement blittée (drawImage) à chaque frame
-// — bien moins coûteux que de retracer des dizaines de fillRect par sprite.
+// Sprites pixel art générés par code — matrice de caractères (lettre =
+// couleur, "." = transparent), convertie une fois en canvas offscreen puis
+// blittée (drawImage) à chaque frame.
 
 function pixelsToCanvas(rows, palette, scale = 1) {
   const h = rows.length;
@@ -23,10 +21,8 @@ function pixelsToCanvas(rows, palette, scale = 1) {
   return off;
 }
 
-// --- Vaisseau du joueur : chasseur trapu, nez à DROITE (sens du tir).
-// Plus grand et plus large que la version précédente (silhouette fine en
-// dard, jugée trop "fragile") — plaques d'armure marquées (liseré bleu vif)
-// et tuyère large pour donner une impression de puissance.
+// --- Vaisseau du joueur : chasseur trapu, nez à DROITE (sens du tir),
+// plaques d'armure marquées et tuyère large pour une impression de puissance.
 const PLAYER_ROWS = [
   ".......................",
   "......aaaa.............",
@@ -93,13 +89,9 @@ const ENEMY_ELITE_PALETTE = {
   e: "#ffb347",
 };
 
-// --- Coque du boss : vaisseau capital générique en forme de coin
-// triangulaire (large à l'arrière/droite, effilé en pointe à l'avant/
-// gauche, face au joueur) — silhouette de vaisseau de guerre massif, un
-// trope générique de SF (pas de logo, pas de proportions ni de détails
-// copiés d'une œuvre existante). Bandes longitudinales façon plaques de
-// coque + une légère superstructure (s) décalée vers l'arrière, pas
-// centrée, pour casser la symétrie sans dessiner une vraie tour détaillée.
+// --- Coque du boss : coin triangulaire générique (large à l'arrière, effilé
+// à l'avant face au joueur) — trope SF générique, pas de détails copiés.
+// Superstructure (s) décalée pour casser la symétrie.
 const BOSS_HULL_ROWS = [
   ".............................a",
   ".........................aaaaa",
@@ -123,8 +115,7 @@ const BOSS_HULL_PALETTE = {
   b: "#3c3c48", // plaques externes
   c: "#5a5a68", // plaques, reflet
   d: "#33465e", // bande intermédiaire, bleu-acier froid
-  e: "#4d6a86", // colonne centrale — délibérément froide pour ne jamais se
-  // confondre avec le jaune vif des points faibles (PALETTE.bossWeakOn)
+  e: "#4d6a86", // colonne centrale — froide, pour ne jamais se confondre avec le jaune des points faibles
   s: "#1c2430", // superstructure/pont, la plus sombre — casse la symétrie
 };
 
@@ -141,8 +132,7 @@ export function buildSprites() {
   return cache;
 }
 
-// Halo lumineux simulé par un double tracé translucide (pas de vrai flou
-// coûteux) : dessine le sprite légèrement agrandi et transparent en dessous.
+// Halo simulé par un double tracé translucide (pas de vrai flou) : sprite agrandi et transparent en dessous.
 export function drawWithGlow(ctx, sprite, x, y, glowColor, glowAlpha = 0.35) {
   const w = sprite.width;
   const h = sprite.height;

@@ -1,7 +1,5 @@
-// Tout le texte/UI du jeu : HUD en partie, écrans menu/classement/crédits
-// en partie (le petit canvas interne + `image-rendering: pixelated` suffit à
-// donner un rendu de texte "façon bitmap" sans avoir à dessiner une police
-// pixel par pixel).
+// Tout le texte/UI du jeu — le petit canvas interne + `image-rendering:
+// pixelated` suffit à un rendu "façon bitmap" sans dessiner une police pixel par pixel.
 import { RES_W, RES_H, PALETTE, POWERUP } from "./config.js";
 
 // Point dans un rectangle {x,y,w,h} centré sur (x,y) — même test répété par
@@ -46,11 +44,9 @@ function text(ctx, str, x, y, { size = 8, color = PALETTE.hud, align = "left", a
 
 export function drawGameHud(ctx, s, lives) {
   text(ctx, `SCORE ${s.score}`, 8, 10, { size: 8, align: "left" });
-  // Compteur d'ennemis tués/objectif à côté du numéro de vague — seulement
-  // hors vague de boss : là, la victoire vient de la coque, pas d'un total
-  // de kills (voir waveDone dans game.js), l'afficher serait trompeur. Sur
-  // la même ligne que "VAGUE" (pas une ligne à part) pour ne pas empiéter
-  // sur l'indicateur de buff/bouclier juste en dessous.
+  // Compteur de kills/objectif à côté de la vague — masqué en vague de boss
+  // (victoire = coque, pas un total de kills). Même ligne que "VAGUE" pour
+  // ne pas empiéter sur l'indicateur de buff/bouclier.
   if (s.boss) {
     text(ctx, `VAGUE ${s.wave}`, RES_W / 2, 10, { size: 8, align: "center" });
   } else {
@@ -77,8 +73,7 @@ export function drawBuffIndicator(ctx, buff) {
   });
 }
 
-// Ligne distincte du buff (arme) : le bouclier n'a pas de minuteur, juste un
-// nombre de coups restants, et peut être actif en même temps qu'un buff.
+// Ligne distincte du buff : le bouclier n'a pas de minuteur (juste des coups restants), peut être actif en même temps.
 export function drawShieldIndicator(ctx, hits) {
   if (!hits) return;
   const def = POWERUP.types.shield;
@@ -125,9 +120,7 @@ export function drawFlash(ctx, amount) {
 const MENU_OPTIONS = ["JOUER", "CLASSEMENT", "AIDE", "CRÉDITS"];
 
 export function menuOptionRects() {
-  // Zones cliquables plus larges que le texte affiché : sur mobile, la
-  // taille logique (480x270) est agrandie mais un doigt reste un doigt —
-  // mieux vaut une marge généreuse qu'un bouton manqué.
+  // Zones cliquables plus larges que le texte — sur mobile, mieux vaut une marge généreuse qu'un bouton manqué.
   const startY = RES_H * 0.56;
   const gap = 22;
   return MENU_OPTIONS.map((label, i) => ({
@@ -143,9 +136,8 @@ export function hitTestMenu(x, y) {
   return hitTestRects(x, y, menuOptionRects());
 }
 
-// Bref résumé de l'histoire (survie de la galaxie face à une invasion) —
-// affiché entre le titre et les options du menu, fixe (ne flotte pas avec
-// le titre) pour ne jamais empiéter sur les options en dessous.
+// Résumé de l'histoire, entre le titre et les options — fixe (ne flotte pas
+// avec le titre) pour ne jamais empiéter dessous.
 const LORE_LINES = [
   "La galaxie agonise sous les flottes ennemies —",
   "seul aux commandes du dernier chasseur libre,",
@@ -203,10 +195,8 @@ export function drawTitleScreen(ctx, elapsed, selected) {
 
 const MEDAL_COLORS = [PALETTE.gold, PALETTE.silver, PALETTE.bronze];
 
-// Colonnes ancrées à des X fixes (rang/nom alignés à gauche, le reste à
-// droite) plutôt qu'une seule chaîne centrée par ligne — sinon les tailles
-// de police différentes des 3 premières places (médailles) désalignent tout
-// le tableau par rapport aux autres lignes et à l'en-tête.
+// Colonnes ancrées à des X fixes (pas une chaîne centrée) — sinon les
+// tailles de police différentes des médailles désaligneraient le tableau.
 const COL = {
   rank: 20,
   name: 55,
@@ -217,8 +207,7 @@ const COL = {
 
 export function drawLeaderboardScreen(ctx, scores, revealCount, gamesPlayed) {
   text(ctx, "CLASSEMENT", RES_W / 2, 24, { size: 16, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
-  // Masqué plutôt qu'un faux "0" si le backend est injoignable (voir
-  // goToLeaderboard dans game.js, qui laisse gamesPlayed à null dans ce cas).
+  // Masqué plutôt qu'un faux "0" si le backend est injoignable (goToLeaderboard laisse gamesPlayed à null).
   if (gamesPlayed != null) {
     text(ctx, `${gamesPlayed} PARTIES JOUÉES`, RES_W / 2, 34, { size: 7, align: "center", alpha: 0.6 });
   }
@@ -393,10 +382,8 @@ export function hitTestInfoContinue(x, y) {
   return hitTestSingle(x, y, infoContinueRect());
 }
 
-// Découpe une chaîne en lignes qui tiennent dans maxWidth pour la police
-// courante du contexte (mesurée via measureText) — nécessaire pour le
-// tableau à deux colonnes, où chaque colonne est deux fois plus étroite que
-// l'écran complet.
+// Découpe une chaîne en lignes qui tiennent dans maxWidth (measureText) —
+// nécessaire pour les colonnes, deux fois plus étroites que l'écran.
 function wrapLines(ctx, str, maxWidth) {
   const words = str.split(" ");
   const lines = [];
@@ -414,10 +401,8 @@ function wrapLines(ctx, str, maxWidth) {
   return lines;
 }
 
-// Contenu organisé en catégories (titre + détail), réparties en deux
-// colonnes façon tableau plutôt qu'une seule liste verticale — plus
-// compact et plus facile à parcourir d'un coup d'œil sur un canevas de
-// 270px de haut.
+// Contenu en catégories, réparties en deux colonnes (pas une liste
+// verticale) — plus compact sur un canevas de 270px de haut.
 export function drawInfoScreen(ctx, content) {
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.9)";
@@ -502,10 +487,8 @@ export function drawDeathScreen(ctx, score, wave, kills) {
   ctx.restore();
 }
 
-// Bouton tactile pour valider le nom — indispensable sur mobile : le
-// clavier virtuel n'apparaît pas toujours (focus() hors du geste utilisateur
-// d'origine, voir handleGameOver dans game.js), donc "ENTRÉE" seule au
-// clavier physique ne suffit pas pour valider le nom pré-rempli aléatoire.
+// Bouton tactile pour valider le nom — indispensable sur mobile où le
+// clavier virtuel n'apparaît pas toujours (handleGameOver dans game.js).
 export function nameEntryValidateRect() {
   return { x: RES_W / 2, y: RES_H * 0.48 + 54, w: 200, h: 18 };
 }

@@ -46,10 +46,9 @@ export function createInput(canvas) {
   });
   window.addEventListener("mouseup", () => (input.fireHeld = false));
 
-  // Tactile : le doigt pilote le vaisseau, décalé vers l'avant (la droite,
-  // vers où viennent les tirs ennemis) plutôt que caché sous le doigt.
-  // `touch-action: none` (CSS) empêche le scroll/zoom du navigateur pendant
-  // qu'on joue.
+  // Tactile : le doigt pilote le vaisseau, décalé vers l'avant (droite)
+  // plutôt que caché sous le doigt. `touch-action: none` (CSS) empêche le
+  // scroll/zoom pendant qu'on joue.
   function handleTouch(e) {
     if (e.touches.length === 0) return;
     input.isTouch = true;

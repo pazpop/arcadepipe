@@ -1,31 +1,24 @@
-// Musique : lecture d'une playlist de vrais fichiers tracker .xm via
-// chiptune3.js (AudioWorklet, vrai module ES6 — voir lib/chiptune3.js). Le
-// flux audio ne se recrée jamais en changeant d'écran (menu, jeu, game
-// over, crédits...) — seul un changement de piste ou stop/play y touche.
+// Musique : playlist de fichiers tracker .xm via chiptune3.js (AudioWorklet).
+// Le flux ne se recrée jamais en changeant d'écran — seul un changement de
+// piste ou stop/play y touche.
 import { AUDIO, STORAGE_KEYS } from "../config.js";
 import { ChiptuneJsPlayer } from "../../lib/chiptune3.js";
 
 export class MusicPlayer {
-  // `audioContext` : partagé avec le moteur SFX (voir audio/sfx.js et
-  // main.js) plutôt que d'en laisser chiptune3 créer un second — un contexte
-  // qui n'est jamais explicitement repris dans le geste utilisateur reste
-  // "verrouillé" côté iOS (la musique ne s'entendrait qu'avec le loquet
-  // silencieux désactivé, contrairement aux bruitages sur le contexte
-  // partagé, bien repris par audio.ensure()).
+  // `audioContext` partagé avec le moteur SFX (sfx.js/main.js) plutôt qu'un
+  // second créé par chiptune3 — un contexte jamais repris dans le geste
+  // utilisateur reste "verrouillé" côté iOS.
   constructor(audioContext) {
-    // repeatCount 0 = chaque piste ne boucle plus sur elle-même ; on enchaîne
-    // nous-mêmes sur la suivante via onEnded ci-dessous, pour que la
-    // playlist tourne en continu plutôt que de rester bloquée sur un seul
-    // morceau pendant toute une partie.
+    // repeatCount 0 : chaque piste ne boucle plus seule, on enchaîne
+    // nous-mêmes via onEnded ci-dessous pour une playlist continue.
     this.player = new ChiptuneJsPlayer({
       repeatCount: 0,
       stereoSeparation: 100,
       interpolationFilter: 4,
       context: audioContext,
     });
-    // Avec un contexte externe, chiptune3 ne connecte pas lui-même sa sortie
-    // (voir chiptune3.js : `this.destination` reste `false` dans ce cas) —
-    // sans cette ligne, la musique serait chargée et "jouée" en silence.
+    // Avec un contexte externe, chiptune3 ne connecte pas sa sortie lui-même
+    // (`this.destination` reste `false`) — sans cette ligne, la musique jouerait en silence.
     this.player.gain.connect(audioContext.destination);
     this.player.onEnded(() => this.playRandom());
     this.started = false;
@@ -34,13 +27,9 @@ export class MusicPlayer {
     this.volume = this._readFloat(STORAGE_KEYS.volume, AUDIO.masterVolume);
     this.trackIndex = this._readInt(STORAGE_KEYS.track, 0);
     if (this.trackIndex < 0 || this.trackIndex >= AUDIO.tracks.length) this.trackIndex = 0;
-    // Incrémenté à chaque _loadCurrent() : le geste qui démarre l'audio
-    // (start(), sur le premier clic) et celui qui lance la partie
-    // (playRandom(), sur ce même clic — voir game.js:startRun) partent tous
-    // les deux une requête fetch() en parallèle. Sans ce jeton, la réponse
-    // arrivée en second gagne toujours, quelle que soit la piste réellement
-    // voulue en dernier — d'où l'impression que la playlist aléatoire ne se
-    // lance "parfois" pas : la piste par défaut gagnait la course.
+    // Incrémenté à chaque _loadCurrent() : start() et playRandom() peuvent
+    // partir un fetch() chacun sur le même clic (game.js:startRun). Sans ce
+    // jeton, la réponse arrivée en second gagnerait toujours, même périmée.
     this._loadToken = 0;
   }
 
@@ -87,12 +76,9 @@ export class MusicPlayer {
     return AUDIO.tracks[this.trackIndex];
   }
 
-  // Ne passe plus par player.load() (fetch + play immédiat) : on fait le
-  // fetch nous-mêmes pour pouvoir (1) ignorer une réponse arrivée après
-  // qu'une piste plus récente a été demandée entretemps (jeton _loadToken —
-  // voir constructeur) et (2) couper le volume à zéro le temps de la
-  // bascule, pour éviter le clic audible quand libopenmpt tranche net
-  // l'ancien module au profit du nouveau, au beau milieu du signal.
+  // Fetch fait nous-mêmes (pas player.load()) pour (1) ignorer une réponse
+  // périmée via _loadToken et (2) couper le volume à zéro le temps de la
+  // bascule, pour éviter le clic quand libopenmpt tranche net l'ancien module.
   _loadCurrent() {
     const token = ++this._loadToken;
     const track = this.currentTrack;
@@ -145,10 +131,9 @@ export class MusicPlayer {
     if (this.started) this._loadCurrent();
   }
 
-  // Bascule stop/lecture — utilise la vraie pause du moteur (arrêt du
-  // traitement audio), pas juste un volume à zéro. `togglePause()` est un
-  // no-op silencieux côté worklet tant qu'aucune piste n'est chargée (voir
-  // postMsg() dans chiptune3.js), donc pas besoin de vérifier ça nous-mêmes.
+  // Bascule stop/lecture — vraie pause du moteur (pas juste volume à zéro).
+  // togglePause() est un no-op silencieux tant qu'aucune piste n'est chargée,
+  // pas besoin de le vérifier nous-mêmes.
   toggleStop() {
     if (!this.started) return;
     this.player.togglePause();

@@ -13,10 +13,8 @@ export const PALETTE = {
   playerGlow: "#8ef4ff",
   bulletPlayer: "#ffe66d",
   bulletEnemy: "#ff5d9e",
-  // Bleu-indigo plutôt que jaune-orangé (#ffcc33, trop proche de bulletPlayer
-  // #ffe66d — signalé peu lisible en jeu) : seule teinte encore libre qui ne
-  // chevauche aucune autre couleur du jeu (jaune joueur, rose bulletEnemy,
-  // violet enemyElite, cyan vaisseau/bouclier, orange des bonus).
+  // Bleu-indigo (pas jaune-orangé, trop proche de bulletPlayer) : seule
+  // teinte encore libre dans la palette du jeu.
   bulletEnemy2: "#5a7dff",
   enemyNormal: "#ff5d73",
   enemyElite: "#c86bff",
@@ -34,11 +32,9 @@ export const PALETTE = {
 };
 
 export const PLAYER = {
-  // px/s (résolution interne 480x270) — plafond du suivi progressif de la
-  // cible souris/tactile (voir player.js). Volontairement très supérieur à
-  // la vitesse de déplacement réelle d'une souris/d'un doigt sur ce canvas,
-  // pour que le lissage reste quasi imperceptible en jeu normal tout en
-  // absorbant les sauts d'un seul événement tactile (pas de snap brutal).
+  // px/s — plafond du suivi progressif de la cible souris/tactile (player.js).
+  // Très supérieur à la vitesse réelle de déplacement, pour un lissage
+  // imperceptible qui absorbe quand même les sauts tactiles.
   speed: 2000,
   w: 14,
   h: 9,
@@ -52,25 +48,20 @@ export const PLAYER = {
 };
 
 export const DIFFICULTY = {
-  bossWaveEvery: 5, // une vague sur N est une vague de boss — le changement de "biodôme" (zonePalette dans game.js) suit ce même rythme, un nouveau après chaque boss
+  bossWaveEvery: 5, // une vague sur N est une vague de boss — le "biodôme" (zonePalette) change au même rythme
   baseWaveKills: 10,
   waveKillsStep: 3,
-  // Les ennemis sont désormais confinés au tiers droit de l'écran (voir
-  // enemies.js) : le même rythme de spawn qu'avant y paraît plus dense
-  // puisqu'ils se concentrent sur un tiers de la largeur au lieu de toute
-  // l'écran — on démarre donc plus doucement, la montée en cadence
-  // (spawnIntervalStep) reste inchangée d'une vague à l'autre.
+  // Ennemis confinés au tiers droit (enemies.js) : le même rythme y paraît
+  // plus dense, donc on démarre plus doucement (spawnIntervalStep inchangé).
   baseSpawnInterval: 0.9,
   spawnIntervalStep: 0.05,
   minSpawnInterval: 0.18,
   waveBreakDuration: 2.4, // saut spatial entre deux vagues
-  // Un peu plus long après un boss : le temps que le décor "Étoile Noire"
-  // (voir triggerDeathStarLeave dans stars.js) et les derniers vaisseaux
-  // ennemis en fuite (voir enemyLeaveSpeed dans enemies.js) aient
-  // complètement quitté l'écran avant l'arrivée des ennemis normaux.
+  // Plus long après un boss : le temps que le décor et les derniers ennemis
+  // en fuite quittent l'écran.
   bossWaveBreakDuration: 3.6,
-  // Les tirs ennemis (élites + boss) accélèrent progressivement avec la
-  // vague, plafonnés pour rester esquivables même en fin de partie.
+  // Tirs ennemis (élites + boss) accélèrent avec la vague, plafonnés pour
+  // rester esquivables.
   bulletSpeedGrowthPerWave: 0.045,
   bulletSpeedCap: 1.7,
 };
@@ -79,14 +70,10 @@ export function bulletSpeedFactor(wave) {
   return Math.min(DIFFICULTY.bulletSpeedCap, 1 + (wave - 1) * DIFFICULTY.bulletSpeedGrowthPerWave);
 }
 
-// Bonus temporaires laissés occasionnellement par les ennemis détruits.
-// "power" frappe plus fort mais cadence réduite ; "rapid" tire beaucoup plus
-// vite mais un peu plus faible (dégâts fractionnaires : un ennemi normal
-// encaisse 2 tirs au lieu d'1, malgré la cadence ~2.5x plus élevée). "nova"
-// est un effet instantané (pas un buff temporisé comme les deux autres) :
-// détruit tous les ennemis normaux/élites visibles à l'écran, pas le boss.
-// "shield" n'est pas non plus temporisé : il encaisse un nombre fixe de
-// coups (voir shieldHits) avant de se briser, quelle que soit la durée.
+// Bonus temporaires lâchés par les ennemis détruits. "power" : dégâts
+// renforcés, tir plus lent. "rapid" : tir très rapide, dégâts réduits.
+// "nova" : instantané, détruit tous les ennemis à l'écran (pas le boss).
+// "shield" : absorbe un nombre fixe de coups (shieldHits), pas temporisé.
 export const POWERUP = {
   duration: 20, // secondes d'effet une fois ramassé (sans effet sur "nova"/"shield")
   shieldHits: 3, // nombre de coups absorbés avant que le bouclier se brise
@@ -101,8 +88,7 @@ export const POWERUP = {
     shield: { color: "#5ec8ff", label: "BOUCLIER", effect: "absorbe les prochains coups" },
     nova: { instant: true, color: "#ffffff", label: "NOVA", effect: "détruit tous les ennemis à l'écran" },
   },
-  // Poids relatifs quand un bonus est tiré (voir pickPowerupType() dans
-  // game.js) — nova doit rester nettement plus rare que les autres.
+  // Poids relatifs (pickPowerupType() dans game.js) — nova doit rester nettement plus rare.
   typeWeights: { power: 0.36, rapid: 0.36, shield: 0.2, nova: 0.08 },
 };
 
@@ -112,10 +98,9 @@ export const BOSS = {
   weakPointHp: 3,
   phaseSpeedupFactor: 1.35, // patterns plus denses par point faible détruit
   bulletSpeed: 90,
-  // Le tout premier combat de boss (vague DIFFICULTY.bossWaveEvery — voir
-  // isFirstBoss() dans boss.js) est volontairement plus clément : un joueur
-  // qui voit un boss pour la première fois n'a pas encore le rythme. Les
-  // vagues de boss suivantes ne sont pas concernées (multiplicateurs à 1).
+  // 1er combat de boss (isFirstBoss() dans boss.js) volontairement plus
+  // clément — le joueur n'a pas encore le rythme. Boss suivants non
+  // concernés (multiplicateurs à 1).
   firstBossHpMul: 0.7,
   firstBossSpeedMul: 0.75,
   firstBossFireIntervalMul: 1.4,
@@ -124,8 +109,7 @@ export const BOSS = {
 
 export const AUDIO = {
   masterVolume: 0.5,
-  // Playlist de vrais fichiers tracker .xm (voir Crédits) — la musique n'est
-  // jamais resynthétisée à la main, seulement rejouée telle quelle.
+  // Playlist de fichiers tracker .xm (voir Crédits), jamais resynthétisée.
   tracks: [
     { file: "music/age-of-empires-3.xm", title: "Age of Empires III", artist: "DEViANCE" },
     { file: "music/battle-for-middle-earth.xm", title: "Battle for Middle-Earth", artist: "DEViANCE" },
@@ -148,9 +132,7 @@ export const STORAGE_KEYS = {
 };
 
 export const INPUT = {
-  // Décalage HORIZONTAL (vers la droite, sens du tir/des ennemis) plutôt
-  // que vertical : le vaisseau "précède" le doigt au lieu de flotter
-  // au-dessus — le doigt ne masque plus la zone d'où viennent les tirs
-  // ennemis, plus facile à esquiver.
+  // Décalage horizontal (pas vertical) : le vaisseau "précède" le doigt, qui
+  // ne masque plus la zone d'où viennent les tirs ennemis.
   touchXOffset: 28,
 };

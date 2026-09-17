@@ -1,7 +1,9 @@
-// Frôlement des tirs ennemis (et du corps du kamikaze, seul ennemi qui ne
-// tire jamais) : récompense l'esquive serrée plutôt que large. Alimente la
-// jauge NOVA (game.js) plutôt que le score seul, pour donner un objectif
-// tactile à chaque frôlement plutôt qu'un simple nombre qui monte.
+// Frôlement des tirs ennemis ET du corps des ennemis eux-mêmes (voler près
+// d'un vaisseau compte, pas seulement esquiver ce qu'il tire) : récompense
+// l'esquive serrée plutôt que large. Le boss fait exception — seuls ses tirs
+// grazent, jamais sa coque (voir updateGraze plus bas). Alimente la jauge
+// NOVA (game.js) plutôt que le score seul, pour donner un objectif tactile à
+// chaque frôlement plutôt qu'un simple nombre qui monte.
 import { GRAZE, NOVA, DIFFICULTY } from "./config.js";
 import { circlesOverlap } from "./collisions.js";
 import { spawnSpark } from "./particles.js";
@@ -47,14 +49,17 @@ export function updateGraze(g, dt, player, projectiles, enemies, particles, audi
     }
   }
 
+  // Corps des ennemis normaux (pool `enemies`) — le boss n'en fait jamais
+  // partie (objet séparé, `g.boss`), donc il est exclu par construction :
+  // seuls ses tirs, déjà traités ci-dessus via projectiles.enemy, le font grazer.
   for (const en of enemies.items) {
-    if (!en.active || en.type !== "kamikaze") continue;
+    if (!en.active) continue;
     if (en.grazeCooldown > 0) {
       en.grazeCooldown = Math.max(0, en.grazeCooldown - dt);
       continue;
     }
     if (circlesOverlap(en.x, en.y, en.radius, player.x, player.y, GRAZE.radius)) {
-      en.grazeCooldown = GRAZE.kamikazeCooldown;
+      en.grazeCooldown = GRAZE.bodyCooldown;
       registerGraze(g, particles, audio, en.x, en.y);
     }
   }

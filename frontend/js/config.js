@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.44";
+export const VERSION = "2.45";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -180,13 +180,14 @@ export const GRAZE = {
   // de la moitié de la largeur du sprite (PLAYER.w=14) pour que le frôlement
   // se déclenche au ras de la silhouette visible, pas seulement au ras du hitbox.
   radius: 7,
-  // Le corps du kamikaze (seul ennemi qui ne tire jamais, fireChance:0 dans
-  // enemies.js) peut regrazer après ce délai — poursuite prolongée, contrairement
-  // à un tir qui ne graze qu'une fois pendant toute sa vie (voir `grazed` sur
-  // les projectiles dans projectiles.js).
-  kamikazeCooldown: 1.5,
+  // Le corps d'un ennemi (tous types, voir updateGraze dans graze.js — le
+  // boss fait exception, seuls ses tirs comptent) peut regrazer après ce
+  // délai tant qu'il reste à proximité, contrairement à un tir qui ne graze
+  // qu'une fois pendant toute sa vie (voir `grazed` sur les projectiles dans
+  // projectiles.js).
+  bodyCooldown: 1.5,
   baseScore: 15, // multiplié par la taille de la chaîne courante (voir graze.js)
-  grazePerCharge: 20, // nombre de grazes pour remplir une charge NOVA
+  grazePerCharge: 12, // nombre de grazes pour remplir une charge NOVA (baissé de 20 : jugé trop lent à charger)
 };
 
 // NOVA : ressource stockable rechargée par le graze (au lieu d'un drop à

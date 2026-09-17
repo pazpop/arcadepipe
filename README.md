@@ -126,7 +126,6 @@ Ce repo s'arrête là — il ne connaît ni VPS ni serveur cible. L'instance `ar
 
 ## Roadmap
 
-- [ ] Premier push vers `main` pour valider le nouveau pipeline CI/CD de bout en bout (build/push/notification cross-repo — jamais exercé depuis la séparation des repos), puis passer les packages GHCR en public (voir ci-dessus)
 - [ ] Sauvegardes DB ([Litestream](https://litestream.io/) ou cron) — **reporté volontairement** : pas de vraie perte critique en cas d'incident pour un classement de jeu perso, pas prioritaire pour l'instant
 - [ ] Score authentifié (jeton signé émis au début de la partie, exigé à la soumission) — pas urgent, le score non authentifié est un risque assumé (voir Sécurité)
 

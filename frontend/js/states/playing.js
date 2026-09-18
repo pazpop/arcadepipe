@@ -6,20 +6,21 @@
 // vide, donc le rendu de la scène elle-même n'est pas propre à "playing" au
 // sens strict, mais vit ici avec le reste de l'état qui la nourrit.
 import { RES_W, RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS } from "../config.js";
-import { updateStarfield, spawnDeathStarBackdrop, triggerDeathStarLeave } from "../stars.js";
+import { updateStarfield, triggerDeathStarLeave } from "../stars.js";
 import { resetPlayer, updatePlayer, hitPlayer, drawPlayer, applyPowerup, applyShield } from "../player.js";
 import { updateProjectiles, drawProjectiles } from "../projectiles.js";
 import { updateParticles, drawParticles, spawnExplosion, spawnFlashBurst, spawnSpark } from "../particles.js";
-import { spawnEnemyWave, updateEnemies, setEnemiesLeaving, damageEnemy, pointsFor, drawEnemies, enemyGlowColor } from "../enemies.js";
-import { spawnBoss, updateBoss, hitBossWeakPoint, hitsBossHull, drawBoss } from "../boss.js";
+import { spawnEnemyWave, updateEnemies, damageEnemy, pointsFor, drawEnemies, enemyGlowColor } from "../enemies.js";
+import { updateBoss, hitBossWeakPoint, hitsBossHull, drawBoss } from "../boss.js";
 import { spawnPowerup, updatePowerups, drawPowerups } from "../powerups.js";
-import { updateGraze, novaMaxForWave } from "../graze.js";
-import { createBonusLevel, updateBonusLevel, drawBonusLevel, bonusLevelRewardFraction } from "../bonusLevel.js";
+import { updateGraze } from "../graze.js";
+import { drawBonusLevel } from "../bonusLevel.js";
 import { circlesOverlap } from "../collisions.js";
 import { consumeJustPressed } from "../input.js";
 import * as hud from "../hud.js";
 import { MODE } from "./mode.js";
 import * as helpState from "./help.js";
+import { startWave, updateWaveTransition } from "./waves.js";
 
 // Accessibilité : coupe le screen shake pour les joueurs sensibles au mouvement (réglage système).
 const REDUCED_MOTION =
@@ -80,40 +81,10 @@ function pickPowerupType() {
   return "power"; // filet de sécurité (erreurs d'arrondi flottant)
 }
 
-function isBossWave(wave) {
-  return wave % DIFFICULTY.bossWaveEvery === 0;
-}
-
 // Utilisée aussi par game.js (couleur de fond hors de "playing" à proprement
 // parler, ex. pendant PAUSED/GAME_OVER qui affichent la même scène figée).
 export function zonePalette(g) {
   return PALETTE.bgZones[Math.floor((g.wave - 1) / DIFFICULTY.bossWaveEvery) % PALETTE.bgZones.length];
-}
-
-function startWave(g, engine, wave) {
-  g.wave = wave;
-  g.waveKills = 0;
-  g.tookDamageThisWave = false;
-  g.grazeChain = 0;
-  g.novaMax = novaMaxForWave(wave);
-  g.novaStock = Math.min(g.novaStock, g.novaMax);
-  g.waveKillTarget = DIFFICULTY.baseWaveKills + (wave - 1) * DIFFICULTY.waveKillsStep;
-  g.spawnInterval = Math.max(
-    DIFFICULTY.minSpawnInterval,
-    DIFFICULTY.baseSpawnInterval - (wave - 1) * DIFFICULTY.spawnIntervalStep
-  );
-  g.waveBreak = 0;
-  g.boss = null;
-  if (isBossWave(wave)) {
-    g.banner = { text: `VAGUE ${wave} — ARME MASSIVE EN APPROCHE`, timer: 2.5 };
-    g.boss = spawnBoss(wave);
-    spawnDeathStarBackdrop(engine.starfield);
-  } else {
-    g.banner = { text: `VAGUE ${wave}`, timer: 1.8 };
-    // Filet de sécurité : évite qu'un décor de boss traîne au début d'une
-    // vague normale (chemin normal = triggerDeathStarLeave à la victoire).
-    engine.starfield.deathStar = null;
-  }
 }
 
 export function startRun(g, engine) {
@@ -269,6 +240,15 @@ function resolveCollisions(g, engine) {
   }
 }
 
+// Cartographie "qui écrit quoi" sur g.novaStock/g.novaProgress (voir aussi
+// hud.js, drawNovaGauge, qui les LIT sans jamais les écrire) — 3 écrivains,
+// jamais concurrents entre eux (tout est synchrone dans une même frame,
+// pas de vraie concurrence en JS) :
+//   - graze.js, registerGraze() : incrément à chaque frôlement.
+//   - tryUseNova()/triggerNova() ci-dessous : décrément manuel (déclenchement).
+//   - states/waves.js, applyNovaReward() : paiement du niveau bonus, une
+//     seule fois (appelée exactement au moment où g.bonusLevel.finished passe à true).
+//
 // NOVA : effet instantané (pas un buff) — détruit tous les ennemis actifs
 // et leurs tirs en vol (sinon un mur de balles resterait mortel), jamais
 // le boss (garde un vrai combat malgré un ramassage chanceux).
@@ -304,16 +284,6 @@ function tryUseNova(g, engine) {
   if (g.novaStock <= 0) return;
   g.novaStock -= 1;
   triggerNova(g, engine);
-}
-
-// Récompense du niveau bonus (bonusLevel.js) : ajoutée à la jauge déjà en
-// cours plutôt que de l'écraser (un run imparfait ne fait jamais reculer ce
-// qui était déjà acquis par le graze), plafonnée au max courant.
-function applyNovaReward(g, frac) {
-  const max = g.novaMax;
-  const units = Math.min(max, g.novaStock + g.novaProgress + frac * max);
-  g.novaStock = Math.floor(units);
-  g.novaProgress = units - g.novaStock;
 }
 
 // Coup absorbé par le bouclier : pas de vie perdue, réaction plus légère qu'un vrai impact.
@@ -451,89 +421,11 @@ export function update(g, engine, dt) {
     }
   }
 
-  // Vagues / transition "saut spatial"
-  if (g.waveBreak > 0) {
-    g.waveBreak -= dt;
-    const p = g.waveBreak / g.waveBreakDuration;
-    g.warp = 1 + 9 * (1 - Math.abs(p - 0.5) * 2);
-    g.clearingScreen = true;
-    if (g.waveBreak <= 0) {
-      g.warp = 1;
-      g.clearingScreen = false;
-      g.warpSoundPlayed = false;
-      startWave(g, engine, g.wave + 1);
-    }
-  } else if (g.bonusLevel) {
-    g.clearingScreen = true; // pas de tir pendant le niveau bonus, comme pendant un saut spatial
-    g.warp = BONUS_LEVEL.warp;
-    updateBonusLevel(g.bonusLevel, dt, player, particles, audio);
-    if (g.bonusLevel.finished) {
-      const frac = bonusLevelRewardFraction(g.bonusLevel);
-      const passed = g.bonusLevel.passedCount;
-      applyNovaReward(g, frac);
-      g.bonusLevel = null;
-      g.warp = 1;
-      g.clearingScreen = false;
-      g.waveBreakDuration = DIFFICULTY.waveBreakDuration;
-      g.waveBreak = g.waveBreakDuration;
-      g.banner = {
-        text: `NIVEAU BONUS TERMINÉ : ${passed}/${BONUS_LEVEL.ringCount} ANNEAUX — NOVA +${Math.round(frac * 100)}%`,
-        timer: g.waveBreakDuration,
-      };
-      if (!g.warpSoundPlayed) {
-        audio.playWarpTransition();
-        g.warpSoundPlayed = true;
-      }
-    }
-  } else {
-    g.clearingScreen = false;
-    const waveDone = g.boss ? g.boss.victory : g.waveKills >= g.waveKillTarget;
-    if (waveDone) {
-      const nextWave = g.wave + 1;
-      const bonusCycle = nextWave % BONUS_LEVEL.everyNWaves === 0 ? nextWave / BONUS_LEVEL.everyNWaves : 0;
-      const bonusRequiredScore =
-        bonusCycle === 1 ? BONUS_LEVEL.firstScoreThreshold : BONUS_LEVEL.scoreThreshold * bonusCycle;
-      if (bonusCycle > 0 && nextWave !== g.bonusLevelLastWave && g.score >= bonusRequiredScore) {
-        g.bonusLevelLastWave = nextWave;
-        g.bonusLevel = createBonusLevel();
-        // Glissée d'entrée du vaisseau (voir updateBonusLevelShip) — même
-        // point de départ que l'intro de vague 1, le message explicatif
-        // s'affiche pendant cette même phase (drawBonusLevelIntro).
-        player.x = -20;
-        player.y = RES_H / 2;
-        setEnemiesLeaving(enemies);
-        for (const b of projectiles.enemy.items) b.active = false;
-        for (const pu of powerups.items) pu.active = false;
-        return;
-      }
-      // Plus long après un boss (bossWaveBreakDuration) — le temps que le
-      // décor et les derniers ennemis en fuite quittent l'écran.
-      g.waveBreakDuration = g.boss ? DIFFICULTY.bossWaveBreakDuration : DIFFICULTY.waveBreakDuration;
-      g.waveBreak = g.waveBreakDuration;
-      g.flash = Math.max(g.flash, 0.3);
-      if (!g.tookDamageThisWave) {
-        g.score += DIFFICULTY.noDamageWaveBonus;
-        g.banner = {
-          text: `VAGUE ${g.wave} TERMINÉE — SANS DÉGÂTS ! +${DIFFICULTY.noDamageWaveBonus}`,
-          timer: g.waveBreakDuration,
-        };
-        audio.playPowerup();
-      } else {
-        g.banner = { text: `VAGUE ${g.wave} TERMINÉE`, timer: g.waveBreakDuration };
-      }
-      // Tirs/bonus disparaissent immédiatement, mais les ennemis défilent
-      // vers la gauche comme le fond (enemies.js) plutôt que de disparaître
-      // d'un coup — le boss reste visible jusqu'à startWave (explosion de
-      // victoire à l'écran).
-      setEnemiesLeaving(enemies);
-      for (const b of projectiles.enemy.items) b.active = false;
-      for (const pu of powerups.items) pu.active = false;
-      if (!g.warpSoundPlayed) {
-        audio.playWarpTransition();
-        g.warpSoundPlayed = true;
-      }
-    }
-  }
+  // Vagues / transition "saut spatial" / cycle du niveau bonus — voir
+  // states/waves.js. true = déclenchement d'un niveau bonus ce frame, le
+  // reste de cette frame (jusqu'à updateGraze inclus) est sauté, comme le
+  // faisait le `return` original de ce bloc avant son extraction.
+  if (updateWaveTransition(g, engine, dt)) return;
 
   updateStarfield(starfield, dt, g.warp);
 
@@ -571,6 +463,17 @@ export function update(g, engine, dt) {
 // Rendu de la scène de jeu — aussi appelé pour PAUSED/GAME_OVER (voir le
 // commentaire en tête de fichier) : ces deux écrans dessinent leur overlay
 // par-dessus après cet appel (voir game.js, draw()).
+//
+// INVARIANT qui rend le freeze de PAUSED/GAME_OVER correct (vérifié par
+// grep sur tout frontend/js au moment d'écrire ceci, mais implicite — rien
+// ne l'impose au niveau du code) : aucune fonction appelée depuis drawScene()
+// (ni transitivement) ne doit lire performance.now()/Date.now() directement.
+// Tout ce qui est visible ici doit venir de l'état posé par update() (celui
+// de ce fichier ou des sous-systèmes), qui lui ne tourne jamais en dehors du
+// mode PLAYING — draw(), contrairement à update(), continue de tourner à
+// chaque frame quel que soit le mode. Une future animation d'ambiance qui
+// lirait l'horloge murale ici continuerait donc de tourner pendant la pause,
+// silencieusement.
 export function drawScene(c2d, g, engine) {
   const { enemies, powerups, particles, projectiles, player } = engine;
   drawEnemies(c2d, enemies);

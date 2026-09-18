@@ -40,9 +40,13 @@ function registerGraze(g, particles, audio, x, y) {
 // restant dans un tir), la transition de vague et le ralenti de mort
 // (g.dying) — leur dt n'est que réduit, jamais nul (voir update() dans
 // states/playing.js), donc sans cette garde la jauge continuerait de se remplir
-// un peu pendant ces phases où le joueur ne "joue" pas vraiment.
+// un peu pendant ces phases où le joueur ne "joue" pas vraiment. g.clearingScreen
+// (saut spatial ET niveau bonus, voir states/playing.js) est vérifié pour la
+// même raison que dans resolveCollisions() — jusqu'ici protégé seulement par
+// une coïncidence de données (pools ennemis/tirs vides pendant le niveau
+// bonus), pas par le code ; explicite maintenant pour ne plus en dépendre.
 export function updateGraze(g, dt, player, projectiles, enemies, particles, audio) {
-  if (!player.alive || player.invuln > 0 || g.waveBreak > 0 || g.dying || g.shipIntro) return;
+  if (!player.alive || player.invuln > 0 || g.waveBreak > 0 || g.dying || g.shipIntro || g.clearingScreen) return;
 
   for (const b of projectiles.enemy.items) {
     if (!b.active || b.grazed) continue;

@@ -4,6 +4,11 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.62] - 2026-09-18
+- Refactor interne (aucun changement de comportement) : `states/waves.js` extrait de `states/playing.js` (démarrage de vague + transition entre vagues/déclenchement du niveau bonus) — `playing.js` passe de ~610 à ~495 lignes. Voir ROADMAP.md, Session 1.
+- Fix : `updateGraze()` (`graze.js`) pouvait continuer à charger la jauge NOVA pendant le niveau bonus/saut spatial — protégé jusqu'ici seulement par une coïncidence de données (pools vides à ce moment), pas par le code. Garde explicite ajoutée + test de régression.
+- Deux commentaires d'invariants ajoutés dans `states/playing.js` (cartographie des écrivains NOVA, condition qui rend le freeze de PAUSED/GAME_OVER correct).
+
 ## [2.61] - 2026-09-18
 - Konami code : petit tilt du canvas ajouté, synchronisé avec le jingle audio.
 

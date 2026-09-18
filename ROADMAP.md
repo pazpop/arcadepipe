@@ -2,16 +2,16 @@
 
 Organisée par session de travail suggérée (issue d'une discussion Lumo/Claude/arbitrage humain le 2026-09-18) plutôt qu'en vrac — chaque session est indépendante, à reprendre quand il y a du temps dédié.
 
-## Session 1 — stabilisation (architecture `states/playing.js`)
+## Session 1 — stabilisation (architecture `states/playing.js`) ✅ 2026-09-18
 
 Issu d'une discussion à trois (utilisateur, Claude, revue croisée) sur la décomposition de `game.js` : contrairement aux écrans de `states/` (mutuellement exclusifs par construction, un seul MODE actif à la fois), les sous-systèmes de `playing.js` (collisions, NOVA, vagues, boss, niveau bonus) coexistent dans la même frame — les extraire en modules séparés déplacerait le couplage plutôt que de le réduire. Seule extraction retenue, grain jugé correct : un `waves.js` (le bloc `startWave` + la logique `waveBreak`/déclenchement du niveau bonus dans `update()`), même patron que `bonusLevel.js` (minuteur propre, champs `g` propres).
 
-- [ ] Extraire `waves.js` de `states/playing.js`.
-- [ ] Fix : la clause de garde de `updateGraze()` (`graze.js`) ne vérifie pas `g.bonusLevel`/`g.clearingScreen`, contrairement à `resolveCollisions()` qui le fait — actuellement protégé seulement par une coïncidence de données (pools ennemis/tirs vides pendant le niveau bonus), pas par le code. Ajouter `|| g.clearingScreen` à la garde.
-- [ ] Ajouter un test dans `frontend/js/graze.test.js` qui fige cette règle ("le graze ne progresse pas pendant clearingScreen") — sans ça la garde peut redivergir au prochain ajout, protégée à nouveau par une coïncidence jusqu'à ce que non.
-- [ ] Commentaire de cartographie "qui écrit quoi" sur les champs `g` liés à NOVA (`novaStock`/`novaProgress`) — 3 écrivains identifiés : `graze.js` (incrément), `states/playing.js` `tryUseNova`/`triggerNova` (décrément manuel), `states/playing.js` `applyNovaReward` (paiement du niveau bonus, une fois).
-- [ ] Commentaire explicite en tête de `drawScene()` (`states/playing.js`) formulant l'invariant qui rend le freeze pendant PAUSED/GAME_OVER correct : aucune fonction `draw*` ne doit lire `performance.now()`/`Date.now()` directement, seulement de l'état posé par `update()` (lui-même conditionné au mode) — vérifié vrai aujourd'hui (grep sur tout `frontend/js`), mais implicite, donc fragile à un futur ajout.
-- [ ] Option pour plus tard, si l'invariant ci-dessus doit être renforcé au-delà d'un commentaire : un test e2e comparant deux captures d'écran prises en pause (doivent être bit à bit identiques) — meilleur rapport effort/protection qu'une règle ESLint personnalisée interdisant `performance.now`/`Date.now` dans les fonctions `draw*` (techniquement possible mais coûteuse à écrire proprement).
+- [x] Extraire `waves.js` de `states/playing.js` — `startWave()` et la transition de vague/niveau bonus (`updateWaveTransition()`) déplacées ; `states/playing.js` passe de ~610 à ~495 lignes.
+- [x] Fix : la clause de garde de `updateGraze()` (`graze.js`) ne vérifiait pas `g.bonusLevel`/`g.clearingScreen`, contrairement à `resolveCollisions()` — `|| g.clearingScreen` ajouté.
+- [x] Test ajouté dans `frontend/js/graze.test.js` ("le graze ne progresse pas pendant clearingScreen"), avec un test de contrôle qui prouve que le même scénario grazerait bien sans la garde.
+- [x] Commentaire de cartographie "qui écrit quoi" sur `g.novaStock`/`g.novaProgress` ajouté dans `states/playing.js`, juste avant `triggerNova()`.
+- [x] Commentaire d'invariant ajouté en tête de `drawScene()` (`states/playing.js`).
+- [ ] Option toujours en réserve, non faite : un test e2e comparant deux captures d'écran prises en pause (doivent être bit à bit identiques), si l'invariant ci-dessus doit être renforcé au-delà d'un commentaire un jour.
 
 ## Session 2 — nouvelles fonctionnalités (meilleur rapport effort/impact)
 

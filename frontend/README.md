@@ -33,7 +33,7 @@ Chaque module de `states/` exporte les mêmes formes de fonctions :
 | `draw(c2d, g[, engine])` | dessine l'écran |
 | `handleTap(g, engine, x, y)` | gère un tap/clic tactile (quand l'écran en a besoin) |
 
-`js/states/playing.js` est à part : c'est le plus gros (vagues, collisions, boss, niveau bonus, NOVA), et sa fonction `drawScene()` est aussi appelée pour les écrans `paused` et `game_over`, qui affichent la scène de jeu figée derrière leur propre overlay plutôt qu'un fond vide.
+`js/states/playing.js` est à part : c'est le plus gros (collisions, boss, niveau bonus, NOVA), et sa fonction `drawScene()` est aussi appelée pour les écrans `paused` et `game_over`, qui affichent la scène de jeu figée derrière leur propre overlay plutôt qu'un fond vide. La gestion des vagues (démarrage, transition entre deux vagues, déclenchement du niveau bonus) vit dans `js/states/waves.js`, un module utilitaire dans le même dossier — pas un écran au sens `MODE`, juste un sous-système extrait pour la même raison que `bonusLevel.js` : son propre minuteur, ses propres champs `g`.
 
 ## Lancer en local
 

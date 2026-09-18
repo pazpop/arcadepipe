@@ -4,6 +4,9 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.58] - 2026-09-18
+- Nettoyage : `playEnemyShot()` (audio/sfx.js) supprimée — définie mais jamais appelée nulle part dans le projet.
+
 ## [2.57] - 2026-09-18
 - Nettoyage : simplification de l'initialisation audio dans main.js — fusion des écouteurs "premier geste" et "reprise permanente" en un seul (aucun changement de comportement, juste moins de code dupliqué).
 

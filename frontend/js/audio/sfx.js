@@ -116,11 +116,6 @@ export class AudioEngine {
     });
   }
 
-  // Tir ennemi : timbre différent (triangle, plus grave) pour distinguer au son qui tire.
-  playEnemyShot() {
-    this._tone({ type: "triangle", startFreq: 600, endFreq: 350, duration: 0.09, gain: 0.08 });
-  }
-
   // Explosion : bruit blanc filtré passe-bas + glissement de fréquence de
   // coupure, enveloppe courte (Attack 0, Decay ~150ms, pas de Sustain).
   playExplosion() {

@@ -20,6 +20,7 @@ RUN apk add --no-cache libcap \
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY index.html /usr/share/caddy/
 COPY robots.txt /usr/share/caddy/
+COPY favicon.svg /usr/share/caddy/
 COPY css/ /usr/share/caddy/css/
 COPY js/ /usr/share/caddy/js/
 COPY lib/ /usr/share/caddy/lib/

@@ -158,6 +158,20 @@ function drawCelestial(ctx, c) {
   ctx.save();
   if (c.type === "planet") {
     ctx.globalAlpha = alpha * 0.5; // discret, pour rester "loin"
+    const ringRx = c.radius * 1.5;
+    const ringRy = c.radius * 0.35;
+    const ringRotation = -0.4;
+    ctx.strokeStyle = `hsla(${c.hue}, 18%, 80%, 0.5)`;
+    ctx.lineWidth = 1.5;
+    // Anneau en deux moitiés (avant/arrière la sphère) plutôt qu'un tracé
+    // complet en un seul passage : un anneau plein passerait "devant" sur
+    // tout son pourtour, y compris la moitié qui doit disparaître derrière
+    // la planète — la coupure à t=0/π est symétrique par rapport au centre
+    // de l'ellipse, donc correcte quelle que soit l'inclinaison (rotation).
+    ctx.beginPath();
+    ctx.ellipse(c.x, c.y, ringRx, ringRy, ringRotation, 0, Math.PI);
+    ctx.stroke();
+
     const grad = ctx.createRadialGradient(
       c.x - c.radius * 0.3, c.y - c.radius * 0.3, c.radius * 0.1,
       c.x, c.y, c.radius
@@ -168,10 +182,9 @@ function drawCelestial(ctx, c) {
     ctx.beginPath();
     ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
     ctx.fill();
-    ctx.strokeStyle = `hsla(${c.hue}, 18%, 80%, 0.5)`;
-    ctx.lineWidth = 1.5;
+
     ctx.beginPath();
-    ctx.ellipse(c.x, c.y, c.radius * 1.5, c.radius * 0.35, -0.4, 0, Math.PI * 2);
+    ctx.ellipse(c.x, c.y, ringRx, ringRy, ringRotation, Math.PI, Math.PI * 2);
     ctx.stroke();
   } else if (c.type === "galaxy") {
     ctx.globalAlpha = alpha * 0.35; // discret, pour rester "loin"

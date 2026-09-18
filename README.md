@@ -108,6 +108,12 @@ Ce repo s'arrête là — il ne connaît ni VPS ni serveur cible. L'instance `ar
 - [ ] Score authentifié (jeton signé émis au début de la partie, exigé à la soumission) — pas urgent, le score non authentifié est un risque assumé (voir Sécurité)
 - [ ] Scan de vulnérabilités des **images construites** ([Trivy](https://trivy.dev/), en CI juste après le build) — `pip-audit` couvre les dépendances Python déclarées, mais pas les paquets système de l'image finale (ex: libs Debian de `python:3.11-slim`)
 
+### Optimisations potentielles (à implémenter si besoin)
+
+Pas de problème constaté aujourd'hui — notées pour garder la trace, sans pression de les faire maintenant. À reprendre soit dans un round dédié après stabilisation, soit si un joueur signale une vraie lenteur (data-driven, pas préemptif).
+
+- [ ] **Cache session du classement** (`states/leaderboardScreen.js`) : chaque ouverture de l'écran classement refait `fetchTopScores(10)` **et** `fetchGamesPlayedCount()`, sans mémorisation — 5 ouvertures/fermetures = 10 requêtes. Payloads minuscules et rate-limiting déjà en place côté backend, donc gain estimé <10ms par session ; pas prioritaire. Si implémenté : un cache avec TTL court, **contrainte explicite — doit s'invalider après une soumission de score** (`confirmNameEntry` rouvre le classement juste après avoir soumis, `g.scores` doit rester frais à ce moment précis, jamais servir une version en cache à cet instant-là).
+
 ## Structure
 
 ```

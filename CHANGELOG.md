@@ -4,6 +4,9 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.57] - 2026-09-18
+- Nettoyage : simplification de l'initialisation audio dans main.js — fusion des écouteurs "premier geste" et "reprise permanente" en un seul (aucun changement de comportement, juste moins de code dupliqué).
+
 ## [2.56] - 2026-09-18
 - **Fix (4e round) : le vrai fond du bug de musique silencieuse récurrent.** `playRandom()` (appelée à chaque nouvelle partie) ne remettait jamais à zéro le compteur de tentatives ratées, contrairement à `start()`/`next()`. Un simple accroc réseau isolé qui épuisait les 3 tentatives UNE fois dans la session bloquait ce compteur au-dessus de 3 pour le reste de la session — chaque partie suivante abandonnait alors au moindre nouvel échec, même isolé, sans plus jamais réessayer. Voir GAMEPLAY.md, Retour d'expérience, 4e round.
 - Fix : le vide du trou noir (décor) n'était pas totalement opaque pendant son entrée/sortie d'écran (fondu appliqué au vide lui-même, pas seulement à son disque d'accrétion) — le fond transparaissait légèrement tant qu'il n'était pas visible en entier.

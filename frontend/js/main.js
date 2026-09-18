@@ -60,25 +60,23 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-// --- Audio : démarré une fois, au premier geste utilisateur (règle des
-// navigateurs pour l'AudioContext). Ne s'arrête plus ensuite.
+// --- Audio : (re)pris à CHAQUE geste utilisateur, pas seulement le premier
+// (règle des navigateurs pour l'AudioContext — resume() ne peut réussir que
+// depuis un vrai geste, jamais depuis la boucle d'animation, voir
+// watchAudioContext plus bas). Si le navigateur suspend le contexte en cours
+// de partie (économie d'énergie), il faut un nouveau geste pour le relancer ;
+// en "Tir automatique", le joueur ne clique jamais sur le canvas en jouant,
+// donc un seul geste initial ne suffirait pas. audio.ensure()/music.start()
+// sont tous deux idempotents (no-op au-delà du premier appel utile), donc
+// rien ne coûte à les rappeler à chaque geste plutôt que de distinguer
+// "premier geste" (démarre tout) et "gestes suivants" (juste un resume).
 function beginAudio() {
   audio.ensure(); // reprend le contexte partagé (SFX + musique, voir audio/music.js)
   audio.setMuted(music.muted);
-  music.start();
+  music.start(); // no-op si déjà démarré (voir music.js)
 }
-window.addEventListener("pointerdown", beginAudio, { once: true });
-window.addEventListener("keydown", beginAudio, { once: true });
-
-// resume() ne peut réussir que depuis un vrai geste utilisateur (jamais
-// depuis la boucle d'animation, voir watchAudioContext plus bas) — si le
-// navigateur suspend le contexte en cours de partie (économie d'énergie),
-// il faut un geste pour le relancer. Celui du dessus ne sert qu'une fois
-// (il démarre aussi la musique) ; en "Tir automatique", le joueur ne clique
-// jamais sur le canvas en jouant, donc sans cet écouteur permanent (juste un
-// resume, idempotent) aucun geste ne viendrait jamais le réveiller.
-window.addEventListener("pointerdown", () => audio.ensure());
-window.addEventListener("keydown", () => audio.ensure());
+window.addEventListener("pointerdown", beginAudio);
+window.addEventListener("keydown", beginAudio);
 
 // --- Tap/clic générique (menu, classement, crédits) — converti en
 // coordonnées logiques internes (480x270) avant d'être transmis au jeu.

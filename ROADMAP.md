@@ -30,6 +30,38 @@ Signalé le 2026-09-18 : sur téléphone en paysage, de grosses bandes noires ap
 
 - [ ] **Élargir la résolution interne** (ou une autre approche à définir) pour réduire les bandes — changement d'architecture, pas un simple ajustement : touche le placement du HUD, les zones d'apparition/tir des ennemis (`LEFT_BOUND`/`FIRE_MIN_X` dans `enemies.js`, tout juste ajoutées), et nécessite une vraie vérification visuelle avant/après (pas juste les tests automatisés). À traiter dans une session dédiée avec le temps de bien tester, pas en aparté d'un autre correctif.
 
+## Session 5 — polish (liste fermée, sans nouveau système de jeu)
+
+Contexte : ArcadePipe est stable et fonctionnel (Sessions 1-2 terminées, 2.76 déployée). Objectif : peaufiner l'existant (game feel, UX, boucle de rejouabilité) — **rien de nouveau côté systèmes de jeu**. Deux consignes : **liste fermée** (aucun ajout en cours de route ; une fois cochée, on déploie et on passe à la promotion) et **une valeur par défaut proposée pour chaque constante à tuner, notée « à ajuster au ressenti »**. Chaque item doit être vérifiable en jouant, avec une mesure objective.
+
+État des lieux vérifié dans le code (2026-09-18) — plusieurs items partaient d'une hypothèse « à créer » alors que la base existe déjà :
+
+| # | Item | Sévérité | Effort | Ce qui existe déjà / mesure | Valeur par défaut (à ajuster au ressenti) |
+|---|---|---|---|---|---|
+| 1 | **Rejouer en 1 clic** : bouton « REJOUER » dès la mort, la saisie du pseudo devient optionnelle après | Urgent | Moyen | Aujourd'hui : mort → `NAME_ENTRY` (si le score qualifie) → classement → menu → JOUER (`triggerGameOver`, `endOfRun.js`). **À chronométrer d'abord** (secondes et clics, mort → nouvelle partie). Objectif : < 2 s, 1 clic. | — |
+| 2 | **Bonus « sans dégâts » plus visible** | Urgent | Faible | Le bonus **existe déjà** : +500 (`DIFFICULTY.noDamageWaveBonus`) et une bannière « VAGUE N TERMINÉE — SANS DÉGÂTS ! +500 » (`waves.js`). Reste à le rendre *ressenti pendant* la vague (rappel discret « INTACT » au HUD tant qu'aucun dégât, disparaît au premier coup) plutôt que seulement à la fin. Mesure : un testeur nouveau sait dire de quoi il s'agit sans lire l'Aide. | Rappel HUD ~7 px, couleur or, clignote 1 s à la perte |
+| 3 | **Mode attract au menu titre** (le jeu se joue tout seul) | Optionnel | **Haut** | N'existe pas. Moins trivial qu'annoncé : il faut faire tourner une partie sous le menu (sans score ni classement, sans son) et un bot qui esquive un minimum — pas juste un drapeau sur le joueur. À reprendre seulement si la Session 5 se passe bien. | Bot : trajectoire pseudo-aléatoire + esquive du tir le plus proche |
+| 4 | **Hit-stop calibré** (ponctuation, pas interruption) | Important | Faible | **Existe déjà** (`triggerHitStop`, `playing.js`) : kill normal 0,03 s, élite 0,05 s, point faible de boss 0,06 s, boss détruit 0,14 s, joueur touché 0,08 s. Écart avec l'intention : les kills *normaux* déclenchent déjà un hit-stop (à réserver aux événements rares). Mesure : ressenti sur une vague de 10 kills normaux vs 1 élite. | normal 0 ; élite 0,08 s (~5 images) ; point faible 0,13 s (~8) ; boss détruit 0,14 s inchangé |
+| 5 | **Chaîne de graze : paliers sonores distincts** | Important | Faible | Le son monte déjà en continu avec le palier (`playGraze(tier)`, 900 Hz + 90 Hz/palier, plafonné à 8). Manque : une signature distincte et plus brillante aux seuils 5 / 10 / 15. | Seuils 5/10/15 ; note plus haute + double tic |
+| 6 | **Télégraphe des tirs circulaires du boss** (anneau qui « gonfle » avant d'être mortel) | Important | Moyen | Aucun signal d'anticipation trouvé dans `boss.js`/`patterns.js` (à confirmer en jouant). Objectif : chaque tir esquivable en théorie. Mesure : plus aucune mort « injuste » sur 5 combats de boss. | ~0,2 s (~12 images) |
+| 7 | **Première minute** : lancement instantané, premier kill satisfaisant, premier bonus dans les 30 s | Important | Faible | Vérification, pas de code a priori. Mesures : délai clic → 1re image jouable ; délai avant 1er drop (sur ~10 parties). | Si > 30 s : hausser le taux de drop en vague 1 seulement |
+| 8 | **Indications contextuelles** : NOVA prête clignote, son distinct à l'apparition d'un kamikaze | Important | Faible | La jauge NOVA passe déjà au jaune vif quand elle est prête et le bouton tactile pulse ; le kamikaze existe (vague 4+) mais aucun son dédié trouvé dans `sfx.js`. | Son kamikaze : sifflement descendant ~0,15 s |
+| 9 | **Messages de fin de partie variables** (« Presque le boss ! », « Chaîne de 42, bravo ») | Optionnel | Faible | Pas de variation aujourd'hui. Réutilise `getRunSummary()` (score, vague, chaîne max). | 3-4 messages, choisis par règle simple |
+| 10 | **Partage réel** : poster une carte sur Twitter/Discord (compte de test) | Important | Faible | Le QR est lu à ≥ 400 px en simulation locale (recompression JPEG) ; il reste à vérifier en vrai. Manuel, pas de code. | — |
+
+**Plan d'action suggéré, première session (4 items max)** : **1, 2, 4, 5** — les deux premiers ferment la boucle de rejouabilité, les deux suivants ne sont que des constantes à ajuster. Le mode attract (3) est écarté de cette première passe : c'est l'item le plus cher et il ne corrige rien d'existant. Ordre : chronométrer l'item 1 avant de toucher au code (mesure de départ), puis tout tester en jouant avant d'enchaîner sur 6-8.
+
+- [ ] 1 — Rejouer en 1 clic
+- [ ] 2 — Bonus « sans dégâts » visible pendant la vague
+- [ ] 3 — Mode attract (optionnel, reporté)
+- [ ] 4 — Hit-stop calibré
+- [ ] 5 — Paliers sonores du graze
+- [ ] 6 — Télégraphe des tirs circulaires du boss
+- [ ] 7 — Première minute vérifiée
+- [ ] 8 — Indications contextuelles (NOVA, kamikaze)
+- [ ] 9 — Messages de fin de partie variables
+- [ ] 10 — Partage réel testé
+
 ## Autres (non séquencées)
 
 - [ ] Score authentifié (jeton signé émis au début de la partie, exigé à la soumission) — pas urgent, le score non authentifié est un risque assumé (voir la section *Sécurité* du [README](README.md))

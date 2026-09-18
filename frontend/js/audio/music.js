@@ -21,19 +21,14 @@ export class MusicPlayer {
     // (`this.destination` reste `false`) — sans cette ligne, la musique jouerait en silence.
     this.player.gain.connect(audioContext.destination);
     this.player.onEnded(() => this.playRandom());
-    // Filet de sécurité : un échec de CHARGEMENT réseau ("Load") est déjà
-    // couvert par le rattrapage de volume dans _loadCurrent (voir plus bas)
-    // — pas de nouvelle tentative ici pour ne jamais boucler sur une vraie
-    // coupure réseau persistante. Un échec de CRÉATION du module côté worklet
-    // ("ptr", voir chiptune3.worklet.js) est un événement ponctuel plutôt
-    // qu'une condition qui se répète : là, retenter avec une autre piste
-    // vaut mieux qu'un silence permanent.
+    // Échec de CRÉATION du module côté worklet ("ptr", voir
+    // chiptune3.worklet.js — arrive si le buffer reçu n'est pas un fichier
+    // .xm valide) : retenter avec une autre piste. Un échec de CHARGEMENT
+    // réseau ("Load") est géré séparément dans _loadCurrent (retries
+    // temporisés et plafonnés) — jamais ici, voir plus bas pourquoi un
+    // retry immédiat sur "Load" a justement causé une rafale de requêtes.
     this.player.onError((e) => {
-      // Log volontairement gardé (pas juste en dev) : le bug "musique
-      // silencieuse au bout d'un moment" a déjà résisté à deux correctifs —
-      // savoir QUELLE branche se déclenche la prochaine fois vaut mieux que
-      // deviner une 3e fois à l'aveugle.
-      console.warn("[music] onError", e);
+      console.warn("[music] onError", e); // voir le commentaire sur _loadCurrent — savoir quelle branche se déclenche plutôt que deviner
       if (e && e.type !== "Load") this.playRandom();
     });
     this.started = false;
@@ -46,6 +41,9 @@ export class MusicPlayer {
     // partir un fetch() chacun sur le même clic (game.js:startRun). Sans ce
     // jeton, la réponse arrivée en second gagnerait toujours, même périmée.
     this._loadToken = 0;
+    // Compteur de tentatives ratées consécutives (voir _loadCurrent) —
+    // remis à 0 dès qu'un chargement réussit.
+    this._loadRetries = 0;
   }
 
   _readBool(key, fallback) {
@@ -106,9 +104,21 @@ export class MusicPlayer {
     g.linearRampToValueAtTime(0, now + 0.02);
 
     fetch(track.file)
-      .then((r) => r.arrayBuffer())
+      .then((r) => {
+        // fetch() ne rejette JAMAIS sur un statut d'erreur HTTP (404, 429...)
+        // — seulement sur une vraie panne réseau. Sans ce contrôle explicite,
+        // une réponse d'erreur (ex: 429 "trop de requêtes") était traitée
+        // comme un fichier audio valide et passée telle quelle à
+        // player.play(), qui plantait sur des données corrompues -> déclenchait
+        // l'ancien retry immédiat -> qui se reprenait aussitôt un 429 -> boucle
+        // de requêtes en rafale contre le serveur (vécu en prod, jamais reproduit
+        // en local). D'où le throw ici, qui route proprement vers .catch().
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.arrayBuffer();
+      })
       .then((buf) => {
         if (token !== this._loadToken) return; // supplantée par une piste demandée depuis
+        this._loadRetries = 0;
         this.player.play(buf);
         const target = this.muted ? 0 : this.volume;
         const t = this.player.context.currentTime;
@@ -118,7 +128,7 @@ export class MusicPlayer {
       })
       .catch((err) => {
         if (token !== this._loadToken) return; // supplantée, la piste plus récente gère déjà le volume
-        console.warn("[music] échec de chargement", track.file, err); // voir le commentaire sur onError plus haut
+        console.warn("[music] échec de chargement", track.file, err);
         // Le fondu de sortie a déjà coupé le son avant même de savoir si le
         // chargement allait réussir (voir plus haut) — sans ce filet, un
         // simple raté réseau laissait la musique silencieuse en permanence :
@@ -128,20 +138,34 @@ export class MusicPlayer {
         const t = this.player.context.currentTime;
         g.cancelScheduledValues(t);
         g.linearRampToValueAtTime(target, t + 0.03);
-        this.player.fireEvent("onError", { type: "Load" });
+        // Nouvelle tentative DIFFÉRÉE (2s, 4s, 6s) et PLAFONNÉE (3 essais) —
+        // jamais immédiate : un 429 veut dire "trop de requêtes", en relancer
+        // une tout de suite ne fait qu'aggraver la situation (c'est exactement
+        // ce que faisait l'ancien retry immédiat via onError, voir plus haut).
+        this._loadRetries += 1;
+        if (this._loadRetries <= 3) {
+          const delay = 2000 * this._loadRetries;
+          setTimeout(() => {
+            if (token === this._loadToken) this._loadCurrent();
+          }, delay);
+        }
       });
   }
 
   start() {
     if (this.started) return;
     this.started = true;
+    this._loadRetries = 0; // nouvelle demande explicite, pas une relance — voir _loadCurrent
     this._loadCurrent();
   }
 
   next() {
     this.trackIndex = (this.trackIndex + 1) % AUDIO.tracks.length;
     this._persist(STORAGE_KEYS.track, String(this.trackIndex));
-    if (this.started) this._loadCurrent();
+    if (this.started) {
+      this._loadRetries = 0;
+      this._loadCurrent();
+    }
   }
 
   // Tirée au début de chaque partie — jamais deux fois la même piste d'affilée.

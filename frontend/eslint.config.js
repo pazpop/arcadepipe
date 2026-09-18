@@ -25,6 +25,7 @@ export default [
         Event: "readonly",
         fetch: "readonly",
         AbortSignal: "readonly",
+        setTimeout: "readonly",
       },
     },
     rules: {

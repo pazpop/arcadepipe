@@ -4,6 +4,9 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.53] - 2026-09-17
+- **Fix (cause enfin confirmée) : la vraie cause du bug de musique silencieuse.** Preuve obtenue via l'onglet Réseau du navigateur : des 429 ("trop de requêtes") sur les fichiers `.xm`. `fetch()` ne rejetant jamais sur un code d'erreur HTTP, ces réponses étaient traitées comme des fichiers audio valides, plantaient le lecteur, et déclenchaient l'ancien retry automatique (v2.48) qui se reprenait aussitôt un 429 — une rafale de requêtes en boucle contre le serveur. Corrigé : vérification explicite du code de statut + nouvelle tentative différée (2s/4s/6s) et plafonnée (3 essais) au lieu d'immédiate. Nouveau test e2e permanent (`music-retry.spec.js`) qui simule des 429 et vérifie l'absence de rafale.
+
 ## [2.52] - 2026-09-17
 - Audio : filet de sécurité supplémentaire contre le bug de musique silencieuse (toujours signalé en v2.50 malgré deux correctifs précédents) — reprise périodique de l'AudioContext (pas seulement au retour d'onglet, certains navigateurs le suspendent même onglet actif) + logs de diagnostic sur les deux chemins d'échec restants, pour savoir enfin lequel se déclenche si ça se reproduit plutôt que deviner à l'aveugle.
 

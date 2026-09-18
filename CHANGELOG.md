@@ -4,6 +4,9 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.54] - 2026-09-17
+- Refactor interne (aucun changement de comportement) : `game.js` (~1000 lignes) découpé en un module par écran sous `frontend/js/states/` (menu, playing, paused, help, endOfRun, leaderboardScreen, credits) — `game.js` ne fait plus que relier (état partagé `g`, bundle `engine`) et tient maintenant en ~220 lignes. Fait par étapes, un module extrait à la fois avec tests relancés entre chaque. Architecture + diagramme documentés dans `frontend/README.md`.
+
 ## [2.53] - 2026-09-17
 - **Fix (cause enfin confirmée) : la vraie cause du bug de musique silencieuse.** Preuve obtenue via l'onglet Réseau du navigateur : des 429 ("trop de requêtes") sur les fichiers `.xm`. `fetch()` ne rejetant jamais sur un code d'erreur HTTP, ces réponses étaient traitées comme des fichiers audio valides, plantaient le lecteur, et déclenchaient l'ancien retry automatique (v2.48) qui se reprenait aussitôt un 429 — une rafale de requêtes en boucle contre le serveur. Corrigé : vérification explicite du code de statut + nouvelle tentative différée (2s/4s/6s) et plafonnée (3 essais) au lieu d'immédiate. Nouveau test e2e permanent (`music-retry.spec.js`) qui simule des 429 et vérifie l'absence de rafale.
 

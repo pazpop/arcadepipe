@@ -29,7 +29,7 @@ Comment les couleurs et les formes sont décidées et générées.
 
 - [x] Le jeu se met à jour et se redessine à chaque image (60 fois par seconde en théorie), avec une protection qui évite les gros sauts si l'onglet du navigateur était en arrière-plan.
 - [x] Résolution interne du jeu volontairement petite et fixe, agrandie ensuite à la taille de l'écran sans flou (look "pixel art" net, pas granuleux).
-- [x] Le jeu est organisé en "écrans" clairement séparés (menu, en partie, pause, game over...) — le code sait toujours dans quel écran il se trouve et n'affiche/n'écoute que ce qui est pertinent pour cet écran.
+- [x] Le jeu est organisé en "écrans" clairement séparés (menu, en partie, pause, game over...) — le code sait toujours dans quel écran il se trouve et n'affiche/n'écoute que ce qui est pertinent pour cet écran. Chaque écran vit dans son propre fichier sous `js/states/`, `js/game.js` ne fait que relier (détail technique et diagramme : voir *Architecture* dans [`README.md`](README.md)).
 
 ## Vaisseau joueur & contrôles
 

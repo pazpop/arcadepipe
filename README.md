@@ -12,8 +12,6 @@ Ce repo contient uniquement le jeu (backend + frontend), déployable n'importe o
 
 Ce projet (et l'infra qui l'héberge, voir [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner)) est réalisé avec l'aide d'assistants IA — [Claude](https://claude.com) (Anthropic) et [Lumo](https://lumo.proton.me) (Proton) — comme assistants techniques. L'objectif n'est pas de contourner l'apprentissage, mais de l'accélérer : explorer des choix que je n'aurais pas eu le temps de creuser seul, challenger mes propres habitudes, et accélérer les tâches répétitives. Je reste le décideur à chaque étape — je teste avant de faire confiance, je demande des revues de sécurité et de qualité, et j'écarte ce qui est disproportionné pour un projet de cette taille (voir *Sécurité* et *Roadmap* ci-dessous, qui documentent aussi bien ce qui est fait que ce qui est volontairement laissé de côté, et pourquoi). L'IA ne remplace pas l'expertise, elle en démultiplie la portée.
 
-**Un exemple concret** de ce que ça donne en pratique, plutôt qu'une description abstraite : Lumo a proposé de découper `states/playing.js` en sous-modules calqués sur le patron de `states/` (une symétrie séduisante avec `game.js`). Claude a relu le fichier en entier plutôt que d'acquiescer, et a contesté l'analogie avec une preuve concrète : les écrans de `states/` sont mutuellement exclusifs par construction (un seul MODE actif à la fois), alors que les sous-systèmes de `playing.js` (collisions, NOVA, vagues, boss, niveau bonus) coexistent dans la même frame — les extraire déplacerait le couplage plutôt que de le réduire. Lumo a reconnu l'argument après relecture ; la décision finale (une seule extraction retenue, `waves.js`, au lieu de la symétrie complète proposée au départ) reste la mienne, documentée dans la *Roadmap*. Une proposition d'IA challengée par une autre IA, arbitrée par l'humain avec le code comme preuve — c'est ce théâtre à trois, pas la confiance aveugle en une seule sortie de modèle, qui fait la différence.
-
 ## Stack
 
 | Composant | Techno | Rôle |
@@ -82,7 +80,7 @@ cd e2e && npm install && npm run install-browsers && npm test
 
 - **Pseudo, score, vague** (`player_name` 1-20 caractères, `score`, `wave`) : seules données stockées, dans SQLite, sans limite de rétention.
 - **Adresse IP** : lue depuis `X-Forwarded-For` uniquement pour le rate limiting (`slowapi`) — gardée en mémoire le temps de la fenêtre de 5/minute, jamais écrite en base ni dans un fichier de log applicatif.
-- **Google Analytics** (`js/analytics.js`, gtag.js) sur l'instance publique `arcadepipe.pazpop.net` — pose des cookies de mesure d'audience. Nécessite d'autoriser `googletagmanager.com`/`google-analytics.com` sur la CSP (repo d'infra séparé) sans quoi le tag est simplement bloqué.
+- **Google Analytics** (`js/analytics.js`, gtag.js) sur l'instance publique `arcadepipe.pazpop.net` — pose des cookies de mesure d'audience, **uniquement après consentement** (bandeau Accepter/Refuser, `js/consent.js`, choix mémorisé dans `localStorage`). Nécessite d'autoriser `googletagmanager.com`/`google-analytics.com` sur la CSP (repo d'infra séparé) sans quoi le tag est simplement bloqué.
 
 ## CI/CD
 

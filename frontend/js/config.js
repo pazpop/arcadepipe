@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.73";
+export const VERSION = "2.74";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -159,7 +159,12 @@ export const STORAGE_KEYS = {
   seenIntro: "arcadepipe_seen_intro",
   lastPlayerName: "arcadepipe_last_player_name",
   gameSpeed: "arcadepipe_game_speed",
+  analyticsConsent: "arcadepipe_analytics_consent",
 };
+
+// Google Analytics n'est chargé qu'après consentement explicite (bannière,
+// voir consent.js) — jamais avant, conformément au RGPD.
+export const GA_MEASUREMENT_ID = "G-YC4WFVN9JY";
 
 // Multiplicateurs de vitesse de jeu proposés par le bouton "VITESSE DU JEU" (panneau
 // bas gauche) — voir main.js. N'affecte que le rythme du jeu (dt), jamais

@@ -180,6 +180,11 @@ html, body {
   color: #4ee1ff;
   border-color: #4ee1ff !important;
 }
+/* Fullscreen API absente (ex: iOS Safari) : bouton masqué plutôt que
+   visible sans effet au clic (voir main.js, document.fullscreenEnabled). */
+#fullscreen-btn.hidden {
+  display: none;
+}
 #music-controls button:hover,
 #music-controls button:active {
   color: #4ee1ff;
@@ -271,6 +276,51 @@ html, body {
 }
 .share-btn.hidden {
   display: none;
+}
+/* Bandeau de consentement (voir consent.js) : collé en bas du conteneur, sur
+   toute sa largeur, pour rester lisible sans recouvrir le centre de l'action.
+   z-index au-dessus des boutons tactiles (nova/share = 2). */
+.cookie-banner {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px 16px;
+  padding: 8px 12px;
+  background: rgba(5, 6, 15, 0.92);
+  border-top: 1px solid #4ee1ff;
+  color: #ffffff;
+  font-family: monospace;
+  font-size: 12px;
+  text-align: center;
+}
+.cookie-banner.hidden {
+  display: none;
+}
+.cookie-actions {
+  display: flex;
+  gap: 8px;
+}
+.cookie-actions button {
+  background: transparent;
+  border: 1px solid #ffffff;
+  border-radius: 4px;
+  color: #ffffff;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+.cookie-actions button:hover,
+.cookie-actions button:active {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: #4ee1ff;
+  color: #4ee1ff;
 }
 @keyframes nova-pulse {
   0%, 100% { box-shadow: 0 0 4px rgba(255, 255, 255, 0.4); }

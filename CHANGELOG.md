@@ -4,6 +4,10 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.74] - 2026-09-18
+- **Bandeau de consentement RGPD** : Google Analytics n'est plus chargé au démarrage mais seulement après "Accepter" (`js/consent.js`, choix mémorisé). `analytics.js` devient un module (`loadAnalytics()`, idempotent).
+- **Nouveau : bouton Plein écran** dans le panneau bas gauche (masqué si l'API Fullscreen est absente, ex: iPhone).
+
 ## [2.73] - 2026-09-18
 - **Google Analytics** ajouté sur l'instance publique (`js/analytics.js` + tag gtag.js) — nécessite un ajustement de la CSP partagée côté infra (`googletagmanager.com`/`google-analytics.com` sur `script-src`/`connect-src`, voir `terraform-infra-pazpop-hetzner`). README (section *Données collectées*) mis à jour en conséquence.
 

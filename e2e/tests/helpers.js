@@ -50,7 +50,13 @@ export function canvasHelpers(page) {
 // test (pas d'erreur, mais rien de ce qui suit ne se produit vraiment).
 // Un seul test dédié (menu-pause.spec.js) vérifie ces aides sans appeler ceci.
 export async function skipHints(page) {
-  await page.evaluate(() => localStorage.setItem("arcadepipe_seen_intro", "1"));
+  await page.evaluate(() => {
+    localStorage.setItem("arcadepipe_seen_intro", "1");
+    // Le bandeau de consentement (consent.js) recouvre le bas de l'écran et
+    // intercepterait les clics sur les boutons tactiles — le refuser d'avance.
+    localStorage.setItem("arcadepipe_analytics_consent", "denied");
+  });
+  await page.evaluate(() => document.getElementById("cookie-banner")?.classList.add("hidden"));
 }
 
 export function collectErrors(page) {

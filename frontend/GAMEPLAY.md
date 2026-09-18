@@ -113,7 +113,9 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] La saisie du pseudo de fin de partie fonctionne même sur les téléphones où le clavier virtuel ne s'ouvre pas automatiquement (bouton de validation tactile en secours).
 - [x] Légende visuelle des bonus et des ennemis (hors boss) dans l'écran Aide, côte à côte — icône/sprite réel + couleur réelle plutôt qu'une liste de noms, et pour les ennemis leurs points de vie et une courte description de leur comportement (tire ou non, poursuit ou non). Le joueur associe l'apparence à l'effet/à la résistance sans avoir à tout vérifier en jeu. La position de la légende est calculée après le texte des sections au-dessus plutôt que fixée en dur, pour ne pas se faire déborder dessus si une section s'allonge un jour.
 - [x] Réglage de la vitesse du jeu (x1/x1.5/x2, bouton "VITESSE DU JEU" dans le panneau en bas à gauche, préférence mémorisée) — accélère tout ce qui dépend du temps de façon uniforme (donc la difficulté relative ne change pas), sans jamais affecter la musique ni les bruitages (qui tournent sur leur propre horloge audio).
-- [x] Panneau bas gauche organisé en items clairs plutôt qu'un groupe "options" fourre-tout : Musique, Bruitages, Vitesse du jeu, Tir automatique, Aide, puis le numéro de version — chacun sa propre ligne, dans l'ordre où un joueur les cherche.
+- [x] Panneau bas gauche organisé en items clairs plutôt qu'un groupe "options" fourre-tout : Musique, Bruitages, Vitesse du jeu, Tir automatique, Aide, Plein écran, puis le numéro de version — chacun sa propre ligne, dans l'ordre où un joueur les cherche.
+- [x] Bouton **Plein écran** dans le panneau bas gauche (bascule sur tout le conteneur du jeu, boutons tactiles compris) — masqué sur les navigateurs sans Fullscreen API (ex: iPhone). Ne supprime pas les bandes noires en paysage mobile (le ratio 16:9 est conservé), il retire juste la barre d'adresse.
+- [x] **Bandeau de consentement** aux cookies (Google Analytics) au premier lancement : Accepter/Refuser, choix mémorisé. Analytics n'est chargé qu'après "Accepter", jamais avant.
 - [x] Lien vers le code source (GitHub) dans les crédits.
 - [x] Numéro de version affiché dans le jeu (détail plus bas).
 - [x] **Partage de run en un clic** : juste après la fin d'une partie (game over/saisie du pseudo), un bouton génère une image carrée (score, vague atteinte, ennemis abattus, meilleure chaîne de frôlements, distance parcourue) dans le même style visuel que le jeu, plus un QR code pointant directement vers le jeu (noir sur blanc, contraste volontairement non stylisé pour rester scannable) — copiée dans le presse-papier quand le navigateur le permet, toujours aussi proposée en téléchargement (le support du presse-papier image varie trop d'un navigateur à l'autre pour s'y fier seul). Pas de lien raccourci/backend dédié : le QR code encode l'URL statique du jeu directement, généré 100% côté client.
@@ -134,7 +136,7 @@ Comment les couleurs et les formes sont décidées et générées.
 
 ## Sauvegardé sur l'appareil du joueur
 
-- [x] Préférences personnelles (volumes, coupure du son, dernière musique jouée, filtre visuel activé ou non, tir automatique, panneau replié, dernier pseudo utilisé) — si le stockage local est indisponible (navigation privée, par exemple), le jeu continue de fonctionner normalement, juste sans mémoriser ces préférences.
+- [x] Préférences personnelles (volumes, coupure du son, dernière musique jouée, filtre visuel activé ou non, tir automatique, panneau replié, dernier pseudo utilisé, choix de consentement aux cookies) — si le stockage local est indisponible (navigation privée, par exemple), le jeu continue de fonctionner normalement, juste sans mémoriser ces préférences.
 
 ## Suivi de version
 

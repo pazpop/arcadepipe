@@ -6,6 +6,7 @@ import { AudioEngine } from "./audio/sfx.js";
 import { MusicPlayer } from "./audio/music.js";
 import { createGame } from "./game.js";
 import { createShareCardCanvas } from "./shareCard.js";
+import { initConsent } from "./consent.js";
 
 const canvas = document.getElementById("game-canvas");
 const ctx = canvas.getContext("2d");
@@ -26,6 +27,7 @@ const mcToggle = document.getElementById("mc-toggle");
 const sfxVolumeEl = document.getElementById("sfx-volume");
 const autoFireToggle = document.getElementById("autofire-toggle");
 const helpBtn = document.getElementById("help-btn");
+const fullscreenBtn = document.getElementById("fullscreen-btn");
 const speedBtn = document.getElementById("speed-btn");
 const novaBtn = document.getElementById("nova-btn");
 const shareBtn = document.getElementById("share-btn");
@@ -42,6 +44,9 @@ const game = createGame({ input, audio, music, nameInputEl });
 // `await import("/js/main.js")` et retrouver ces mêmes instances (modules ES
 // mis en cache par URL). Rien sur `window`, pas de trace en prod.
 export { music, audio };
+
+// Bannière RGPD : charge Google Analytics seulement après consentement.
+initConsent();
 
 // --- Redimensionnement responsive : ratio 480x270 gardé, agrandi au max, net
 // grâce à `image-rendering: pixelated` (css/style.css).
@@ -175,6 +180,33 @@ if (helpBtn) {
     audio.ensure();
     game.openHelp();
   });
+}
+
+// --- Bouton plein écran : bascule sur #game-container (pas juste le canvas,
+// pour garder les boutons tactiles superposés accessibles) — n'enlève PAS
+// les bandes noires en paysage mobile (le canvas reste contraint au ratio
+// 16:9 par resizeCanvas, voir ROADMAP.md Session 4), juste la barre
+// d'adresse du navigateur. Absent sur les navigateurs/contextes qui ne
+// supportent pas l'API (ex: iOS Safari sur iPhone) — bouton alors masqué
+// plutôt que de rester visible pour ne rien faire au clic.
+if (fullscreenBtn) {
+  if (!document.fullscreenEnabled) {
+    fullscreenBtn.classList.add("hidden");
+  } else {
+    fullscreenBtn.addEventListener("click", () => {
+      audio.ensure();
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        document.getElementById("game-container").requestFullscreen().catch(() => {
+          /* refusé par le navigateur (hors geste utilisateur direct...) — pas bloquant */
+        });
+      }
+    });
+    document.addEventListener("fullscreenchange", () => {
+      fullscreenBtn.textContent = document.fullscreenElement ? "⛶ Quitter le plein écran" : "⛶ Plein écran";
+    });
+  }
 }
 
 // --- Vitesse du jeu (x1/x1.5/x2, cycle au clic) : multiplie le delta-time

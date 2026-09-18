@@ -22,12 +22,6 @@
 <meta name="twitter:title" content="ArcadePipe — Starfighter" />
 <meta name="twitter:description" content="Jeu d'arcade spatial rétro gratuit, jouable directement dans le navigateur." />
 <link rel="stylesheet" href="css/style.css" />
-<!-- Google Analytics (gtag.js). Le tag externe (googletagmanager.com) doit
-     être autorisé sur script-src/connect-src côté CSP (Traefik, infra
-     séparée) sans quoi il est bloqué silencieusement — voir js/analytics.js
-     pour pourquoi la config elle-même est dans un fichier à part. -->
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-YC4WFVN9JY"></script>
-<script src="js/analytics.js"></script>
 </head>
 <body>
   <div id="game-container">
@@ -70,6 +64,9 @@
         <div class="mc-section">
           <button id="help-btn" type="button" class="mc-pause-btn" title="Aide">Aide</button>
         </div>
+        <div class="mc-section">
+          <button id="fullscreen-btn" type="button" class="mc-pause-btn" title="Plein écran">⛶ Plein écran</button>
+        </div>
         <div class="mc-section mc-version" id="version-label"></div>
       </div>
       <!-- Hors du panneau qui glisse : reste toujours visible, replié ou non. -->
@@ -85,6 +82,17 @@
          shareCard.js) — visible seulement juste après la fin d'une partie
          (main.js), pas en permanence. -->
     <button id="share-btn" type="button" class="share-btn hidden" title="Générer une image à partager">📤 Partager</button>
+
+    <!-- Consentement RGPD : Google Analytics n'est chargé qu'après "Accepter"
+         (voir js/consent.js et js/analytics.js). Masqué par défaut, affiché
+         seulement tant qu'aucun choix n'est mémorisé. -->
+    <div id="cookie-banner" class="cookie-banner hidden" role="dialog" aria-label="Consentement aux cookies">
+      <span>Ce site utilise Google Analytics (cookies de mesure d'audience) pour comprendre comment le jeu est utilisé.</span>
+      <div class="cookie-actions">
+        <button id="cookie-accept" type="button">Accepter</button>
+        <button id="cookie-decline" type="button">Refuser</button>
+      </div>
+    </div>
   </div>
 
   <!-- Le lecteur de module tracker (lib/chiptune3.js, AudioWorklet) est un

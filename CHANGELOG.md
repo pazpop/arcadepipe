@@ -4,6 +4,9 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.64] - 2026-09-18
+- Écran Aide : passage à une seule colonne (texte plus grand, plus lisible qu'un découpage en deux colonnes) — réparti sur 4 pages au lieu de 2 pour compenser (contrôles/NOVA, boss/musique, légende bonus, légende ennemis).
+
 ## [2.63] - 2026-09-18
 - **Nouveau : distance parcourue** (années-lumière), accumulée pendant la partie et affichée à l'écran de fin de partie + sur la carte de partage. Phase 1 seulement (frontend), le classement reste pour plus tard.
 - **Nouveau : QR code sur la carte de partage**, pointant directement vers le jeu — 100% client-side, bibliothèque QR vendorisée dans `frontend/lib/qrcode.js` (MIT, voir Crédits).

@@ -2,9 +2,10 @@
 // automatiquement à la 1re partie (voir states/playing.js, startRun).
 // g.helpReturnTo mémorise où revenir en le fermant (open() le pose).
 //
-// Réparti sur 2 pages (g.helpPage, voir open() ci-dessous) : tout tenait sur
-// un seul écran à l'origine, mais la section NOVA + la légende bonus/ennemis
-// rendaient l'ensemble trop chargé une fois les deux ajoutées.
+// Réparti sur 4 pages (g.helpPage, voir open() ci-dessous) en une seule
+// colonne chacune — plus lisible qu'un découpage en deux colonnes sur moins
+// de pages, au prix de devoir tourner un peu plus souvent. Chaque page ne
+// mélange jamais texte et légende (voir drawInfoScreen dans hud.js).
 import { consumeJustPressed } from "../input.js";
 import * as hud from "../hud.js";
 import { MODE } from "./mode.js";
@@ -12,7 +13,6 @@ import { MODE } from "./mode.js";
 const HELP_PAGES = [
   {
     title: "AIDE",
-    showBonusLegend: false,
     sections: [
       { heading: "DÉPLACEMENT", detail: "Souris ou doigt : dirige le vaisseau" },
       { heading: "TIR", detail: 'Maintiens le clic, ou coche "TIR AUTO" (bas à gauche)' },
@@ -21,14 +21,22 @@ const HELP_PAGES = [
         detail:
           "Frôle (sans le toucher) un tir ennemi ou un vaisseau ennemi — pas le boss — pour charger la jauge NOVA en haut à gauche, prends des risques ! Une fois pleine, ESPACE (ou le bouton tactile en bas à droite) détruit tous les ennemis normaux à l'écran, jamais le boss. Jusqu'à 2 charges en réserve après le 2e combat de boss (1 seule avant), à déclencher quand tu veux.",
       },
+    ],
+  },
+  {
+    title: "AIDE",
+    sections: [
       { heading: "BOSS", detail: "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie" },
       { heading: "MUSIQUE", detail: "Playlist aléatoire, réglable en bas à gauche" },
     ],
   },
   {
-    title: "AIDE",
+    title: "AIDE — BONUS",
     showBonusLegend: true,
-    sections: [], // page dédiée à la légende bonus/ennemis (dessinée par drawInfoScreen)
+  },
+  {
+    title: "AIDE — ENNEMIS",
+    showEnemyLegend: true,
   },
 ];
 

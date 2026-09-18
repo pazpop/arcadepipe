@@ -499,10 +499,13 @@ function wrapLines(ctx, str, maxWidth) {
   return lines;
 }
 
-// Contenu en catégories, réparties en deux colonnes (pas une liste
-// verticale) — plus compact sur un canevas de 270px de haut. page/pageCount :
-// pagination (voir states/help.js) — l'Aide était devenue trop chargée sur
-// un seul écran une fois la section NOVA + la légende bonus/ennemis ajoutées.
+// Contenu en une seule colonne centrée — plus lisible qu'un découpage en
+// deux colonnes (texte plus grand, moins de coupures de ligne), réparti sur
+// plusieurs pages (page/pageCount, voir states/help.js) pour ne jamais
+// surcharger un seul écran. Chaque page ne contient qu'un seul type de
+// contenu : soit des sections de texte (content.sections), soit une légende
+// (content.showBonusLegend OU content.showEnemyLegend), jamais combinés —
+// c'est justement ce qui manquait de place en deux colonnes.
 export function drawInfoScreen(ctx, content, page = 0, pageCount = 1) {
   ctx.save();
   // Pas de fond opaque ici : le champ d'étoiles (dessiné par game.js avant
@@ -514,68 +517,54 @@ export function drawInfoScreen(ctx, content, page = 0, pageCount = 1) {
     glow: PALETTE.bulletPlayer,
   });
 
-  const sections = content.sections;
-  const half = Math.ceil(sections.length / 2);
-  const columns = [sections.slice(0, half), sections.slice(half)];
-  const colX = [RES_W * 0.27, RES_W * 0.73];
-  const colWidth = RES_W * 0.42;
-  const detailFont = "7px monospace";
-  const startY = RES_H * 0.09 + 28;
-  const lineH = 9;
-  const sectionGap = 10;
+  const centerX = RES_W / 2;
+  const contentWidth = RES_W * 0.82; // presque toute la largeur, une seule colonne
+  const detailFont = "8px monospace";
+  const lineH = 10;
+  const sectionGap = 12;
+  let y = RES_H * 0.09 + 30;
 
-  // Le bas de la colonne la plus haute dicte legendY ci-dessous : le nombre
-  // de sections/lignes wrappées varie selon leur contenu (voir HELP_INFO
-  // dans states/help.js), donc une valeur fixe se fait dépasser dès qu'une section
-  // s'allonge — vécu une première fois en ajoutant la section NOVA.
-  let tallestColBottom = startY;
-  columns.forEach((items, c) => {
-    let y = startY;
+  if (content.sections) {
     ctx.font = detailFont; // pour measureText dans wrapLines ci-dessous
-    for (const section of items) {
-      text(ctx, section.heading, colX[c], y, {
-        size: 9,
+    for (const section of content.sections) {
+      text(ctx, section.heading, centerX, y, {
+        size: 10,
         align: "center",
         color: PALETTE.player,
         glow: PALETTE.player,
       });
-      y += 12;
-      const lines = wrapLines(ctx, section.detail, colWidth);
+      y += 14;
+      const lines = wrapLines(ctx, section.detail, contentWidth);
       for (const line of lines) {
-        text(ctx, line, colX[c], y, { size: 7, align: "center" });
+        text(ctx, line, centerX, y, { size: 8, align: "center" });
         y += lineH;
       }
       y += sectionGap;
     }
-    tallestColBottom = Math.max(tallestColBottom, y);
-  });
+  }
 
-  // Légende bonus + ennemis (menu Aide uniquement), deux colonnes côte à
-  // côte (même x que les sections du haut) faute de hauteur pour les empiler.
-  // Icônes identiques à ce qui apparaît en jeu (drawPowerupIcon partagé avec
-  // powerups.js ; sprite réel d'assets.js pour les ennemis) — le joueur
-  // associe l'apparence à l'effet sans avoir à le vérifier en jeu.
+  // Légende bonus/ennemis : icônes identiques à ce qui apparaît en jeu
+  // (drawPowerupIcon partagé avec powerups.js ; sprite réel d'assets.js pour
+  // les ennemis) — le joueur associe l'apparence à l'effet sans avoir à le
+  // vérifier en jeu. Une liste empilée (plus jamais deux légendes côte à
+  // côte) depuis le passage en colonne unique.
   if (content.showBonusLegend) {
-    const legendY = tallestColBottom - sectionGap + 4;
-    const rowH = 14;
-    text(ctx, "BONUS", colX[0], legendY, { size: 9, align: "center", color: PALETTE.player, glow: PALETTE.player });
-    const bonusIconX = colX[0] - 62;
-    const bonusLabelX = bonusIconX + 10;
+    const rowH = 22;
     Object.keys(POWERUP.types).forEach((type, i) => {
-      const y = legendY + 16 + i * rowH;
+      const rowY = y + i * rowH;
       const def = POWERUP.types[type];
-      drawPowerupIcon(ctx, bonusIconX, y, type, 4);
-      text(ctx, `${def.label} — ${BONUS_SHORT_EFFECT[type]}`, bonusLabelX, y, { size: 6.5, align: "left", color: def.color });
+      drawPowerupIcon(ctx, centerX - 120, rowY, type, 5);
+      text(ctx, `${def.label} — ${BONUS_SHORT_EFFECT[type]}`, centerX - 100, rowY, { size: 8, align: "left", color: def.color });
     });
+  }
 
-    text(ctx, "ENNEMIS", colX[1], legendY, { size: 9, align: "center", color: PALETTE.player, glow: PALETTE.player });
+  if (content.showEnemyLegend) {
+    const rowH = 22;
     const enemySprites = buildSprites();
-    const enemyIconX = colX[1] - 62;
-    const enemyLabelX = enemyIconX + 12;
     ENEMY_LEGEND.forEach((en, i) => {
-      const y = legendY + 16 + i * rowH;
-      drawWithGlow(ctx, enemySprites[en.spriteKey], enemyIconX, y, en.color, 0.3);
-      text(ctx, en.text, enemyLabelX, y, { size: 6.5, align: "left", color: en.color });
+      const rowY = y + i * rowH;
+      drawWithGlow(ctx, enemySprites[en.spriteKey], centerX - 120, rowY, en.color, 0.3);
+      text(ctx, en.text, centerX - 100, rowY, { size: 8, align: "left", color: en.color });
     });
   }
 

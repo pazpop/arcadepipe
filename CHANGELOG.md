@@ -4,6 +4,15 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.56] - 2026-09-18
+- **Fix (4e round) : le vrai fond du bug de musique silencieuse récurrent.** `playRandom()` (appelée à chaque nouvelle partie) ne remettait jamais à zéro le compteur de tentatives ratées, contrairement à `start()`/`next()`. Un simple accroc réseau isolé qui épuisait les 3 tentatives UNE fois dans la session bloquait ce compteur au-dessus de 3 pour le reste de la session — chaque partie suivante abandonnait alors au moindre nouvel échec, même isolé, sans plus jamais réessayer. Voir GAMEPLAY.md, Retour d'expérience, 4e round.
+- Fix : le vide du trou noir (décor) n'était pas totalement opaque pendant son entrée/sortie d'écran (fondu appliqué au vide lui-même, pas seulement à son disque d'accrétion) — le fond transparaissait légèrement tant qu'il n'était pas visible en entier.
+- Taux d'apparition du trou noir réduit (20% → 12% des astres tirés).
+- Écran Aide réparti sur 2 pages (précédent/suivant + indicateur "1/2") — devenu trop chargé sur un seul écran depuis l'ajout de la section NOVA et de la légende bonus/ennemis.
+- Menu principal : retrait du texte clignotant "APPUIE SUR ENTRÉE..." (jugé superflu) et du numéro de version en bas à droite (reste affiché dans le panneau rétractable).
+- Bouton "Partager" déplacé du coin haut-droit (peu visible) vers le centre, juste au-dessus du bouton "OK"/"VALIDER".
+- Nettoyage : export superflu retiré sur 4 fonctions internes (hud.js ×3, shareCard.js) — jamais utilisées hors de leur propre fichier.
+
 ## [2.55] - 2026-09-18
 - Fix : spam de la console navigateur en prod (`[audio] AudioContext suspendu...` répété à chaque frame) — le garde-fou "une fois par reprise" décrit en commentaire n'était jamais réellement codé. Ajout d'une reprise permanente sur tout clic/touche (pas seulement le tout premier de la session) : en "Tir automatique", le joueur ne clique jamais sur le canvas en jouant, donc rien ne relançait l'audio si le navigateur le suspendait en cours de partie.
 - Fond des écrans-menus unifié : Aide/Classement/Crédits/Saisie du pseudo affichent désormais le même champ d'étoiles défilant que le menu principal (fond opaque retiré de l'écran Aide).

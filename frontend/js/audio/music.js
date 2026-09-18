@@ -178,6 +178,15 @@ export class MusicPlayer {
       this.trackIndex = idx;
     }
     this._persist(STORAGE_KEYS.track, String(this.trackIndex));
+    // Oubliée ici avant ce correctif (contrairement à start()/next()) : sans
+    // ce reset, un simple accroc réseau isolé qui épuisait les 3 tentatives
+    // UNE fois dans la session laissait ce compteur bloqué au-dessus de 3
+    // pour le reste de la session — chaque partie suivante abandonnait alors
+    // au moindre nouvel échec, même isolé, sans plus jamais réessayer.
+    // Repéré comme la cause probable du bug de musique silencieuse encore
+    // signalé après les 3 correctifs précédents (voir GAMEPLAY.md, Retour
+    // d'expérience, 4e round).
+    this._loadRetries = 0;
     if (this.started) this._loadCurrent();
   }
 

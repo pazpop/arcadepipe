@@ -61,6 +61,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     pauseStage: "menu", // "menu" | "confirmQuit"
     confirmQuitSelected: 1, // par défaut sur NON — un Entrée accidentel ne doit pas faire perdre la partie
     helpReturnTo: MODE.MENU, // où revenir en fermant l'aide (MODE.MENU, MODE.PAUSED ou MODE.PLAYING)
+    helpPage: 0, // page courante de l'écran Aide — voir states/help.js
 
     // Partie en cours
     score: 0,
@@ -173,7 +174,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     } else if (g.mode === MODE.MENU) {
       menuState.draw(ctx, g);
     } else if (g.mode === MODE.HELP) {
-      helpState.draw(ctx);
+      helpState.draw(ctx, g);
     } else if (g.mode === MODE.LEADERBOARD) {
       leaderboardScreen.draw(ctx, g);
     } else if (g.mode === MODE.CREDITS) {

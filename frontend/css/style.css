@@ -245,13 +245,16 @@ html, body {
   display: none;
 }
 
-/* Coin haut-droit : libre à cet endroit (le panneau réglages est en bas à
-   gauche, NOVA en bas à droite) — pas de pulse, contrairement à NOVA, cette
-   action n'est jamais urgente. */
+/* Centré, un peu au-dessus du bouton "OK"/"VALIDER" dessiné dans le canvas
+   (voir gameOverContinueRect/nameEntryValidateRect dans hud.js, ~62-68% de
+   la hauteur) — le coin haut-droit d'origine passait inaperçu, trop loin du
+   regard une fois la partie terminée. Pas de pulse, contrairement à NOVA,
+   cette action n'est jamais urgente. */
 .share-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 44%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 2;
   background: rgba(5, 6, 15, 0.7);
   border: 1px solid #ffffff;

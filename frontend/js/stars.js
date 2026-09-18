@@ -51,12 +51,12 @@ function makeStar(layer, randomX) {
 // pleinement saturées, donc un décor terne reste reconnaissable comme
 // "arrière-plan" quelle que soit la teinte qu'il tire.
 // Trou noir plus rare que galaxie/planète (silhouette la plus chargée
-// visuellement des trois) — le reste se repartage 50/50 entre les deux autres.
+// visuellement des trois) — le reste se repartage entre les deux autres.
 // allowBlackhole=false (menu principal, voir updateStarfield) : jamais tiré,
-// son 20% se redistribue simplement vers la galaxie.
+// sa part se redistribue simplement vers la galaxie.
 function makeCelestial(allowBlackhole) {
   const roll = Math.random();
-  const type = allowBlackhole && roll < 0.2 ? "blackhole" : roll < 0.6 ? "galaxy" : "planet";
+  const type = allowBlackhole && roll < 0.12 ? "blackhole" : roll < 0.6 ? "galaxy" : "planet";
   const radius =
     type === "blackhole" ? 28 + Math.random() * 20 : type === "galaxy" ? 26 + Math.random() * 18 : 12 + Math.random() * 22;
   return {
@@ -215,7 +215,12 @@ function drawCelestial(ctx, c) {
     ctx.stroke();
 
     ctx.shadowBlur = 0;
-    ctx.globalAlpha = alpha;
+    // Toujours pleinement opaque (pas `alpha`, contrairement au disque
+    // d'accrétion ci-dessus/ci-dessous) : un vide qui fondrait en transparence
+    // pendant l'entrée/sortie d'écran laisserait voir le fond au travers —
+    // "pas totalement noir" — alors qu'un trou noir n'a par définition rien
+    // à laisser transparaître, entier ou non encore.
+    ctx.globalAlpha = 1;
     ctx.fillStyle = "#000000";
     ctx.beginPath();
     ctx.arc(0, 0, c.radius, 0, Math.PI * 2);

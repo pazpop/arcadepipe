@@ -253,7 +253,7 @@ export function drawFlash(ctx, amount) {
 const MENU_OPTIONS = ["JOUER", "CLASSEMENT", "AIDE", "CRÉDITS"];
 
 // Zones cliquables plus larges que le texte — sur mobile, mieux vaut une marge généreuse qu'un bouton manqué.
-export function menuOptionRects() {
+function menuOptionRects() {
   return verticalOptionRects(MENU_OPTIONS, RES_H * 0.56, 22, 220, 20);
 }
 
@@ -294,18 +294,6 @@ export function drawTitleScreen(ctx, elapsed, selected) {
   });
 
   drawOptionList(ctx, menuOptionRects(), selected, 12);
-
-  const blink = Math.sin(elapsed * 4) > 0;
-  if (blink) {
-    text(ctx, "APPUIE SUR ENTRÉE / TOUCHE POUR COMMENCER", RES_W / 2, RES_H - 14, {
-      size: 7,
-      align: "center",
-      color: PALETTE.hud,
-      alpha: 0.8,
-    });
-  }
-  // Discret, coin bas droit — juste assez visible pour repérer une mise à jour.
-  text(ctx, `v${VERSION}`, RES_W - 4, RES_H - 6, { size: 6, align: "right", alpha: 0.4 });
   ctx.restore();
 }
 
@@ -414,7 +402,7 @@ export function drawCreditsScreen(ctx, scrollY) {
 
 const PAUSE_OPTIONS = ["REPRENDRE", "AIDE", "MENU PRINCIPAL"];
 
-export function pauseOptionRects() {
+function pauseOptionRects() {
   return verticalOptionRects(PAUSE_OPTIONS, RES_H * 0.4 + 24, 20, 200, 18);
 }
 
@@ -435,7 +423,7 @@ export function drawPauseScreen(ctx, selected) {
 
 const CONFIRM_QUIT_OPTIONS = ["OUI, QUITTER", "NON, CONTINUER"];
 
-export function confirmQuitOptionRects() {
+function confirmQuitOptionRects() {
   return verticalOptionRects(CONFIRM_QUIT_OPTIONS, RES_H * 0.58, 20, 200, 18);
 }
 
@@ -472,6 +460,24 @@ export function hitTestInfoContinue(x, y) {
   return hitTestSingle(x, y, infoContinueRect());
 }
 
+// Pagination (voir states/help.js, HELP_PAGES) — juste au-dessus de
+// CONTINUER, jamais chevauchée quel que soit le contenu de la page.
+export function infoPrevRect() {
+  return { x: RES_W * 0.32, y: RES_H * 0.78, w: 70, h: 16 };
+}
+
+export function infoNextRect() {
+  return { x: RES_W * 0.68, y: RES_H * 0.78, w: 70, h: 16 };
+}
+
+export function hitTestInfoPrev(x, y) {
+  return hitTestSingle(x, y, infoPrevRect());
+}
+
+export function hitTestInfoNext(x, y) {
+  return hitTestSingle(x, y, infoNextRect());
+}
+
 // Découpe une chaîne en lignes qui tiennent dans maxWidth (measureText) —
 // nécessaire pour les colonnes, deux fois plus étroites que l'écran.
 function wrapLines(ctx, str, maxWidth) {
@@ -492,8 +498,10 @@ function wrapLines(ctx, str, maxWidth) {
 }
 
 // Contenu en catégories, réparties en deux colonnes (pas une liste
-// verticale) — plus compact sur un canevas de 270px de haut.
-export function drawInfoScreen(ctx, content) {
+// verticale) — plus compact sur un canevas de 270px de haut. page/pageCount :
+// pagination (voir states/help.js) — l'Aide était devenue trop chargée sur
+// un seul écran une fois la section NOVA + la légende bonus/ennemis ajoutées.
+export function drawInfoScreen(ctx, content, page = 0, pageCount = 1) {
   ctx.save();
   // Pas de fond opaque ici : le champ d'étoiles (dessiné par game.js avant
   // cet appel) doit rester visible, comme sur les autres écrans-menus.
@@ -567,6 +575,16 @@ export function drawInfoScreen(ctx, content) {
       drawWithGlow(ctx, enemySprites[en.spriteKey], enemyIconX, y, en.color, 0.3);
       text(ctx, en.text, enemyLabelX, y, { size: 6.5, align: "left", color: en.color });
     });
+  }
+
+  if (pageCount > 1) {
+    const prevR = infoPrevRect();
+    const nextR = infoNextRect();
+    // Grisée plutôt que masquée aux extrémités : la position du bouton reste
+    // stable, seule son opacité indique qu'il n'y a rien de plus dans ce sens.
+    text(ctx, "◀ PRÉC.", prevR.x, prevR.y, { size: 9, align: "center", alpha: page > 0 ? 1 : 0.3 });
+    text(ctx, `${page + 1}/${pageCount}`, RES_W / 2, prevR.y, { size: 9, align: "center", color: PALETTE.hud });
+    text(ctx, "SUIV. ▶", nextR.x, nextR.y, { size: 9, align: "center", alpha: page < pageCount - 1 ? 1 : 0.3 });
   }
 
   const r = infoContinueRect();

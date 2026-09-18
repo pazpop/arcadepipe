@@ -33,7 +33,7 @@ function drawBackdrop(ctx) {
 
 // stats : { score, wave, kills, maxGrazeChain } — voir getRunSummary() dans
 // game.js, seule source de vérité pour ces champs (pas dupliqué ici).
-export function drawShareCard(ctx, stats) {
+function drawShareCard(ctx, stats) {
   drawBackdrop(ctx);
 
   text(ctx, "ARCADEPIPE", SIZE / 2, 130, { size: 54, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });

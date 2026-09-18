@@ -4,6 +4,9 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.76] - 2026-09-18
+- **Fix (6e round) : musique qui ne redémarre jamais en fin de piste, boucle de GET sur les `.xm`, RAM qui grimpe.** Cause racine trouvée et reproduite (test e2e `music-end.spec.js`, 2031 requêtes en 6 s avec 150 ms de latence) : le worklet du lecteur (`chiptune3.worklet.js`) repostait `end` à chaque quantum audio (~375/s) une fois le module terminé, tant qu'aucune nouvelle piste n'était chargée ; chaque `end` relançait un `fetch` avec un nouveau jeton, donc chaque réponse arrivait périmée -> plus jamais de `play()`. Le worklet appelle maintenant `stop()` après `end`/`err` (un seul message), et `onEnded` est ignoré tant qu'un chargement est en cours (`_loading`). Voir GAMEPLAY.md, Retour d'expérience, 6e round.
+
 ## [2.75] - 2026-09-18
 - **Fix : QR code de la carte de partage teinté** (blanc crème, noir olive, halo doré) — la lueur du texte précédent (l'URL) restait active sur le canvas et s'appliquait à chaque module, réduisant le contraste. `drawQrCode` isole désormais son état (`save`/`restore`, ombre coupée). Test e2e ajouté : le QR de la carte est décodé (jsQR) après redimensionnement + recompression JPEG et doit donner l'URL du jeu.
 

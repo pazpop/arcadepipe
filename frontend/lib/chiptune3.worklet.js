@@ -68,6 +68,15 @@ class MPT extends AudioWorkletProcessor {
 			} else {
 				this.port.postMessage({cmd:'end'})
 			}
+			// Corrigé : sans ceci, process() (appelé ~375 fois/s) reposait 'end'
+			// (ou 'err') à CHAQUE quantum audio tant qu'aucune nouvelle piste
+			// n'était chargée. Côté page, chaque 'end' relançait un fetch : avec la
+			// moindre latence réseau, toutes les réponses arrivaient périmées (un
+			// 'end' plus récent avait déjà invalidé leur jeton) -> boucle de GET sans
+			// fin, jamais de musique, RAM qui grimpe. stop() libère le module et met
+			// modulePtr/leftPtr/rightPtr à 0 : les appels suivants retournent en
+			// silence (garde en tête de process()) et 'end' n'est envoyé qu'UNE fois.
+			this.stop()
 			return true
 		}
 
@@ -252,8 +261,9 @@ class MPT extends AudioWorkletProcessor {
 		if (!paused) this.meta()
 	}
 	stop() {
-		if (!this.modulePtr) return
-		if (this.modulePtr != 0) {
+		// Pas de retour anticipé si modulePtr vaut déjà 0 : le cas d'erreur
+		// 'Process' (module invalide) doit quand même libérer leftPtr/rightPtr.
+		if (this.modulePtr) {
 			libopenmpt._openmpt_module_destroy(this.modulePtr)
 			this.modulePtr = 0
 		}

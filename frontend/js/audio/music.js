@@ -20,7 +20,14 @@ export class MusicPlayer {
     // Avec un contexte externe, chiptune3 ne connecte pas sa sortie lui-même
     // (`this.destination` reste `false`) — sans cette ligne, la musique jouerait en silence.
     this.player.gain.connect(audioContext.destination);
-    this.player.onEnded(() => this.playRandom());
+    // Ignoré tant qu'un chargement est en cours (_loading) : ceinture et
+    // bretelles en plus du correctif du worklet (qui ne poste plus 'end' qu'une
+    // fois) — un 'end' répété ne doit JAMAIS relancer un fetch par message, sinon
+    // chaque nouveau jeton périme la réponse précédente et la musique ne
+    // redémarre jamais (voir GAMEPLAY.md, Retour d'expérience, 6e round).
+    this.player.onEnded(() => {
+      if (!this._loading) this.playRandom();
+    });
     // Échec de CRÉATION du module côté worklet ("ptr", voir
     // chiptune3.worklet.js — arrive si le buffer reçu n'est pas un fichier
     // .xm valide) : retenter avec une autre piste, mais jamais immédiatement
@@ -52,6 +59,9 @@ export class MusicPlayer {
     // Compteur de tentatives ratées consécutives (voir _loadCurrent) —
     // remis à 0 dès qu'un chargement réussit.
     this._loadRetries = 0;
+    // true entre le lancement d'un chargement et son aboutissement (succès ou
+    // échec définitif de ce jeton) — voir onEnded ci-dessus.
+    this._loading = false;
   }
 
   _readBool(key, fallback) {
@@ -102,6 +112,7 @@ export class MusicPlayer {
   // bascule, pour éviter le clic quand libopenmpt tranche net l'ancien module.
   _loadCurrent() {
     const token = ++this._loadToken;
+    this._loading = true;
     const track = this.currentTrack;
     this.paused = false;
 
@@ -127,6 +138,7 @@ export class MusicPlayer {
       .then((buf) => {
         if (token !== this._loadToken) return; // supplantée par une piste demandée depuis
         this._loadRetries = 0;
+        this._loading = false;
         this.player.play(buf);
         const target = this.muted ? 0 : this.volume;
         const t = this.player.context.currentTime;

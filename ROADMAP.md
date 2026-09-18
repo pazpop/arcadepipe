@@ -66,6 +66,8 @@ Contexte : ArcadePipe est stable et fonctionnel (Sessions 1-2 terminées, 2.76 d
 ## Autres (non séquencées)
 
 - [ ] **Bandeau de consentement qui recouvre le bas du panneau de gauche** sur desktop (boutons Plein écran/version masqués tant que le visiteur n'a pas choisi) — le décaler ou le rétrécir. Cosmétique, rien d'urgent.
+- [ ] **Permettre de changer son choix de consentement** (RGPD : retirer son accord aussi facilement qu'on l'a donné) : ajouter un bouton **« Cookies »** dans le panneau de gauche qui rouvre le bandeau (`js/consent.js` n'affiche aujourd'hui le bandeau que tant qu'aucun choix n'est mémorisé). Prévoir aussi un lien depuis le bandeau vers la section *Données collectées* du README. À faire plus tard, pas urgent.
+- [ ] **Tests e2e sur Firefox et WebKit** (Safari/iOS), pas seulement Chromium — ajouter deux projets dans `e2e/playwright.config.js`, voir quels tests passent (audio/AudioWorklet, plein écran absent sur iPhone). Le jeu vise le mobile, donc Safari compte. Pas urgent.
 - [ ] Autres améliorations **côté infra** (durcissement de la CSP avec `'wasm-unsafe-eval'`, copie distante et alertes des backups) : suivies dans la *Roadmap* du README de [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner), car ce sont ses fichiers qui sont concernés.
 
 - [ ] Précharger les 5 pistes musicales en mémoire au premier geste (~156 Ko au total) au lieu d'un `fetch` à chaque changement de piste — envisagé pendant la saga audio, **plus justifié** depuis le 6e round (la cause de la boucle de requêtes n'était pas le réseau). Choix d'architecture optionnel, à ne reconsidérer que si de nouveaux incidents réseau réapparaissent.

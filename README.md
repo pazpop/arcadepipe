@@ -82,7 +82,7 @@ cd e2e && npm install && npm run install-browsers && npm test
 
 - **Pseudo, score, vague** (`player_name` 1-20 caractères, `score`, `wave`) : seules données stockées, dans SQLite, sans limite de rétention.
 - **Adresse IP** : lue depuis `X-Forwarded-For` uniquement pour le rate limiting (`slowapi`) — gardée en mémoire le temps de la fenêtre de 5/minute, jamais écrite en base ni dans un fichier de log applicatif.
-- Aucun cookie, aucun tracker, aucun outil d'analytics.
+- **Google Analytics** (`js/analytics.js`, gtag.js) sur l'instance publique `arcadepipe.pazpop.net` — pose des cookies de mesure d'audience. Nécessite d'autoriser `googletagmanager.com`/`google-analytics.com` sur la CSP (repo d'infra séparé) sans quoi le tag est simplement bloqué.
 
 ## CI/CD
 

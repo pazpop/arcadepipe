@@ -4,6 +4,9 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.73] - 2026-09-18
+- **Google Analytics** ajouté sur l'instance publique (`js/analytics.js` + tag gtag.js) — nécessite un ajustement de la CSP partagée côté infra (`googletagmanager.com`/`google-analytics.com` sur `script-src`/`connect-src`, voir `terraform-infra-pazpop-hetzner`). README (section *Données collectées*) mis à jour en conséquence.
+
 ## [2.71] - 2026-09-18
 - Ennemis (gunner/élite) : ne peuvent plus tirer une fois dérivés dans le tiers gauche de l'écran — le joueur reste focalisé sur les 2/3 droits (l'apparition était déjà confinée au tiers droit, mais rien n'empêchait un tir après une longue dérive vers la gauche).
 - **Fix (5e round) : musique silencieuse récurrente.** `_loadCurrent()` abandonnait définitivement après 3 tentatives réseau ratées (12s) — une panne un peu plus longue (redéploiement du site, coupure réseau) laissait la musique silencieuse pour le reste de la partie, sans récupération automatique. Retrait du plafond sur le *nombre* de tentatives, seul le délai reste plafonné (10s max). Voir GAMEPLAY.md, Retour d'expérience, 5e round.

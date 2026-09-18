@@ -22,6 +22,12 @@
 <meta name="twitter:title" content="ArcadePipe — Starfighter" />
 <meta name="twitter:description" content="Jeu d'arcade spatial rétro gratuit, jouable directement dans le navigateur." />
 <link rel="stylesheet" href="css/style.css" />
+<!-- Google Analytics (gtag.js). Le tag externe (googletagmanager.com) doit
+     être autorisé sur script-src/connect-src côté CSP (Traefik, infra
+     séparée) sans quoi il est bloqué silencieusement — voir js/analytics.js
+     pour pourquoi la config elle-même est dans un fichier à part. -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-YC4WFVN9JY"></script>
+<script src="js/analytics.js"></script>
 </head>
 <body>
   <div id="game-container">

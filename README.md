@@ -92,6 +92,8 @@ cd e2e && npm install && npm run install-browsers && npm test
 
 Ce repo s'arrête là — il ne connaît ni VPS ni serveur cible. L'instance `arcadepipe.pazpop.net` est déployée par un repo d'infra séparé ([`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner)), notifié via un événement `repository_dispatch` une fois les images publiées (voir le CI/CD de ce repo-là pour le détail). Un fork ou un usage communautaire n'a pas ce déclenchement (secret absent) et n'en a pas besoin — voir *Docker* ci-dessus pour se déployer soi-même.
 
+**Choix assumé — les tests ne tournent pas en CI.** Le workflow ne lance que le lint (`ruff`, `eslint`) et l'audit des dépendances (`pip-audit`) : les tests (`pytest`, `node --test`, Playwright) sont lancés à la main avant de pousser. Le risque existe : un push qui casse un test est quand même buildé et déployé. Jugé acceptable pour l'instant (un seul développeur, suite e2e d'environ 2 minutes) ; à reconsidérer si le rythme des changements ou le nombre de contributeurs augmente.
+
 ⚠️ GHCR crée les packages en **privé** par défaut au premier push — après le premier run, aller dans Package Settings sur GitHub et les passer en public (sinon `docker compose pull` échoue côté déploiement sans authentification).
 
 ## Roadmap
@@ -109,7 +111,7 @@ arcadepipe/
 │   │   ├── states/ # machine à états : un module par écran (menu, playing, pause...) — voir frontend/README.md, section Architecture
 │   │   ├── audio/  # sfx.js (synthèse), music.js + leaderboard.js (intégrations)
 │   │   └── consent.js, analytics.js  # bandeau de consentement + chargement de Google Analytics après accord
-│   ├── lib/      # chiptune3.js + chiptune3.worklet.js + libopenmpt.worklet.js (lecture de module tracker, AudioWorklet ; le worklet est patché, voir GAMEPLAY.md), qrcode.js (carte de partage)
+│   ├── lib/      # chiptune3.js + chiptune3.worklet.js + libopenmpt.worklet.js (lecture de module tracker, AudioWorklet ; le worklet porte 3 correctifs locaux, voir `frontend/lib/PATCHES.md`), qrcode.js (carte de partage)
 │   └── music/    # playlist de .xm — voir Crédits
 ├── e2e/        # tests bout-en-bout Playwright — voir section Tests
 ├── .github/workflows/  # CI/CD (lint + build + push GHCR + notification de déploiement)

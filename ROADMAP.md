@@ -65,6 +65,9 @@ Contexte : ArcadePipe est stable et fonctionnel (Sessions 1-2 terminées, 2.76 d
 
 ## Autres (non séquencées)
 
+- [ ] **Bandeau de consentement qui recouvre le bas du panneau de gauche** sur desktop (boutons Plein écran/version masqués tant que le visiteur n'a pas choisi) — le décaler ou le rétrécir. Cosmétique, rien d'urgent.
+- [ ] Autres améliorations **côté infra** (durcissement de la CSP avec `'wasm-unsafe-eval'`, copie distante et alertes des backups) : suivies dans la *Roadmap* du README de [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner), car ce sont ses fichiers qui sont concernés.
+
 - [ ] Précharger les 5 pistes musicales en mémoire au premier geste (~156 Ko au total) au lieu d'un `fetch` à chaque changement de piste — envisagé pendant la saga audio, **plus justifié** depuis le 6e round (la cause de la boucle de requêtes n'était pas le réseau). Choix d'architecture optionnel, à ne reconsidérer que si de nouveaux incidents réseau réapparaissent.
 - [ ] Score authentifié (jeton signé émis au début de la partie, exigé à la soumission) — pas urgent, le score non authentifié est un risque assumé (voir la section *Sécurité* du [README](README.md))
 - [ ] Scan de vulnérabilités des **images construites** ([Trivy](https://trivy.dev/), en CI juste après le build) — `pip-audit` couvre les dépendances Python déclarées, mais pas les paquets système de l'image finale (ex: libs Debian de `python:3.11-slim`)

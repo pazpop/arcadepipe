@@ -23,9 +23,9 @@ test("429 sur les fichiers musique : pas de rafale de requêtes, volume récupé
   await page.mouse.down();
   await page.mouse.up();
 
-  // Retry différé (2s/4s/6s) et plafonné (3 tentatives) — avec l'ancien
-  // code (retry immédiat), cette fenêtre suffisait à générer des dizaines
-  // de requêtes en rafale.
+  // Retry différé (2s/4s/6s, puis plafonné à 10s, jamais de plafond sur le
+  // NOMBRE de tentatives) — avec l'ancien code (retry immédiat), cette
+  // fenêtre suffisait à générer des dizaines de requêtes en rafale.
   await page.waitForTimeout(9000);
   const countAfterRetries = requestCount;
   await page.waitForTimeout(4000);

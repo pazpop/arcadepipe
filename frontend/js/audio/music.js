@@ -23,13 +23,21 @@ export class MusicPlayer {
     this.player.onEnded(() => this.playRandom());
     // Échec de CRÉATION du module côté worklet ("ptr", voir
     // chiptune3.worklet.js — arrive si le buffer reçu n'est pas un fichier
-    // .xm valide) : retenter avec une autre piste. Un échec de CHARGEMENT
-    // réseau ("Load") est géré séparément dans _loadCurrent (retries
-    // temporisés et plafonnés) — jamais ici, voir plus bas pourquoi un
-    // retry immédiat sur "Load" a justement causé une rafale de requêtes.
+    // .xm valide) : retenter avec une autre piste, mais jamais immédiatement
+    // — sans le délai ci-dessous, un fichier qui échoue systématiquement à
+    // se décoder (WASM en mauvais état, fichier corrompu...) déclenchait une
+    // boucle fetch->échec->retry en rafale SANS AUCUNE pause, contrairement
+    // au chemin réseau ("Load", géré séparément dans _loadCurrent avec
+    // retries temporisés et plafonnés depuis le round précédent) — même
+    // catégorie de bug que le 429 en rafale (voir plus bas), juste jamais
+    // corrigée pour cette branche-ci jusqu'à présent.
     this.player.onError((e) => {
       console.warn("[music] onError", e); // voir le commentaire sur _loadCurrent — savoir quelle branche se déclenche plutôt que deviner
-      if (e && e.type !== "Load") this.playRandom();
+      if (e && e.type !== "Load") {
+        this._loadRetries += 1;
+        const delay = Math.min(10000, 2000 * this._loadRetries);
+        setTimeout(() => this.playRandom(), delay);
+      }
     });
     this.started = false;
     this.paused = false;
@@ -138,17 +146,23 @@ export class MusicPlayer {
         const t = this.player.context.currentTime;
         g.cancelScheduledValues(t);
         g.linearRampToValueAtTime(target, t + 0.03);
-        // Nouvelle tentative DIFFÉRÉE (2s, 4s, 6s) et PLAFONNÉE (3 essais) —
+        // Nouvelle tentative DIFFÉRÉE (2s, 4s, 6s, ... plafonné à 10s) —
         // jamais immédiate : un 429 veut dire "trop de requêtes", en relancer
         // une tout de suite ne fait qu'aggraver la situation (c'est exactement
         // ce que faisait l'ancien retry immédiat via onError, voir plus haut).
+        // Pas de plafond sur le NOMBRE de tentatives (contrairement à avant,
+        // 3 essais puis abandon définitif) : une panne un peu plus longue que
+        // 12s (redéploiement du site, coupure réseau passagère) laissait la
+        // musique silencieuse pour le reste de la partie, sans aucun moyen de
+        // s'en remettre seule une fois la panne finie — le prochain
+        // changement de piste automatique (onEnded) ne pouvait plus jamais se
+        // déclencher puisque plus rien ne jouait. Coût négligeable à
+        // continuer d'essayer (une requête toutes les 10s au pire).
         this._loadRetries += 1;
-        if (this._loadRetries <= 3) {
-          const delay = 2000 * this._loadRetries;
-          setTimeout(() => {
-            if (token === this._loadToken) this._loadCurrent();
-          }, delay);
-        }
+        const delay = Math.min(10000, 2000 * this._loadRetries);
+        setTimeout(() => {
+          if (token === this._loadToken) this._loadCurrent();
+        }, delay);
       });
   }
 

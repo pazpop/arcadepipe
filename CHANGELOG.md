@@ -4,6 +4,12 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.71] - 2026-09-18
+- Ennemis (gunner/élite) : ne peuvent plus tirer une fois dérivés dans le tiers gauche de l'écran — le joueur reste focalisé sur les 2/3 droits (l'apparition était déjà confinée au tiers droit, mais rien n'empêchait un tir après une longue dérive vers la gauche).
+- **Fix (5e round) : musique silencieuse récurrente.** `_loadCurrent()` abandonnait définitivement après 3 tentatives réseau ratées (12s) — une panne un peu plus longue (redéploiement du site, coupure réseau) laissait la musique silencieuse pour le reste de la partie, sans récupération automatique. Retrait du plafond sur le *nombre* de tentatives, seul le délai reste plafonné (10s max). Voir GAMEPLAY.md, Retour d'expérience, 5e round.
+- **Fix : boucle de requêtes en rafale (source probable d'une fuite mémoire signalée en jeu).** `onError` (échec de décodage d'un fichier musique côté WASM) relançait une piste immédiatement, sans aucun délai — même défaut que le round 3 (429 en rafale), jamais corrigé pour cette branche. Même mécanisme de délai progressif appliqué.
+- Tactile : le vaisseau est désormais un peu plus éloigné du doigt (décalage 28 -> 45) pour mieux voir venir les tirs ennemis.
+
 ## [2.64] - 2026-09-18
 - Écran Aide : passage à une seule colonne (texte plus grand, plus lisible qu'un découpage en deux colonnes) — réparti sur 4 pages au lieu de 2 pour compenser (contrôles/NOVA, boss/musique, légende bonus, légende ennemis).
 

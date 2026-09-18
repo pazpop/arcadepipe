@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.64";
+export const VERSION = "2.71";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -169,7 +169,7 @@ export const GAME_SPEEDS = [1, 1.5, 2];
 export const INPUT = {
   // Décalage horizontal (pas vertical) : le vaisseau "précède" le doigt, qui
   // ne masque plus la zone d'où viennent les tirs ennemis.
-  touchXOffset: 28,
+  touchXOffset: 45,
 };
 
 // Frôlement des tirs ennemis (graze.js) : récompense l'esquive serrée plutôt

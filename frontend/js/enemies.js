@@ -13,6 +13,12 @@ const POOL_SIZE = 40;
 // disparaît en sortant (jamais de rebond).
 const LEFT_BOUND = (RES_W * 2) / 3;
 
+// Zone de tir : distinct de LEFT_BOUND (qui ne confine que l'APPARITION au
+// tiers droit) — ici on autorise le tir tant que l'ennemi n'a pas dérivé
+// dans le tiers gauche, pour garder le joueur focalisé sur les 2/3 droits
+// de l'écran (le tiers gauche reste traversable, juste silencieux).
+const FIRE_MIN_X = RES_W / 3;
+
 const TYPE_STATS = {
   normal: { hp: 1, radius: 4.5, points: 100, speed: 55, fireChance: 0 },
   elite: { hp: 3, radius: 5, points: 300, speed: 45, fireChance: 1 }, // tire toujours (aimed périodique)
@@ -196,8 +202,11 @@ export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
       en.leaving = false;
       continue;
     }
-    // En fuite : ne tire plus (pas de dernier tir vache).
-    if ((en.type === "elite" || en.gunner) && !en.leaving) {
+    // En fuite : ne tire plus (pas de dernier tir vache). En dérivant vers la
+    // gauche (vx négatif), un élite/gunner pouvait franchir tout l'écran et
+    // continuer de tirer depuis le tiers gauche — le joueur doit pouvoir
+    // rester concentré sur les 2/3 droits (voir FIRE_MIN_X plus haut).
+    if ((en.type === "elite" || en.gunner) && !en.leaving && en.x > FIRE_MIN_X) {
       en.fireTimer -= dt;
       if (en.fireTimer <= 0) {
         const speed = en.gunner ? bulletSpeed * 0.75 : bulletSpeed;

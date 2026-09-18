@@ -243,7 +243,8 @@ if (shareBtn) {
   });
 }
 
-// --- Konami code (easter egg, aucun effet de jeu — juste un son) ---
+// --- Konami code (easter egg, aucun effet de jeu — juste un son + un tilt
+// visuel du canvas, voir konami-tilt dans css/style.css) ---
 const KONAMI_SEQUENCE = [
   "ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown",
   "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight",
@@ -263,6 +264,13 @@ window.addEventListener("keydown", (e) => {
     konamiProgress = 0;
     audio.ensure();
     audio.playKonami();
+    // Force un redémarrage propre de l'animation même si le code est refait
+    // avant la fin de la précédente — retirer/rajouter la classe seule ne
+    // suffit pas (le navigateur ne "voit" pas de changement sans un reflow
+    // forcé entre les deux, ici via la simple lecture de offsetWidth).
+    canvas.classList.remove("konami-tilt");
+    void canvas.offsetWidth;
+    canvas.classList.add("konami-tilt");
   }
 });
 

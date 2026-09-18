@@ -101,7 +101,7 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] Réglages de volume séparés pour la musique et les bruitages, plus une coupure du son complète — tout est mémorisé d'une visite à l'autre.
 - [x] Changement de musique en fondu (le son baisse puis remonte) plutôt qu'une coupure nette, pour éviter un clic audible désagréable.
 - [x] L'intensité d'un bruitage suit celle de son effet visuel — le NOVA (écran qui tremble fort, tout l'écran nettoyé d'un coup) a son propre son "large" (bruit filtré + sub grave), pas le même son qu'une explosion d'ennemi normal, sinon l'impact paraît muet malgré l'écran qui vibre.
-- [x] Un easter egg pur son (aucun effet de jeu) caché derrière une séquence de touches connue des joueurs de jeux vidéo — jamais indiqué en jeu, à découvrir.
+- [x] Un easter egg (aucun effet de jeu) caché derrière une séquence de touches connue des joueurs de jeux vidéo — jamais indiqué en jeu, à découvrir. Jingle audio accompagné d'un petit tilt du canvas, synchronisés.
 - [x] Le contexte audio est explicitement repris quand l'onglet redevient visible, et vérifié en continu (pas seulement au premier geste) — certains navigateurs le suspendent d'eux-mêmes après un moment sans jamais le reprendre, y compris parfois onglet actif, ce qui coupait la musique en permanence.
 - [x] Le chargement d'une piste vérifie le code de statut de la réponse réseau avant de la traiter comme valide (`fetch()` ne rejette jamais sur une erreur HTTP à lui seul) ; en cas d'échec, une nouvelle tentative différée et plafonnée — jamais immédiate, pour ne pas aggraver une limite de requêtes temporaire (voir *Retour d'expérience*, troisième round, plus bas).
 

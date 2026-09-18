@@ -4,6 +4,9 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.61] - 2026-09-18
+- Konami code : petit tilt du canvas ajouté, synchronisé avec le jingle audio.
+
 ## [2.60] - 2026-09-18
 - Fix : l'anneau des planètes (décor) était dessiné en un seul tracé complet par-dessus la sphère — on voyait toute sa moitié censée passer derrière, en transparence. Dessiné maintenant en deux moitiés (avant/arrière) avec la sphère intercalée entre les deux.
 

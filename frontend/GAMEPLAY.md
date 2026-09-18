@@ -123,7 +123,7 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] Les scores sont envoyés à un vrai serveur et lus depuis ce serveur (pas seulement stockés sur l'appareil du joueur), donc partagés entre tous les joueurs.
 - [x] Un compteur du nombre total de parties jouées, toutes personnes confondues.
 - [x] Si le serveur est injoignable, l'écran de classement l'affiche proprement (liste vide) plutôt que de planter ou de bloquer le jeu.
-- [ ] Distance parcourue durant la run (en années-lumière, à définir comment la convertir depuis une mesure de jeu réelle — ex: temps de survie × vitesse de défilement) affichée au classement, aux côtés du score/vague/kills actuels — pas encore fait, idée notée.
+- [ ] Distance parcourue durant la run (en années-lumière, accumulée en jeu — vitesse de défilement × warp × dt, voir `states/playing.js`) — prévue en deux temps (voir Roadmap du [README](../README.md)) : **phase 1** affichée à l'écran de fin de partie et sur la carte de partage (aucun changement backend), **phase 2** ajoutée au classement plus tard (demande un changement de schéma serveur). Pas encore fait, idée notée et découpée.
 
 ## Accessibilité & mobile
 

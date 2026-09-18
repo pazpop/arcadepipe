@@ -100,11 +100,11 @@ export function updateGameOver(g, engine) {
 // Overlay dessiné par-dessus la scène de jeu partagée (voir game.js draw) —
 // contrairement à l'écran NAME_ENTRY, qui a son propre fond.
 export function drawGameOverOverlay(c2d, g) {
-  hud.drawDeathScreen(c2d, g.score, g.wave, g.enemiesKilled);
+  hud.drawDeathScreen(c2d, g.score, g.wave, g.enemiesKilled, g.distanceTraveled);
 }
 
 export function drawNameEntry(c2d, g) {
-  hud.drawGameOverScreen(c2d, g.score, g.wave, g.enemiesKilled);
+  hud.drawGameOverScreen(c2d, g.score, g.wave, g.enemiesKilled, g.distanceTraveled);
   hud.drawNameEntry(c2d, g.nameEntry, Math.floor(performance.now() / 400) % 2 === 0);
 }
 

@@ -5,7 +5,7 @@
 // écrans affichent la scène figée derrière leur overlay plutôt qu'un fond
 // vide, donc le rendu de la scène elle-même n'est pas propre à "playing" au
 // sens strict, mais vit ici avec le reste de l'état qui la nourrit.
-import { RES_W, RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS } from "../config.js";
+import { RES_W, RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE } from "../config.js";
 import { updateStarfield, triggerDeathStarLeave } from "../stars.js";
 import { resetPlayer, updatePlayer, hitPlayer, drawPlayer, applyPowerup, applyShield } from "../player.js";
 import { updateProjectiles, drawProjectiles } from "../projectiles.js";
@@ -100,6 +100,7 @@ export function startRun(g, engine) {
   g.score = 0;
   g.enemiesKilled = 0;
   g.maxGrazeChain = 0;
+  g.distanceTraveled = 0;
   g.shake = 0;
   g.flash = 0;
   g.hitStop = 0;
@@ -373,6 +374,11 @@ export function update(g, engine, dt) {
     g.hitStop = Math.max(0, g.hitStop - dt);
     dt *= 0.06;
   }
+
+  // Distance parcourue (cosmétique, voir DISTANCE dans config.js) —
+  // proportionnelle au warp courant : compte plus vite pendant un saut
+  // spatial/le niveau bonus qu'en vol normal, comme le ressent le joueur.
+  g.distanceTraveled += DISTANCE.lightYearsPerSecond * g.warp * dt;
 
   if (g.dying) {
     // Ralenti après la mort — plus long/prononcé que le micro-gel

@@ -13,10 +13,10 @@ Issu d'une discussion à trois (utilisateur, Claude, revue croisée) sur la déc
 - [x] Commentaire d'invariant ajouté en tête de `drawScene()` (`states/playing.js`).
 - [ ] Option toujours en réserve, non faite : un test e2e comparant deux captures d'écran prises en pause (doivent être bit à bit identiques), si l'invariant ci-dessus doit être renforcé au-delà d'un commentaire un jour.
 
-## Session 2 — nouvelles fonctionnalités (meilleur rapport effort/impact)
+## Session 2 — nouvelles fonctionnalités (meilleur rapport effort/impact) ✅ 2026-09-18
 
-- [ ] **Distance parcourue, phase 1 (frontend seul)** — priorité la plus haute de la Roadmap actuelle : aucun changement backend requis (`g.distanceTraveled += vitesse × warp × dt` dans `states/playing.js`), affichage immédiat à l'écran de fin de partie et sur la carte de partage. Risque quasi nul (pas de DB, pas de logique de scoring touchée). Coche progressivement l'idée déjà notée dans `frontend/GAMEPLAY.md` (classement = phase 2, plus tard, demande un changement de schéma serveur).
-- [ ] **QR code sur la carte de partage** (`shareCard.js`) — 100% client-side (contrairement au "lien court" écarté plus tôt, un QR code encode directement l'URL statique du jeu, pas besoin de backend). Ajouter une petite bibliothèque de génération QR vendorisée dans `lib/` (même principe que `chiptune3.js` déjà dans le repo — un seul fichier, sans dépendance), appelée lors de la génération de la carte. Utile surtout sur mobile, où scanner bat le recopiage manuel de l'URL.
+- [x] **Distance parcourue, phase 1 (frontend seul)** — `g.distanceTraveled` accumulée proportionnellement au warp (`DISTANCE.lightYearsPerSecond`, `config.js`), affichée à l'écran de fin de partie et sur la carte de partage. Aucun changement backend. Phase 2 (classement, changement de schéma serveur) reste à faire, non urgente.
+- [x] **QR code sur la carte de partage** (`shareCard.js`) — 100% client-side, encode directement `https://arcadepipe.pazpop.net`. Bibliothèque vendorisée dans `frontend/lib/qrcode.js` ([kazuhikoarase/qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator), MIT — pas celle de Nayuki envisagée initialement, qui n'existe qu'en TypeScript à compiler ; celle-ci est distribuée en JS pur, sans étape de build, cohérente avec le reste du projet). Noir sur blanc volontairement non stylisé (la scannabilité prime sur l'esthétique). Créditée dans le README et l'écran crédits en jeu.
 
 ## Session 3 — optimisations optionnelles (pas pressé)
 

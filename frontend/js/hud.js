@@ -376,6 +376,8 @@ export const CREDITS_LINES = [
   "JAVASCRIPT · CANVAS 2D",
   "WEB AUDIO API · SQLITE",
   "",
+  "QR CODE : KAZUHIKO ARASE",
+  "",
   "MERCI D'AVOIR JOUÉ !",
 ];
 
@@ -599,9 +601,10 @@ export function drawInfoScreen(ctx, content, page = 0, pageCount = 1) {
 
 // --- Game over / saisie du nom ---
 
-export function drawGameOverScreen(ctx, score, wave, kills) {
+export function drawGameOverScreen(ctx, score, wave, kills, distance) {
   text(ctx, "GAME OVER", RES_W / 2, RES_H * 0.28, { size: 20, align: "center", color: PALETTE.danger, glow: PALETTE.danger });
   text(ctx, `SCORE ${score}  ·  VAGUE ${wave}  ·  ${kills} ENNEMIS`, RES_W / 2, RES_H * 0.28 + 22, { size: 10, align: "center" });
+  text(ctx, `${Math.round(distance)} ANNÉES-LUMIÈRE PARCOURUES`, RES_W / 2, RES_H * 0.28 + 34, { size: 7, align: "center", alpha: 0.8 });
 }
 
 // --- Écran "GAME OVER" intermédiaire (après le ralenti de mort, avant la
@@ -615,11 +618,11 @@ export function hitTestGameOverContinue(x, y) {
   return hitTestSingle(x, y, gameOverContinueRect());
 }
 
-export function drawDeathScreen(ctx, score, wave, kills) {
+export function drawDeathScreen(ctx, score, wave, kills, distance) {
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.55)";
   ctx.fillRect(0, 0, RES_W, RES_H);
-  drawGameOverScreen(ctx, score, wave, kills);
+  drawGameOverScreen(ctx, score, wave, kills, distance);
   const r = gameOverContinueRect();
   text(ctx, "▶ OK", r.x, r.y, {
     size: 12,

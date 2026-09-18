@@ -4,6 +4,11 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.63] - 2026-09-18
+- **Nouveau : distance parcourue** (années-lumière), accumulée pendant la partie et affichée à l'écran de fin de partie + sur la carte de partage. Phase 1 seulement (frontend), le classement reste pour plus tard.
+- **Nouveau : QR code sur la carte de partage**, pointant directement vers le jeu — 100% client-side, bibliothèque QR vendorisée dans `frontend/lib/qrcode.js` (MIT, voir Crédits).
+- Session 2 de ROADMAP.md marquée faite.
+
 ## [2.62] - 2026-09-18
 - Refactor interne (aucun changement de comportement) : `states/waves.js` extrait de `states/playing.js` (démarrage de vague + transition entre vagues/déclenchement du niveau bonus) — `playing.js` passe de ~610 à ~495 lignes. Voir ROADMAP.md, Session 1.
 - Fix : `updateGraze()` (`graze.js`) pouvait continuer à charger la jauge NOVA pendant le niveau bonus/saut spatial — protégé jusqu'ici seulement par une coïncidence de données (pools vides à ce moment), pas par le code. Garde explicite ajoutée + test de régression.

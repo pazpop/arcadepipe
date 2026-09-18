@@ -116,14 +116,14 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] Panneau bas gauche organisé en items clairs plutôt qu'un groupe "options" fourre-tout : Musique, Bruitages, Vitesse du jeu, Tir automatique, Aide, puis le numéro de version — chacun sa propre ligne, dans l'ordre où un joueur les cherche.
 - [x] Lien vers le code source (GitHub) dans les crédits.
 - [x] Numéro de version affiché dans le jeu (détail plus bas).
-- [x] **Partage de run en un clic** : juste après la fin d'une partie (game over/saisie du pseudo), un bouton génère une image carrée (score, vague atteinte, ennemis abattus, meilleure chaîne de frôlements de la partie, lien vers le jeu) dans le même style visuel que le jeu — copiée dans le presse-papier quand le navigateur le permet, toujours aussi proposée en téléchargement (le support du presse-papier image varie trop d'un navigateur à l'autre pour s'y fier seul). Pas de lien raccourci/backend dédié : l'image se suffit à elle-même pour Twitter/Discord.
+- [x] **Partage de run en un clic** : juste après la fin d'une partie (game over/saisie du pseudo), un bouton génère une image carrée (score, vague atteinte, ennemis abattus, meilleure chaîne de frôlements, distance parcourue) dans le même style visuel que le jeu, plus un QR code pointant directement vers le jeu (noir sur blanc, contraste volontairement non stylisé pour rester scannable) — copiée dans le presse-papier quand le navigateur le permet, toujours aussi proposée en téléchargement (le support du presse-papier image varie trop d'un navigateur à l'autre pour s'y fier seul). Pas de lien raccourci/backend dédié : le QR code encode l'URL statique du jeu directement, généré 100% côté client.
 
 ## Classement (leaderboard)
 
 - [x] Les scores sont envoyés à un vrai serveur et lus depuis ce serveur (pas seulement stockés sur l'appareil du joueur), donc partagés entre tous les joueurs.
 - [x] Un compteur du nombre total de parties jouées, toutes personnes confondues.
 - [x] Si le serveur est injoignable, l'écran de classement l'affiche proprement (liste vide) plutôt que de planter ou de bloquer le jeu.
-- [ ] Distance parcourue durant la run (en années-lumière, accumulée en jeu — vitesse de défilement × warp × dt, voir `states/playing.js`) — prévue en deux temps (voir Roadmap du [README](../README.md)) : **phase 1** affichée à l'écran de fin de partie et sur la carte de partage (aucun changement backend), **phase 2** ajoutée au classement plus tard (demande un changement de schéma serveur). Pas encore fait, idée notée et découpée.
+- [x] Distance parcourue durant la run (années-lumière, accumulée proportionnellement au warp — voir `DISTANCE` dans `config.js`), affichée à l'écran de fin de partie et sur la carte de partage — **phase 1** faite. **Phase 2**, non faite : l'ajouter aussi au classement (demande un changement de schéma serveur, voir [ROADMAP.md](../ROADMAP.md)).
 
 ## Accessibilité & mobile
 

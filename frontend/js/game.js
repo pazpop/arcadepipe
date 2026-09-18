@@ -72,6 +72,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     tookDamageThisWave: false, // pour DIFFICULTY.noDamageWaveBonus — reset dans startWave, mis à true dans onPlayerHit
     grazeChain: 0, // reset dans startWave (pas startRun) — voir graze.js
     maxGrazeChain: 0, // meilleure chaîne de la partie entière — reset dans startRun (pas startWave), voir graze.js
+    distanceTraveled: 0, // années-lumière, accumulé pendant PLAYING — reset dans startRun, voir DISTANCE dans config.js
     novaStock: 0, // rechargé par le graze, consommé par tryUseNova() — vide au début d'une partie (récompense à gagner)
     novaProgress: 0, // 0..1, progression vers la prochaine charge
     novaMax: 1, // recalculé dans startWave (novaMaxForWave)
@@ -227,7 +228,13 @@ export function createGame({ input, audio, music, nameInputEl }) {
     // Résumé de la partie qui vient de se terminer — seule source pour la
     // carte de partage (main.js/shareCard.js), pas de champs dupliqués ailleurs.
     getRunSummary() {
-      return { score: g.score, wave: g.wave, kills: g.enemiesKilled, maxGrazeChain: g.maxGrazeChain };
+      return {
+        score: g.score,
+        wave: g.wave,
+        kills: g.enemiesKilled,
+        maxGrazeChain: g.maxGrazeChain,
+        distanceTraveled: g.distanceTraveled,
+      };
     },
     update,
     draw,

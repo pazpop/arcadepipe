@@ -110,7 +110,7 @@ arcadepipe/
 │   ├── js/       # config, assets (sprites générés), moteur de jeu (modules ES6)
 │   │   ├── states/ # machine à états : un module par écran (menu, playing, pause...) — voir frontend/README.md, section Architecture
 │   │   └── audio/  # sfx.js (synthèse), music.js + leaderboard.js (intégrations)
-│   ├── lib/      # chiptune3.js + libopenmpt.worklet.js (lecture de module tracker, AudioWorklet)
+│   ├── lib/      # chiptune3.js + libopenmpt.worklet.js (lecture de module tracker, AudioWorklet), qrcode.js (carte de partage)
 │   └── music/    # playlist de .xm — voir Crédits
 ├── e2e/        # tests bout-en-bout Playwright — voir section Tests
 ├── .github/workflows/  # CI/CD (lint + build + push GHCR + notification de déploiement)
@@ -123,6 +123,7 @@ arcadepipe/
 
 - Musique : playlist de 5 morceaux composés pour la scène keygen par **DEViANCE** et **h4x0r** — trouvés via [keygen.music](https://keygen.music/) / [keygenmusic.tk](https://keygenmusic.tk/). Merci à ses autrices/auteurs et à la scène tracker en général. Aucune licence explicite trouvée (les dépôts qui les archivent n'en ont pas non plus) : utilisés ici sciemment pour un projet personnel non-commercial, pas au-delà.
 - Lecture du fichier : [libopenmpt](https://lib.openmpt.org/libopenmpt/) (BSD-3-Clause) via [chiptune3.js](https://github.com/DrSnuggles/chiptune) (MIT) — la même techno que keygenmusic.tk utilise pour son propre lecteur.
+- Génération du QR code sur la carte de partage : [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) par Kazuhiko Arase (MIT).
 
 ## Licence
 

@@ -4,6 +4,9 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.75] - 2026-09-18
+- **Fix : QR code de la carte de partage teinté** (blanc crème, noir olive, halo doré) — la lueur du texte précédent (l'URL) restait active sur le canvas et s'appliquait à chaque module, réduisant le contraste. `drawQrCode` isole désormais son état (`save`/`restore`, ombre coupée). Test e2e ajouté : le QR de la carte est décodé (jsQR) après redimensionnement + recompression JPEG et doit donner l'URL du jeu.
+
 ## [2.74] - 2026-09-18
 - **Bandeau de consentement RGPD** : Google Analytics n'est plus chargé au démarrage mais seulement après "Accepter" (`js/consent.js`, choix mémorisé). `analytics.js` devient un module (`loadAnalytics()`, idempotent).
 - **Nouveau : bouton Plein écran** dans le panneau bas gauche (masqué si l'API Fullscreen est absente, ex: iPhone).

@@ -40,6 +40,12 @@ function drawBackdrop(ctx) {
 // typeNumber=0 = taille auto (la plus petite qui contient l'URL), niveau de
 // correction 'M' = compromis standard entre taille et tolérance aux dégâts.
 function drawQrCode(ctx, x, y, size) {
+  // Isolé de l'état du canvas : le dernier text() dessiné avant (l'URL, avec
+  // lueur dorée) laisse shadowBlur/shadowColor actifs, ce qui teintait
+  // chaque module du QR (blanc -> crème, noir -> olive) et réduisait son contraste.
+  ctx.save();
+  ctx.shadowBlur = 0;
+  ctx.shadowColor = "transparent";
   const qr = qrcodeFactory(0, "M");
   qr.addData(SHARE_URL);
   qr.make();
@@ -60,6 +66,7 @@ function drawQrCode(ctx, x, y, size) {
       if (qr.isDark(r, c)) ctx.fillRect(x + margin + c * cell, y + margin + r * cell, cell, cell);
     }
   }
+  ctx.restore();
   return actualSize;
 }
 

@@ -1,11 +1,12 @@
 # Changelog
 
-Journal des changements notables (gameplay, visuel, audio, infra) — pas les simples ajustements numériques. Adapté au versionnement automatique de ce projet plutôt qu'à SemVer classique : `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>`, jamais choisi à la main (voir `frontend/GAMEPLAY.md`, section *Suivi de version*). Une entrée par version qui mérite d'être racontée, la plus récente en premier.
+Journal des changements notables (gameplay, visuel, audio, infra) — pas les simples ajustements numériques. Adapté au versionnement automatique de ce projet plutôt qu'à SemVer classique : `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au moment du dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas), jamais choisi à la main (voir `frontend/GAMEPLAY.md`, section *Suivi de version*). Une entrée par version qui mérite d'être racontée, la plus récente en premier.
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
 ## [2.76] - 2026-09-18
 - **Fix (6e round) : musique qui ne redémarre jamais en fin de piste, boucle de GET sur les `.xm`, RAM qui grimpe.** Cause racine trouvée et reproduite (test e2e `music-end.spec.js`, 2031 requêtes en 6 s avec 150 ms de latence) : le worklet du lecteur (`chiptune3.worklet.js`) repostait `end` à chaque quantum audio (~375/s) une fois le module terminé, tant qu'aucune nouvelle piste n'était chargée ; chaque `end` relançait un `fetch` avec un nouveau jeton, donc chaque réponse arrivait périmée -> plus jamais de `play()`. Le worklet appelle maintenant `stop()` après `end`/`err` (un seul message), et `onEnded` est ignoré tant qu'un chargement est en cours (`_loading`). Voir GAMEPLAY.md, Retour d'expérience, 6e round.
+- Fix (infra, même version) : `favicon.svg` absent de l'image Docker du frontend (404 en production) — `COPY favicon.svg` ajouté au Dockerfile.
 
 ## [2.75] - 2026-09-18
 - **Fix : QR code de la carte de partage teinté** (blanc crème, noir olive, halo doré) — la lueur du texte précédent (l'URL) restait active sur le canvas et s'appliquait à chaque module, réduisant le contraste. `drawQrCode` isole désormais son état (`save`/`restore`, ombre coupée). Test e2e ajouté : le QR de la carte est décodé (jsQR) après redimensionnement + recompression JPEG et doit donner l'URL du jeu.
@@ -32,7 +33,7 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 - Session 2 de ROADMAP.md marquée faite.
 
 ## [2.62] - 2026-09-18
-- Refactor interne (aucun changement de comportement) : `states/waves.js` extrait de `states/playing.js` (démarrage de vague + transition entre vagues/déclenchement du niveau bonus) — `playing.js` passe de ~610 à ~495 lignes. Voir ROADMAP.md, Session 1.
+- Refactor interne (aucun changement de comportement) : `states/waves.js` extrait de `states/playing.js` (démarrage de vague + transition entre vagues/déclenchement du niveau bonus) — `playing.js` passe de ~590 à ~495 lignes. Voir ROADMAP.md, Session 1.
 - Fix : `updateGraze()` (`graze.js`) pouvait continuer à charger la jauge NOVA pendant le niveau bonus/saut spatial — protégé jusqu'ici seulement par une coïncidence de données (pools vides à ce moment), pas par le code. Garde explicite ajoutée + test de régression.
 - Deux commentaires d'invariants ajoutés dans `states/playing.js` (cartographie des écrivains NOVA, condition qui rend le freeze de PAUSED/GAME_OVER correct).
 

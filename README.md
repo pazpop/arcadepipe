@@ -19,7 +19,7 @@ Ce projet (et l'infra qui l'héberge, voir [`terraform-infra-pazpop-hetzner`](ht
 | Backend | FastAPI + `sqlite3` natif | API du leaderboard |
 | Frontend | JS vanilla (modules ES6) + Canvas 2D | Shoot'em up à défilement horizontal, pixel art généré par code |
 | DB | SQLite (WAL), volume Docker | Scores |
-| Musique | [libopenmpt](https://lib.openmpt.org/libopenmpt/) via [chiptune3.js](https://github.com/DrSnuggles/chiptune) (`AudioWorklet`) | Rejoue le vrai fichier `.xm` (`frontend/music/theme.xm`), pas une recomposition |
+| Musique | [libopenmpt](https://lib.openmpt.org/libopenmpt/) via [chiptune3.js](https://github.com/DrSnuggles/chiptune) (`AudioWorklet`) | Rejoue de vrais fichiers tracker `.xm` (playlist de 5 morceaux dans `frontend/music/`), pas une recomposition |
 
 ```mermaid
 flowchart LR
@@ -70,7 +70,7 @@ cd e2e && npm install && npm run install-browsers && npm test
 
 - CORS restreint (`ALLOWED_ORIGINS`, jamais `"*"`), requêtes SQL paramétrées, entrées validées (Pydantic)
 - Nom de joueur jamais inséré dans du HTML (rendu Canvas côté client, API JSON côté serveur) — aucune surface XSS, sans échappement explicite à maintenir
-- **Rate limiting** (`slowapi`, par IP réelle via `X-Forwarded-For` si un reverse-proxy de confiance le pose devant, sinon l'IP de connexion directe) : `POST /api/scores` à 5/minute, `GET /api/scores` à 60/minute (lecture bon marché mais toujours limitée, en défense en profondeur)
+- **Rate limiting** (`slowapi`, par IP réelle via `X-Forwarded-For` si un reverse-proxy de confiance le pose devant, sinon l'IP de connexion directe) : `POST /api/scores` à 5/minute, `POST /api/games` (compteur de parties) à 10/minute, `GET /api/scores` et `GET /api/games/count` à 60/minute (lectures bon marché mais toujours limitées, en défense en profondeur)
 - Backend **et** frontend non-root, rootfs read-only, `cap_drop: ALL` (voir `docker-compose.yml` — le frontend garde `NET_BIND_SERVICE`, seule capacité nécessaire pour qu'un Caddy non-root se lie au port 80)
 - Taille des requêtes `POST /api/*` plafonnée par le reverse-proxy (10 Ko, largement suffisant pour un score) — sans ça, un payload énorme serait lu en mémoire avant même que Pydantic ne le rejette. Scopé aux routes API uniquement (jamais aux fichiers statiques/musique, servis par un routeur séparé) pour ne jamais risquer de casser un téléchargement légitime
 - Sauvegarde quotidienne de la base SQLite (timer systemd sur la VPS, testée en conditions réelles — backup/restauration validées) — gérée entièrement dans le repo d'infra séparé (`terraform-infra-pazpop-hetzner/backup/`), pas ici
@@ -78,7 +78,7 @@ cd e2e && npm install && npm run install-browsers && npm test
 
 ## Données collectées
 
-- **Pseudo, score, vague** (`player_name` 1-20 caractères, `score`, `wave`) : seules données stockées, dans SQLite, sans limite de rétention.
+- **Pseudo, score, vague, ennemis abattus** (`player_name` 1-20 caractères, `score`, `wave`, `kills`) : seules données personnelles-ish stockées, dans SQLite, sans limite de rétention. À cela s'ajoute un simple **compteur global de parties jouées** (`POST /api/games`, aucun payload, aucune donnée sur le joueur).
 - **Adresse IP** : lue depuis `X-Forwarded-For` uniquement pour le rate limiting (`slowapi`) — gardée en mémoire le temps de la fenêtre de 5/minute, jamais écrite en base ni dans un fichier de log applicatif.
 - **Google Analytics** (`js/analytics.js`, gtag.js) sur l'instance publique `arcadepipe.pazpop.net` — pose des cookies de mesure d'audience, **uniquement après consentement** (bandeau Accepter/Refuser, `js/consent.js`, choix mémorisé dans `localStorage`). Nécessite d'autoriser `googletagmanager.com`/`google-analytics.com` sur la CSP (repo d'infra séparé) sans quoi le tag est simplement bloqué.
 
@@ -107,8 +107,9 @@ arcadepipe/
 │   ├── index.html, css/style.css
 │   ├── js/       # config, assets (sprites générés), moteur de jeu (modules ES6)
 │   │   ├── states/ # machine à états : un module par écran (menu, playing, pause...) — voir frontend/README.md, section Architecture
-│   │   └── audio/  # sfx.js (synthèse), music.js + leaderboard.js (intégrations)
-│   ├── lib/      # chiptune3.js + libopenmpt.worklet.js (lecture de module tracker, AudioWorklet), qrcode.js (carte de partage)
+│   │   ├── audio/  # sfx.js (synthèse), music.js + leaderboard.js (intégrations)
+│   │   └── consent.js, analytics.js  # bandeau de consentement + chargement de Google Analytics après accord
+│   ├── lib/      # chiptune3.js + chiptune3.worklet.js + libopenmpt.worklet.js (lecture de module tracker, AudioWorklet ; le worklet est patché, voir GAMEPLAY.md), qrcode.js (carte de partage)
 │   └── music/    # playlist de .xm — voir Crédits
 ├── e2e/        # tests bout-en-bout Playwright — voir section Tests
 ├── .github/workflows/  # CI/CD (lint + build + push GHCR + notification de déploiement)

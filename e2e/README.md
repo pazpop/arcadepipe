@@ -20,6 +20,9 @@ npm test                   # ou : npx playwright test --headed pour voir le navi
 - `graze-nova.spec.js` — frôlement des tirs, remplissage de la jauge NOVA, déclenchement via le bouton tactile
 - `bonus-level.spec.js` — déclenchement du niveau bonus, défilement des anneaux, récompense NOVA
 - `music-retry.spec.js` — régression : un 429 sur les fichiers musique ne doit jamais déclencher une rafale de requêtes
+- `music-end.spec.js` — régression : la fin naturelle d'une piste ne déclenche qu'**une** requête pour la suivante (avec 150 ms de latence simulée — sans latence, le serveur local masque le bug) et la musique repart
+- `consent.spec.js` — bandeau de consentement : Google Analytics jamais chargé avant « Accepter », choix mémorisé au rechargement, chargé une seule fois ; bouton Plein écran
+- `share-qr.spec.js` — le QR de la carte de partage se décode (jsQR) après redimensionnement + recompression JPEG, et son contraste noir/blanc est vérifié au pixel près
 
 **Limite volontaire** : le rendu canvas n'est pas inspectable comme du DOM, donc pas d'assertion pixel-exacte possible. Ces tests valident surtout l'absence d'erreurs JS sur de vraies séquences d'interaction, avec des captures d'écran pour la vérification visuelle humaine — pas un remplacement total du "lancer le jeu et regarder", plutôt un filet qui attrape les régressions qui plantent (erreurs JS, écran figé, flux cassé).
 
@@ -32,4 +35,4 @@ await page.evaluate(async () => {
 });
 ```
 
-Ça marche pour n'importe quel module déjà chargé par la page — `config.js` pour les constantes, ou `main.js` pour atteindre les instances `music`/`audio` (voir l'export en bas de `frontend/js/main.js`). Voir `tests/helpers.js` pour le détail et d'autres exemples.
+Ça marche pour n'importe quel module déjà chargé par la page — `config.js` pour les constantes, ou `main.js` pour atteindre les instances `music`/`audio` (voir l'export en bas de `frontend/js/main.js`). Voir `tests/helpers.js` pour le détail et d'autres exemples. `skipHints()` (helpers) masque aussi le bandeau de consentement, qui recouvrirait sinon les boutons tactiles du bas de l'écran.

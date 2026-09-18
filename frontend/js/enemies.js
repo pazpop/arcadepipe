@@ -144,13 +144,13 @@ export function spawnEnemyWave(pool, waveNumber, eliteChance) {
 }
 
 // Vitesse de base des ennemis en fuite (avant le warp, x10 max — voir
-// updatePlayingMode) : assez rapide pour quitter l'écran bien avant la fin
-// du saut spatial.
+// update() dans states/playing.js) : assez rapide pour quitter l'écran bien
+// avant la fin du saut spatial.
 const LEAVE_SPEED = 90;
 
 // Fin de vague : les ennemis actifs défilent vers la gauche comme le fond
 // (plus naturel qu'une disparition instantanée) — voir aussi le filet de
-// sécurité dans startWave (game.js).
+// sécurité dans startWave (states/playing.js).
 export function setEnemiesLeaving(pool) {
   for (const en of pool.items) {
     if (!en.active) continue;
@@ -241,10 +241,14 @@ export function drawEnemies(ctx, pool) {
   const sprites = buildSprites();
   for (const en of pool.items) {
     if (!en.active) continue;
+    // gunner/élite encaissent plus d'un coup — dès qu'ils en ont pris un,
+    // leur sprite passe à sa variante ternie (voir fadedPalette dans
+    // assets.js), un repère visuel de dégâts sans jauge de PV à l'écran.
+    const damaged = en.hp < en.maxHp;
     const sprite =
-      en.type === "elite" ? sprites.enemyElite
+      en.type === "elite" ? (damaged ? sprites.enemyEliteDamaged : sprites.enemyElite)
       : en.type === "kamikaze" ? sprites.enemyKamikaze
-      : en.gunner ? sprites.enemyGunner
+      : en.gunner ? (damaged ? sprites.enemyGunnerDamaged : sprites.enemyGunner)
       : sprites.enemyNormal;
     const glow = enemyGlowColor(en);
     if (en.type === "kamikaze") {

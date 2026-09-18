@@ -244,6 +244,31 @@ html, body {
 .nova-btn.hidden {
   display: none;
 }
+
+/* Coin haut-droit : libre à cet endroit (le panneau réglages est en bas à
+   gauche, NOVA en bas à droite) — pas de pulse, contrairement à NOVA, cette
+   action n'est jamais urgente. */
+.share-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  background: rgba(5, 6, 15, 0.7);
+  border: 1px solid #ffffff;
+  border-radius: 4px;
+  color: #ffffff;
+  font-family: monospace;
+  font-size: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+.share-btn:hover,
+.share-btn:active {
+  background: rgba(255, 255, 255, 0.15);
+}
+.share-btn.hidden {
+  display: none;
+}
 @keyframes nova-pulse {
   0%, 100% { box-shadow: 0 0 4px rgba(255, 255, 255, 0.4); }
   50% { box-shadow: 0 0 12px rgba(255, 255, 255, 0.9); }

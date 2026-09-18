@@ -26,6 +26,8 @@ export default [
         fetch: "readonly",
         AbortSignal: "readonly",
         setTimeout: "readonly",
+        URL: "readonly",
+        ClipboardItem: "readonly",
       },
     },
     rules: {

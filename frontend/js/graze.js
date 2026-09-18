@@ -20,6 +20,9 @@ export function novaMaxForWave(wave) {
 
 function registerGraze(g, particles, audio, x, y) {
   g.grazeChain += 1;
+  // Sur toute la partie (pas remise à zéro par vague comme grazeChain) —
+  // affichée en fin de run sur la carte de partage (voir shareCard.js).
+  g.maxGrazeChain = Math.max(g.maxGrazeChain, g.grazeChain);
   g.score += grazeScoreForChain(g.grazeChain);
   g.novaProgress += 1 / GRAZE.grazePerCharge;
   while (g.novaProgress >= 1 && g.novaStock < g.novaMax) {
@@ -35,8 +38,8 @@ function registerGraze(g, particles, audio, x, y) {
 
 // Suspendu pendant : l'invulnérabilité post-hit (sinon trivial à spammer en
 // restant dans un tir), la transition de vague et le ralenti de mort
-// (g.dying) — leur dt n'est que réduit, jamais nul (voir updatePlayingMode
-// dans game.js), donc sans cette garde la jauge continuerait de se remplir
+// (g.dying) — leur dt n'est que réduit, jamais nul (voir update() dans
+// states/playing.js), donc sans cette garde la jauge continuerait de se remplir
 // un peu pendant ces phases où le joueur ne "joue" pas vraiment.
 export function updateGraze(g, dt, player, projectiles, enemies, particles, audio) {
   if (!player.alive || player.invuln > 0 || g.waveBreak > 0 || g.dying || g.shipIntro) return;

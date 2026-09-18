@@ -8,6 +8,34 @@ const LAYERS = [
   { count: 35, speedMin: 25, speedMax: 55, size: 1, alpha: 0.55 },
 ];
 
+// Petit groupe d'étoiles qui scintillent (luminosité qui varie dans le
+// temps, positions figées) — distinct des couches de fond ci-dessus qui
+// défilent mais ne scintillent jamais. Réutilisé pour le niveau bonus
+// (bonusLevel.js, plus visible) et le menu principal (states/menu.js, plus
+// discret) plutôt que dupliqué dans les deux.
+export function createTwinkleStars(count) {
+  return Array.from({ length: count }, () => ({
+    x: Math.random() * RES_W,
+    y: Math.random() * RES_H,
+    phase: Math.random() * Math.PI * 2,
+    // Rythme propre à chaque étoile : un scintillement synchronisé
+    // paraîtrait bien plus artificiel.
+    speed: 2 + Math.random() * 2,
+  }));
+}
+
+// Va-et-vient 0..1 (pas juste positif) : Math.sin ramené en [0,1] fait
+// clignoter doucement plutôt que sauter d'un coup entre deux états.
+export function drawTwinkleStars(ctx, stars, elapsed) {
+  ctx.save();
+  ctx.fillStyle = PALETTE.star;
+  for (const s of stars) {
+    ctx.globalAlpha = 0.15 + 0.5 * (0.5 + 0.5 * Math.sin(elapsed * s.speed + s.phase));
+    ctx.fillRect(s.x, s.y, 1, 1);
+  }
+  ctx.restore();
+}
+
 function makeStar(layer, randomX) {
   return {
     x: randomX ? Math.random() * RES_W : RES_W + 4,
@@ -24,9 +52,11 @@ function makeStar(layer, randomX) {
 // "arrière-plan" quelle que soit la teinte qu'il tire.
 // Trou noir plus rare que galaxie/planète (silhouette la plus chargée
 // visuellement des trois) — le reste se repartage 50/50 entre les deux autres.
-function makeCelestial() {
+// allowBlackhole=false (menu principal, voir updateStarfield) : jamais tiré,
+// son 20% se redistribue simplement vers la galaxie.
+function makeCelestial(allowBlackhole) {
   const roll = Math.random();
-  const type = roll < 0.08 ? "blackhole" : roll < 0.54 ? "galaxy" : "planet";
+  const type = allowBlackhole && roll < 0.2 ? "blackhole" : roll < 0.6 ? "galaxy" : "planet";
   const radius =
     type === "blackhole" ? 28 + Math.random() * 20 : type === "galaxy" ? 26 + Math.random() * 18 : 12 + Math.random() * 22;
   return {
@@ -84,7 +114,10 @@ export function createStarfield() {
   return { layers, celestial: null, celestialTimer: nextCelestialDelay(), deathStar: null };
 }
 
-export function updateStarfield(field, dt, warp) {
+// allowBlackhole : false pour ne jamais en tirer un nouveau (menu principal,
+// voir game.js) — un trou noir déjà en train de traverser l'écran continue
+// sa traversée (pas de retrait rétroactif), seul un NOUVEAU tirage en tient compte.
+export function updateStarfield(field, dt, warp, allowBlackhole = true) {
   for (const layer of field.layers) {
     for (const st of layer.stars) {
       st.x -= st.speed * warp * dt;
@@ -99,7 +132,7 @@ export function updateStarfield(field, dt, warp) {
     }
   } else {
     field.celestialTimer -= dt;
-    if (field.celestialTimer <= 0) field.celestial = makeCelestial();
+    if (field.celestialTimer <= 0) field.celestial = makeCelestial(allowBlackhole);
   }
   if (field.deathStar) {
     if (field.deathStar.leaving) {

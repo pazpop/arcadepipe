@@ -128,6 +128,7 @@ export function startRun(g, engine) {
   for (const pu of powerups.items) pu.active = false;
   g.score = 0;
   g.enemiesKilled = 0;
+  g.maxGrazeChain = 0;
   g.shake = 0;
   g.flash = 0;
   g.hitStop = 0;

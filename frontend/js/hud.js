@@ -47,7 +47,7 @@ function hitTestRects(x, y, rects) {
 
 // Bouton unique (aide, game over, saisie du nom) : 0 si survolé/cliqué, -1
 // sinon — même contrat que hitTestRects, pour rester compatible avec
-// syncHover()/syncHoverWithSound() côté game.js.
+// syncHover()/syncHoverWithSound() côté states/navHelpers.js.
 function hitTestSingle(x, y, r) {
   return pointInRect(x, y, r) ? 0 : -1;
 }
@@ -115,16 +115,17 @@ export function drawGameHud(ctx, s, lives) {
   });
 }
 
-// Jauge NOVA : une pastille par charge dispo (pleine/vide) + une fine barre
-// de progression vers la prochaine sous la dernière pastille vide — en haut
-// à gauche, sous le score, symétrique des vies (haut à droite).
+// Jauge NOVA : charges dispo / max (ex. "NOVA 1/2" — le max lui-même monte
+// à 2 après le 2e combat de boss, voir novaMaxForWave dans graze.js, d'où
+// l'intérêt de toujours l'afficher plutôt qu'un simple compteur) + une fine
+// barre de progression vers la prochaine charge — en haut à gauche, sous le
+// score, symétrique des vies (haut à droite). Jaune pâle à 0 charge, jaune
+// vif (avec glow) dès qu'au moins une est prête à être utilisée.
 export function drawNovaGauge(ctx, stock, max, progress) {
   if (max <= 0) return;
   const color = NOVA.color;
   const y = 20;
-  let pips = "";
-  for (let i = 0; i < max; i++) pips += i < stock ? "●" : "○";
-  text(ctx, `NOVA ${pips}`, 8, y, {
+  text(ctx, `NOVA ${stock}/${max}`, 8, y, {
     size: 7,
     align: "left",
     color,
@@ -380,6 +381,7 @@ export const CREDITS_LINES = [
   "DES ANNÉES 90-2000",
   "",
   "MERCI SPÉCIAL À CLAUDE (ANTHROPIC)",
+  "ET LUMO (PROTON)",
   "POUR L'ASSISTANCE AU DÉVELOPPEMENT",
   "",
   "TECHNOLOGIES",
@@ -493,8 +495,8 @@ function wrapLines(ctx, str, maxWidth) {
 // verticale) — plus compact sur un canevas de 270px de haut.
 export function drawInfoScreen(ctx, content) {
   ctx.save();
-  ctx.fillStyle = "rgba(0,0,0,0.9)";
-  ctx.fillRect(0, 0, RES_W, RES_H);
+  // Pas de fond opaque ici : le champ d'étoiles (dessiné par game.js avant
+  // cet appel) doit rester visible, comme sur les autres écrans-menus.
   text(ctx, content.title, RES_W / 2, RES_H * 0.09, {
     size: 14,
     align: "center",
@@ -514,7 +516,7 @@ export function drawInfoScreen(ctx, content) {
 
   // Le bas de la colonne la plus haute dicte legendY ci-dessous : le nombre
   // de sections/lignes wrappées varie selon leur contenu (voir HELP_INFO
-  // dans game.js), donc une valeur fixe se fait dépasser dès qu'une section
+  // dans states/help.js), donc une valeur fixe se fait dépasser dès qu'une section
   // s'allonge — vécu une première fois en ajoutant la section NOVA.
   let tallestColBottom = startY;
   columns.forEach((items, c) => {
@@ -611,7 +613,7 @@ export function drawDeathScreen(ctx, score, wave, kills) {
 }
 
 // Bouton tactile pour valider le nom — indispensable sur mobile où le
-// clavier virtuel n'apparaît pas toujours (handleGameOver dans game.js).
+// clavier virtuel n'apparaît pas toujours (triggerGameOver dans states/endOfRun.js).
 export function nameEntryValidateRect() {
   return { x: RES_W / 2, y: RES_H * 0.48 + 54, w: 200, h: 18 };
 }

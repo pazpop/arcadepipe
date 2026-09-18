@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.54";
+export const VERSION = "2.55";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -117,7 +117,7 @@ export const POWERUP = {
     shotgun: { fireCooldownMul: 1.35, damage: 2, color: "#d4a24c", label: "CHEVROTINE", effect: "cône de plombs, dégâts décroissants avec la distance" },
     shield: { color: "#5ec8ff", label: "BOUCLIER", effect: "absorbe les prochains coups" },
   },
-  // Poids relatifs (pickPowerupType() dans game.js).
+  // Poids relatifs (pickPowerupType() dans states/playing.js).
   typeWeights: { power: 0.3, rapid: 0.3, shotgun: 0.2, shield: 0.2 },
 };
 
@@ -191,7 +191,7 @@ export const GRAZE = {
 };
 
 // NOVA : ressource stockable rechargée par le graze (au lieu d'un drop à
-// effet immédiat) — voir triggerNova/tryUseNova dans game.js.
+// effet immédiat) — voir triggerNova/tryUseNova dans states/playing.js.
 export const NOVA = {
   color: PALETTE.gold,
   baseMaxStock: 1,
@@ -226,12 +226,6 @@ export const BONUS_LEVEL = {
   // petite montée en difficulté dans le niveau bonus lui-même, pas juste une
   // suite de portes identiques.
   ringTighten: 0.6,
-  // Silhouette d'arrière-plan désaturée comme tout le reste du décor (voir
-  // Charte graphique dans GAMEPLAY.md) — un clin d'œil, pas un élément de
-  // jeu. Démarre juste hors écran (pas loin derrière) à une vitesse qui la
-  // fait traverser en ~10-13s : trop lente/trop loin au premier essai, à
-  // peine sa queue était visible avant la fin du niveau.
-  whaleSpeed: 55,
   // Entrée en douceur du vaisseau (glissée depuis la gauche, comme au tout
   // début d'une partie) + message explicatif — aucun anneau ne spawn avant
   // la fin de cette phase (voir spawnTimer initial dans createBonusLevel).

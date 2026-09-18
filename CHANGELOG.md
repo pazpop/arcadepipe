@@ -4,6 +4,19 @@ Journal des changements notables (gameplay, visuel, audio, infra) — pas les si
 
 **Historique non rétro-rempli avant 2.43** — ce fichier démarre à sa création plutôt que de reconstituer tout l'historique Git. `git log` reste la source exhaustive pour ce qui précède.
 
+## [2.55] - 2026-09-18
+- Fix : spam de la console navigateur en prod (`[audio] AudioContext suspendu...` répété à chaque frame) — le garde-fou "une fois par reprise" décrit en commentaire n'était jamais réellement codé. Ajout d'une reprise permanente sur tout clic/touche (pas seulement le tout premier de la session) : en "Tir automatique", le joueur ne clique jamais sur le canvas en jouant, donc rien ne relançait l'audio si le navigateur le suspendait en cours de partie.
+- Fond des écrans-menus unifié : Aide/Classement/Crédits/Saisie du pseudo affichent désormais le même champ d'étoiles défilant que le menu principal (fond opaque retiré de l'écran Aide).
+- Jauge NOVA : affichage "NOVA x/max" (au lieu de pastilles) + section dédiée dans l'écran Aide qui explique clairement le fonctionnement.
+- Ennemis gunner/élite (2-3 PV) : sprite qui passe à une variante aux couleurs ternies dès qu'ils ont encaissé un coup — retour visuel de dégâts sans jauge de PV à l'écran.
+- Trou noir (décor) : taux d'apparition relevé (8% → 20% des astres tirés) — pouvait rester invisible plusieurs sessions d'affilée. Jamais tiré sur l'écran titre spécifiquement (trop chargé visuellement derrière le texte du menu), remplacé par quelques étoiles scintillantes.
+- Niveau bonus : silhouette de baleine (easter egg) retirée (peu reconnaissable en pratique), remplacée par des étoiles lointaines qui scintillent — même mécanisme réutilisé pour le menu principal.
+- Konami code : nouveau jingle "trouvaille" (fanfare montante originale), corrige au passage un bug d'enveloppe audio qui coupait les dernières notes de l'ancien arpège.
+- Crédit Lumo (Proton) ajouté à l'écran crédits en jeu (déjà présent dans le README).
+- **Nouveau : partage de run en un clic** — à la fin d'une partie, une image carrée (score, vague, kills, meilleure chaîne de frôlements) prête pour Twitter/Discord, copiée dans le presse-papier et téléchargée.
+- Limite de taille des requêtes `POST /api/*` ajoutée côté reverse-proxy (10 Ko, infra séparée) — scopée à l'API uniquement, jamais aux fichiers statiques/musique.
+- Relecture complète du repo (revue demandée explicitement, deux agents dédiés frontend/backend) : une vraie race condition corrigée (double-soumission de score possible), un export mort retiré, 13 commentaires obsolètes remis à jour après le refactor states/. Backend : rien à corriger, déjà propre.
+
 ## [2.54] - 2026-09-17
 - Refactor interne (aucun changement de comportement) : `game.js` (~1000 lignes) découpé en un module par écran sous `frontend/js/states/` (menu, playing, paused, help, endOfRun, leaderboardScreen, credits) — `game.js` ne fait plus que relier (état partagé `g`, bundle `engine`) et tient maintenant en ~220 lignes. Fait par étapes, un module extrait à la fois avec tests relancés entre chaque. Architecture + diagramme documentés dans `frontend/README.md`.
 

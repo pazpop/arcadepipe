@@ -62,13 +62,25 @@ export async function triggerGameOver(g, engine) {
   }
 }
 
+// Garde contre une double soumission : g.mode ne change qu'après l'await
+// submitScore ci-dessous, donc un second tap sur VALIDER (ou Entrée juste
+// après un tap) pendant ce délai rappellerait confirmNameEntry une deuxième
+// fois sans ce verrou — même famille de bug que _loadToken (audio/music.js)
+// et le jeton de leaderboardScreen.js, mais ici on veut ignorer l'appel en
+// trop plutôt que garder seulement le plus récent.
+let submitting = false;
+
 export async function confirmNameEntry(g, engine) {
+  if (submitting) return;
+  submitting = true;
   const name = (g.nameEntry || "PILOTE").trim() || "PILOTE";
   saveLastPlayerName(name); // repris pré-rempli à la prochaine partie (voir triggerGameOver)
   try {
     await submitScore(name, g.score, g.wave, g.enemiesKilled);
   } catch {
     /* échec silencieux : on affiche quand même le classement en l'état */
+  } finally {
+    submitting = false;
   }
   if (engine.nameInputEl) engine.nameInputEl.blur();
   leaderboardScreen.open(g, MODE.MENU);

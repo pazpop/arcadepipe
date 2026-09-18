@@ -2,6 +2,7 @@
 // — aucune allocation pendant la boucle de jeu, donc pas de pause GC.
 import { PALETTE } from "./config.js";
 import { acquireSlot } from "./pool.js";
+import { desaturate } from "./color.js";
 
 const POOL_SIZE = 400;
 
@@ -20,25 +21,11 @@ export function createParticlePool() {
   return { items };
 }
 
-// Désature une couleur en mélangeant chaque canal vers sa clarté perçue
-// (équivalent à réduire la saturation HSL en gardant la luminosité). Toutes
-// les couleurs de gameplay de ce jeu sont pleinement saturées (voir la
+// Toutes les couleurs de gameplay de ce jeu sont pleinement saturées (voir la
 // Charte graphique dans GAMEPLAY.md) — désaturer systématiquement les
 // particules (spawnOne ci-dessous) garantit qu'elles ne rivalisent jamais
 // visuellement avec un tir à esquiver, tout en gardant la couleur par type
 // (juste plus terne) plutôt que de tout aplatir sur une seule teinte.
-function desaturate(hex, amount = 0.55) {
-  const r = parseInt(hex.slice(1, 3), 16) / 255;
-  const g = parseInt(hex.slice(3, 5), 16) / 255;
-  const b = parseInt(hex.slice(5, 7), 16) / 255;
-  const l = (Math.max(r, g, b) + Math.min(r, g, b)) / 2;
-  const toByte = (c) =>
-    Math.round(Math.min(1, Math.max(0, c + (l - c) * amount)) * 255)
-      .toString(16)
-      .padStart(2, "0");
-  return `#${toByte(r)}${toByte(g)}${toByte(b)}`;
-}
-
 function spawnOne(pool, x, y, vx, vy, life, size, color) {
   const p = acquireSlot(pool);
   if (!p) return;

@@ -3,6 +3,13 @@
 // atteint le seuil du cycle en cours avant BONUS_LEVEL.everyNWaves.
 import { RES_W, RES_H, PALETTE, BONUS_LEVEL } from "./config.js";
 import { spawnFlashBurst } from "./particles.js";
+import { createTwinkleStars, drawTwinkleStars } from "./stars.js";
+
+// Étoiles lointaines qui scintillent, propres au niveau bonus — distinctes
+// du champ d'étoiles qui défile normalement (stars.js), pour renforcer
+// l'impression de profondeur pendant la traversée des anneaux. Même
+// principe que le menu principal (states/menu.js), en plus nombreux/visible.
+const TWINKLE_STAR_COUNT = 18;
 
 export function createBonusLevel() {
   return {
@@ -16,10 +23,10 @@ export function createBonusLevel() {
     spawnTimer: BONUS_LEVEL.introDuration,
     introTimer: BONUS_LEVEL.introDuration,
     finished: false,
-    // Silhouette d'arrière-plan (easter egg) — démarre tout près pour être
-    // bien visible dès le début du niveau, pas juste sa queue à la toute fin.
-    whaleX: RES_W + 40,
-    whaleY: RES_H * (0.2 + Math.random() * 0.2),
+    elapsed: 0,
+    // Positions/phases figées pour toute la durée du niveau (pas recréées à
+    // chaque frame) — seule leur luminosité varie (voir drawTwinkleStars).
+    twinkleStars: createTwinkleStars(TWINKLE_STAR_COUNT),
   };
 }
 
@@ -38,7 +45,7 @@ function spawnRing(bl) {
 }
 
 // Fraction d'anneaux réussis sur le total — c'est elle qui détermine combien
-// la jauge NOVA se remplit (voir applyBonusLevelReward dans game.js).
+// la jauge NOVA se remplit (voir applyNovaReward dans states/playing.js).
 export function bonusLevelRewardFraction(bl) {
   if (!bl || BONUS_LEVEL.ringCount <= 0) return 0;
   return bl.passedCount / BONUS_LEVEL.ringCount;
@@ -47,6 +54,7 @@ export function bonusLevelRewardFraction(bl) {
 export function updateBonusLevel(bl, dt, player, particles, audio) {
   if (bl.finished) return;
 
+  bl.elapsed += dt;
   if (bl.introTimer > 0) bl.introTimer -= dt;
 
   bl.spawnTimer -= dt;
@@ -62,7 +70,7 @@ export function updateBonusLevel(bl, dt, player, particles, audio) {
     ring.x -= BONUS_LEVEL.ringSpeed * dt;
     if (ring.resolved) continue;
     // Résolu au croisement du plan du vaisseau (verrouillé en x pendant le
-    // niveau bonus, voir updateBonusLevelShip dans game.js) plutôt qu'une
+    // niveau bonus, voir updateBonusLevelShip dans states/playing.js) plutôt qu'une
     // vraie détection de collision : plus lisible pour le joueur (le moment
     // où "ça compte" est net, pas une zone floue).
     if (ring.x <= player.x) {
@@ -79,25 +87,9 @@ export function updateBonusLevel(bl, dt, player, particles, audio) {
     }
   }
 
-  bl.whaleX -= BONUS_LEVEL.whaleSpeed * dt;
-
   if (bl.spawnedCount >= BONUS_LEVEL.ringCount && bl.resolvedCount >= BONUS_LEVEL.ringCount) {
     bl.finished = true;
   }
-}
-
-function drawWhale(ctx, x, y) {
-  if (x < -200 || x > RES_W + 200) return;
-  ctx.save();
-  ctx.globalAlpha = 0.3;
-  ctx.fillStyle = "#4a6fa5"; // désaturé, cohérent avec le reste du décor (voir Charte graphique)
-  ctx.beginPath();
-  ctx.ellipse(x, y, 70, 26, 0, 0, Math.PI * 2);
-  ctx.moveTo(x - 68, y - 2);
-  ctx.quadraticCurveTo(x - 100, y - 30, x - 122, y - 6);
-  ctx.quadraticCurveTo(x - 100, y + 6, x - 68, y + 2);
-  ctx.fill();
-  ctx.restore();
 }
 
 function drawRing(ctx, ring) {
@@ -115,7 +107,7 @@ function drawRing(ctx, ring) {
 }
 
 export function drawBonusLevel(ctx, bl) {
-  drawWhale(ctx, bl.whaleX, bl.whaleY);
+  drawTwinkleStars(ctx, bl.twinkleStars, bl.elapsed);
   for (const ring of bl.rings) {
     if (ring.x < -ring.outerRadius * 2) continue; // déjà loin derrière, rien à dessiner
     drawRing(ctx, ring);

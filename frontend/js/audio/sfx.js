@@ -140,7 +140,7 @@ export class AudioEngine {
   }
 
   // Transition "saut spatial" : glissement montant sur 2s avec légère
-  // distorsion, synchronisé avec l'accélération visuelle (game.js).
+  // distorsion, synchronisé avec l'accélération visuelle (states/playing.js).
   playWarpTransition() {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
@@ -168,7 +168,7 @@ export class AudioEngine {
 
   // NOVA : explosion nettement plus "large" qu'un impact normal
   // (playExplosion) — bruit filtré plus long + un sub grave en dessous pour
-  // le poids. L'écran tremble déjà fort (triggerShake dans game.js), le son
+  // le poids. L'écran tremble déjà fort (triggerShake dans states/playing.js), le son
   // doit suivre sinon l'effet paraît muet malgré l'écran qui vibre.
   playNovaBlast() {
     if (!this.ctx) return;
@@ -253,23 +253,46 @@ export class AudioEngine {
     this._tone({ type: "sine", startFreq: 220, endFreq: 140, duration: 0.08, gain: 0.05 });
   }
 
-  // Konami code (↑↑↓↓←→←→BA, voir main.js) : petit arpège montant façon
-  // jingle "code accepté" — plus festif que playPowerup, réservé à ce secret.
+  // Konami code (↑↑↓↓←→←→BA, voir main.js) : petit jingle "trouvaille" —
+  // silhouette rythmique courte-courte-courte-longue (comme une fanfare),
+  // avec un éclat aigu par-dessus la note tenue finale. Mélodie originale
+  // composée pour ce jeu, pas une citation.
+  //
+  // Chaque note gère sa propre enveloppe de volume plutôt que _envGain
+  // (utilisée ailleurs pour un son immédiat) : _envGain programme ses rampes
+  // par rapport à `ctx.currentTime` au moment où elle est appelée, ce qui
+  // convient pour un son isolé mais pas ici — appelée une seule fois "à
+  // now" pour les 5 notes, elle les aurait toutes fait ramper (et pour les
+  // dernières, revenir à 0) avant même que leur oscillateur, lui bien
+  // décalé dans le temps, ne commence à produire du son.
   playKonami() {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
-    const notes = [523, 659, 784, 1047, 1319]; // do-mi-sol-do-mi, octave au-dessus
-    notes.forEach((freq, i) => {
-      const start = now + i * 0.08;
+    // start/duration en secondes depuis "now".
+    const notes = [
+      { freq: 392, start: 0, duration: 0.1 }, // sol
+      { freq: 523, start: 0.1, duration: 0.1 }, // do
+      { freq: 659, start: 0.2, duration: 0.12 }, // mi
+      { freq: 784, start: 0.32, duration: 0.3 }, // sol aigu, tenue — le "ta-daa" final
+      { freq: 1175, start: 0.38, duration: 0.15 }, // ré très aigu, éclat par-dessus la tenue
+    ];
+    for (const { freq, start, duration } of notes) {
+      const t = now + start;
       const osc = this.ctx.createOscillator();
-      const g = this._envGain(0.16, 0.14, 0.005, 0.1);
+      const g = this.ctx.createGain();
+      const attack = 0.008;
+      const release = duration * 0.4;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.15, t + attack);
+      g.gain.setValueAtTime(0.15, t + Math.max(attack, duration - release));
+      g.gain.linearRampToValueAtTime(0, t + duration);
       osc.type = "square";
-      osc.frequency.setValueAtTime(freq, start);
+      osc.frequency.setValueAtTime(freq, t);
       osc.connect(g);
       g.connect(this.master);
-      osc.start(start);
-      osc.stop(start + 0.18);
-    });
+      osc.start(t);
+      osc.stop(t + duration + 0.02);
+    }
   }
 
   // Ramassage de bonus : deux notes montantes, timbre franc et positif, distinct des tirs/impacts.

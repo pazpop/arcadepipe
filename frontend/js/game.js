@@ -2,7 +2,7 @@
 // crédits — chaque écran vit dans states/, ce fichier ne fait plus que les
 // relier (état partagé `g`, bundle `engine`, dispatch update/draw/handleTap).
 import { RES_W, RES_H, PALETTE, DIFFICULTY } from "./config.js";
-import { createStarfield, drawStarfield } from "./stars.js";
+import { createStarfield, updateStarfield, drawStarfield, createTwinkleStars } from "./stars.js";
 import { createPlayer } from "./player.js";
 import { createProjectiles } from "./projectiles.js";
 import { createParticlePool } from "./particles.js";
@@ -53,6 +53,10 @@ export function createGame({ input, audio, music, nameInputEl }) {
     mode: MODE.MENU,
     elapsed: 0,
     menuSelected: 0,
+    // Quelques étoiles qui scintillent en arrière-plan du menu principal
+    // (même principe que le niveau bonus, voir states/menu.js et
+    // createTwinkleStars dans stars.js) — un peu de vie derrière le titre.
+    menuTwinkleStars: createTwinkleStars(10),
     pauseSelected: 0,
     pauseStage: "menu", // "menu" | "confirmQuit"
     confirmQuitSelected: 1, // par défaut sur NON — un Entrée accidentel ne doit pas faire perdre la partie
@@ -66,6 +70,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     waveKillTarget: DIFFICULTY.baseWaveKills,
     tookDamageThisWave: false, // pour DIFFICULTY.noDamageWaveBonus — reset dans startWave, mis à true dans onPlayerHit
     grazeChain: 0, // reset dans startWave (pas startRun) — voir graze.js
+    maxGrazeChain: 0, // meilleure chaîne de la partie entière — reset dans startRun (pas startWave), voir graze.js
     novaStock: 0, // rechargé par le graze, consommé par tryUseNova() — vide au début d'une partie (récompense à gagner)
     novaProgress: 0, // 0..1, progression vers la prochaine charge
     novaMax: 1, // recalculé dans startWave (novaMaxForWave)
@@ -122,6 +127,16 @@ export function createGame({ input, audio, music, nameInputEl }) {
     else if (g.mode === MODE.CREDITS) creditsState.update(g, engine, dt);
     // MODE.NAME_ENTRY : piloté par les événements DOM du champ caché (voir main.js)
 
+    // Défilement du champ d'étoiles pour tous les écrans-menus (même fond
+    // que le menu principal). PLAYING/PAUSED/GAME_OVER n'entrent pas ici :
+    // playingState.update() s'en charge lui-même (avec le facteur de warp),
+    // et PAUSED/GAME_OVER doivent au contraire rester figés sur la scène
+    // telle qu'elle était au moment de la pause/mort.
+    if (g.mode !== MODE.PLAYING && g.mode !== MODE.PAUSED && g.mode !== MODE.GAME_OVER) {
+      // Jamais de trou noir au menu principal (voir allowBlackhole dans stars.js).
+      updateStarfield(starfield, dt, 1, g.mode !== MODE.MENU);
+    }
+
     // Une touche non consommée par l'état courant ne doit pas fuiter vers
     // l'état suivant — nettoyage en fin de frame, après que les handlers
     // ci-dessus aient pu la lire.
@@ -143,11 +158,10 @@ export function createGame({ input, audio, music, nameInputEl }) {
       ctx.translate((Math.random() - 0.5) * g.shake, (Math.random() - 0.5) * g.shake);
     }
 
-    // Classement/crédits gardent un fond uni — le starfield nuirait à la
-    // lisibilité et resterait figé (non mis à jour dans ces états).
-    const showStarfield =
-      g.mode === MODE.PLAYING || g.mode === MODE.PAUSED || g.mode === MODE.GAME_OVER || g.mode === MODE.MENU || g.mode === MODE.HELP;
-    if (showStarfield) drawStarfield(ctx, starfield, g.mode === MODE.PLAYING ? g.warp : 1);
+    // Même champ d'étoiles pour tous les écrans (même fond que le menu
+    // principal) — seul PLAYING applique le facteur de warp (accélération
+    // visuelle pendant le saut spatial entre deux vagues).
+    drawStarfield(ctx, starfield, g.mode === MODE.PLAYING ? g.warp : 1);
 
     if (g.mode === MODE.PLAYING || g.mode === MODE.PAUSED || g.mode === MODE.GAME_OVER) {
       playingState.drawScene(ctx, g, engine);
@@ -208,6 +222,11 @@ export function createGame({ input, audio, music, nameInputEl }) {
     },
     get inBonusLevel() {
       return g.bonusLevel !== null;
+    },
+    // Résumé de la partie qui vient de se terminer — seule source pour la
+    // carte de partage (main.js/shareCard.js), pas de champs dupliqués ailleurs.
+    getRunSummary() {
+      return { score: g.score, wave: g.wave, kills: g.enemiesKilled, maxGrazeChain: g.maxGrazeChain };
     },
     update,
     draw,

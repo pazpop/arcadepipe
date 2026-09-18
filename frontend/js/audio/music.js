@@ -38,7 +38,7 @@ export class MusicPlayer {
     this.trackIndex = this._readInt(STORAGE_KEYS.track, 0);
     if (this.trackIndex < 0 || this.trackIndex >= AUDIO.tracks.length) this.trackIndex = 0;
     // Incrémenté à chaque _loadCurrent() : start() et playRandom() peuvent
-    // partir un fetch() chacun sur le même clic (game.js:startRun). Sans ce
+    // partir un fetch() chacun sur le même clic (states/playing.js:startRun). Sans ce
     // jeton, la réponse arrivée en second gagnerait toujours, même périmée.
     this._loadToken = 0;
     // Compteur de tentatives ratées consécutives (voir _loadCurrent) —

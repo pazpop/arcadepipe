@@ -1,6 +1,7 @@
 // Sprites pixel art générés par code — matrice de caractères (lettre =
 // couleur, "." = transparent), convertie une fois en canvas offscreen puis
 // blittée (drawImage) à chaque frame.
+import { desaturate } from "./color.js";
 
 function pixelsToCanvas(rows, palette, scale = 1) {
   const h = rows.length;
@@ -153,6 +154,15 @@ const BOSS_HULL_PALETTE = {
   s: "#1c2430", // superstructure/pont, la plus sombre — casse la symétrie
 };
 
+// Désature chaque couleur d'une palette (voir desaturate dans color.js) —
+// utilisé pour générer la variante "endommagée" d'un sprite sans dupliquer
+// sa palette à la main.
+function fadedPalette(palette) {
+  const out = {};
+  for (const key in palette) out[key] = desaturate(palette[key], 0.45);
+  return out;
+}
+
 let cache = null;
 
 export function buildSprites() {
@@ -161,7 +171,14 @@ export function buildSprites() {
     player: pixelsToCanvas(PLAYER_ROWS, PLAYER_PALETTE, 1),
     enemyNormal: pixelsToCanvas(ENEMY_NORMAL_ROWS, ENEMY_NORMAL_PALETTE, 1),
     enemyGunner: pixelsToCanvas(ENEMY_NORMAL_ROWS, ENEMY_GUNNER_PALETTE, 1),
+    // Variantes "endommagées" (couleurs ternies) : gunner et élite encaissent
+    // plus d'un coup (voir GUNNER_HP_BONUS et TYPE_STATS.elite dans
+    // enemies.js) — un seul palier visuel dès le premier coup pris plutôt
+    // qu'un dégradé par PV, largement suffisant vu leur nombre de PV réduit
+    // (2 et 3) et plus simple à suivre du coin de l'œil en plein combat.
+    enemyGunnerDamaged: pixelsToCanvas(ENEMY_NORMAL_ROWS, fadedPalette(ENEMY_GUNNER_PALETTE), 1),
     enemyElite: pixelsToCanvas(ENEMY_ELITE_ROWS, ENEMY_ELITE_PALETTE, 1),
+    enemyEliteDamaged: pixelsToCanvas(ENEMY_ELITE_ROWS, fadedPalette(ENEMY_ELITE_PALETTE), 1),
     enemyKamikaze: pixelsToCanvas(ENEMY_KAMIKAZE_ROWS, ENEMY_KAMIKAZE_PALETTE, 1),
     bossHull: pixelsToCanvas(BOSS_HULL_ROWS, BOSS_HULL_PALETTE, 2),
   };

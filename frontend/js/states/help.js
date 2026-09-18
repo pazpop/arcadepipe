@@ -1,5 +1,5 @@
 // État "aide" : écran unique par catégories, ouvert depuis le menu, la
-// pause, ou automatiquement à la 1re partie (voir game.js, startRun).
+// pause, ou automatiquement à la 1re partie (voir states/playing.js, startRun).
 // g.helpReturnTo mémorise où revenir en le fermant (open() le pose).
 import { consumeJustPressed } from "../input.js";
 import * as hud from "../hud.js";
@@ -10,10 +10,11 @@ const HELP_INFO = {
   showBonusLegend: true, // dessine icône + couleur de chaque bonus (voir drawInfoScreen dans hud.js) à la place d'une ligne "BONUS" ici
   sections: [
     { heading: "DÉPLACEMENT", detail: "Souris ou doigt : dirige le vaisseau" },
+    { heading: "TIR", detail: 'Maintiens le clic, ou coche "TIR AUTO" (bas à gauche)' },
     {
-      heading: "TIR",
+      heading: "NOVA",
       detail:
-        'Maintiens le clic, ou coche "TIR AUTO" (bas à gauche). NOVA (ESPACE ou bouton bas droite) une fois la jauge pleine — frôle les tirs ET les vaisseaux ennemis (pas le boss) pour la charger, prends des risques !',
+        "Frôle (sans le toucher) un tir ennemi ou un vaisseau ennemi — pas le boss — pour charger la jauge NOVA en haut à gauche, prends des risques ! Une fois pleine, ESPACE (ou le bouton tactile en bas à droite) détruit tous les ennemis normaux à l'écran, jamais le boss. Jusqu'à 2 charges en réserve après le 2e combat de boss (1 seule avant), à déclencher quand tu veux.",
     },
     { heading: "BOSS", detail: "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie" },
     { heading: "MUSIQUE", detail: "Playlist aléatoire, réglable en bas à gauche" },
@@ -25,7 +26,8 @@ export function open(g, from) {
   g.mode = MODE.HELP;
 }
 
-export function close(g) {
+// Pas exportée : utilisée uniquement en interne (update/handleTap ci-dessous).
+function close(g) {
   g.mode = g.helpReturnTo;
   if (g.helpReturnTo === MODE.PAUSED) g.pauseStage = "menu";
 }

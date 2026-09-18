@@ -16,7 +16,7 @@
 // "ctx" pour ne jamais se confondre avec le contexte Canvas2D (souvent
 // appelé `ctx` lui aussi, y compris dans game.js).
 import { consumeJustPressed } from "../input.js";
-import { updateStarfield } from "../stars.js";
+import { drawTwinkleStars } from "../stars.js";
 import { syncHoverWithSound } from "./navHelpers.js";
 import { MODE } from "./mode.js";
 import * as hud from "../hud.js";
@@ -35,7 +35,8 @@ function selectMenuOption(g, engine, index) {
 
 export function update(g, engine, dt) {
   g.elapsed += dt;
-  updateStarfield(engine.starfield, dt, 1);
+  // Le défilement du champ d'étoiles est centralisé dans game.js (même fond
+  // pour tous les écrans-menus) — voir son update().
   syncHoverWithSound(engine.input, engine.audio, hud.hitTestMenu, () => g.menuSelected, (idx) => (g.menuSelected = idx));
   // +3 (pas -1) : JS calcule le modulo du résultat, pas de "index négatif" à gérer.
   if (consumeJustPressed(engine.input, "ArrowUp")) g.menuSelected = (g.menuSelected + 3) % 4;
@@ -44,6 +45,7 @@ export function update(g, engine, dt) {
 }
 
 export function draw(c2d, g) {
+  drawTwinkleStars(c2d, g.menuTwinkleStars, g.elapsed);
   hud.drawTitleScreen(c2d, g.elapsed, g.menuSelected);
 }
 

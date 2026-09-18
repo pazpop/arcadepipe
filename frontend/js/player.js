@@ -103,7 +103,7 @@ export function hitPlayer(player) {
 }
 
 export function drawPlayer(ctx, player) {
-  if (!player.alive) return; // a explosé — ne clignote plus, disparaît (voir la séquence de mort dans game.js)
+  if (!player.alive) return; // a explosé — ne clignote plus, disparaît (voir la séquence de mort dans states/playing.js)
   if (player.invuln > 0 && Math.floor(player.invuln * 14) % 2 === 0) return; // clignote
   const sprites = buildSprites();
   if (player.shield > 0) {

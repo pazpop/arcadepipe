@@ -5,6 +5,7 @@ import { createInput, canvasToLogical } from "./input.js";
 import { AudioEngine } from "./audio/sfx.js";
 import { MusicPlayer } from "./audio/music.js";
 import { createGame } from "./game.js";
+import { createShareCardCanvas } from "./shareCard.js";
 
 const canvas = document.getElementById("game-canvas");
 const ctx = canvas.getContext("2d");
@@ -27,6 +28,7 @@ const autoFireToggle = document.getElementById("autofire-toggle");
 const helpBtn = document.getElementById("help-btn");
 const speedBtn = document.getElementById("speed-btn");
 const novaBtn = document.getElementById("nova-btn");
+const shareBtn = document.getElementById("share-btn");
 const versionLabel = document.getElementById("version-label");
 if (versionLabel) versionLabel.textContent = `v${VERSION}`;
 
@@ -67,6 +69,16 @@ function beginAudio() {
 }
 window.addEventListener("pointerdown", beginAudio, { once: true });
 window.addEventListener("keydown", beginAudio, { once: true });
+
+// resume() ne peut réussir que depuis un vrai geste utilisateur (jamais
+// depuis la boucle d'animation, voir watchAudioContext plus bas) — si le
+// navigateur suspend le contexte en cours de partie (économie d'énergie),
+// il faut un geste pour le relancer. Celui du dessus ne sert qu'une fois
+// (il démarre aussi la musique) ; en "Tir automatique", le joueur ne clique
+// jamais sur le canvas en jouant, donc sans cet écouteur permanent (juste un
+// resume, idempotent) aucun geste ne viendrait jamais le réveiller.
+window.addEventListener("pointerdown", () => audio.ensure());
+window.addEventListener("keydown", () => audio.ensure());
 
 // --- Tap/clic générique (menu, classement, crédits) — converti en
 // coordonnées logiques internes (480x270) avant d'être transmis au jeu.
@@ -194,11 +206,42 @@ if (speedBtn) {
 }
 
 // --- Bouton NOVA (tactile) : pose un jeton générique dans input.justPressed,
-// consommé exactement comme une touche clavier (voir game.js). ---
+// consommé exactement comme une touche clavier (voir states/playing.js). ---
 if (novaBtn) {
   novaBtn.addEventListener("click", () => {
     audio.ensure();
     input.justPressed.add("NovaTrigger");
+  });
+}
+
+// --- Bouton "Partager" (visible juste après la fin d'une partie, voir
+// loop() plus bas) : image PNG carrée (score/vague/kills/meilleure chaîne
+// de frôlements, voir shareCard.js) — copiée dans le presse-papier quand le
+// navigateur le permet, TOUJOURS aussi proposée en téléchargement (support
+// du presse-papier image inégal d'un navigateur à l'autre, le téléchargement
+// marche partout). Le clic est le geste utilisateur exigé par l'API Clipboard.
+if (shareBtn) {
+  shareBtn.addEventListener("click", async () => {
+    const canvas2 = createShareCardCanvas(game.getRunSummary());
+    const blob = await new Promise((resolve) => canvas2.toBlob(resolve, "image/png"));
+    if (!blob) return;
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "arcadepipe-score.png";
+    a.click();
+    URL.revokeObjectURL(url);
+
+    try {
+      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+      const original = shareBtn.textContent;
+      shareBtn.textContent = "✅ Copiée + téléchargée";
+      setTimeout(() => (shareBtn.textContent = original), 2000);
+    } catch {
+      /* Clipboard API image indisponible sur ce navigateur — le
+         téléchargement ci-dessus a déjà eu lieu, rien de plus à faire. */
+    }
   });
 }
 
@@ -287,19 +330,29 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-// --- Filet de sécurité supplémentaire : reprise périodique de l'AudioContext.
+// --- Filet de sécurité supplémentaire : détection de suspension de l'AudioContext.
 // Le resume() sur visibilitychange (ci-dessus) ne couvre que le cas "onglet
 // caché puis revisible" — certains navigateurs/réglages d'économie d'énergie
 // suspendent le contexte après un moment d'inactivité audio perçue MÊME
 // onglet actif au premier plan, sans qu'aucun événement ne le signale. Coût
 // négligeable (une lecture de propriété par frame) pour ne plus dépendre
-// d'un déclencheur précis. Log une seule fois par reprise, pour savoir si ça
-// arrive vraiment en pratique plutôt que de deviner à l'aveugle si le
-// silence recommence malgré ça.
+// d'un déclencheur précis.
+//
+// Ne PAS appeler resume() ici : depuis la boucle d'animation, ce n'est
+// jamais un vrai geste utilisateur, donc ça échoue systématiquement (le
+// navigateur le refuse) — appeler resume() en boucle ici ne faisait que
+// spammer la console à chaque frame sans jamais réussir. La vraie reprise
+// se fait via les écouteurs pointerdown/keydown permanents ci-dessus ; ici
+// on se contente de logguer UNE FOIS par épisode de suspension (`warned`
+// évite de reloguer tant que ça reste suspendu).
+let warnedSuspended = false;
 function watchAudioContext() {
-  if (audio.ctx.state === "suspended" && music.started) {
-    console.warn("[audio] AudioContext suspendu de façon inattendue (onglet actif) — reprise automatique.");
-    audio.ensure();
+  const suspended = audio.ctx.state === "suspended" && music.started;
+  if (suspended && !warnedSuspended) {
+    warnedSuspended = true;
+    console.warn("[audio] AudioContext suspendu de façon inattendue (onglet actif) — un prochain clic/touche le relancera.");
+  } else if (!suspended) {
+    warnedSuspended = false;
   }
 }
 
@@ -313,6 +366,12 @@ function loop(timestamp) {
   watchAudioContext();
   if (novaBtn) {
     novaBtn.classList.toggle("hidden", !(game.mode === game.MODE.PLAYING && game.novaStock > 0 && !game.inBonusLevel));
+  }
+  if (shareBtn) {
+    // GAME_OVER (juste après la mort) et NAME_ENTRY (pendant/après la
+    // saisie du pseudo) : la fenêtre naturelle où le joueur vient de voir
+    // son résultat, avant de repartir vers le classement/le menu.
+    shareBtn.classList.toggle("hidden", !(game.mode === game.MODE.GAME_OVER || game.mode === game.MODE.NAME_ENTRY));
   }
   requestAnimationFrame(loop);
 }

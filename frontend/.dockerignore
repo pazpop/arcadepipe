@@ -1,0 +1,5 @@
+# Tests, config de lint et docs : inutiles dans l'image (sinon servis publiquement).
+**/*.test.js
+**/package.json
+**/*.md
+node_modules/

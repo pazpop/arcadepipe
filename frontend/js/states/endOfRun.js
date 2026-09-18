@@ -3,6 +3,7 @@
 // séquence linéaire (mort -> continuer -> saisir un nom -> classement) sans
 // retour possible en arrière, contrairement aux autres écrans à options.
 import { STORAGE_KEYS } from "../config.js";
+import { loadItem, saveItem } from "../storage.js";
 import { consumeJustPressed } from "../input.js";
 import { syncHover } from "./navHelpers.js";
 import { MODE } from "./mode.js";
@@ -12,18 +13,10 @@ import * as hud from "../hud.js";
 
 // Pseudo mémorisé d'une partie à l'autre — pré-remplit la saisie du nom (triggerGameOver).
 function readLastPlayerName() {
-  try {
-    return localStorage.getItem(STORAGE_KEYS.lastPlayerName);
-  } catch {
-    return null;
-  }
+  return loadItem(STORAGE_KEYS.lastPlayerName);
 }
 function saveLastPlayerName(name) {
-  try {
-    localStorage.setItem(STORAGE_KEYS.lastPlayerName, name);
-  } catch {
-    /* stockage indisponible — pas bloquant */
-  }
+  saveItem(STORAGE_KEYS.lastPlayerName, name);
 }
 
 // Nom par défaut aléatoire — évite un "PILOTE" générique si le clavier

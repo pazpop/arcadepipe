@@ -2,21 +2,7 @@
 
 Organisée par session de travail suggérée (issue d'une discussion Lumo/Claude/arbitrage humain le 2026-09-18) plutôt qu'en vrac — chaque session est indépendante, à reprendre quand il y a du temps dédié.
 
-## Session 1 — stabilisation (architecture `states/playing.js`) ✅ 2026-09-18
-
-Issu d'une discussion à trois (utilisateur, Claude, revue croisée) sur la décomposition de `game.js` : contrairement aux écrans de `states/` (mutuellement exclusifs par construction, un seul MODE actif à la fois), les sous-systèmes de `playing.js` (collisions, NOVA, vagues, boss, niveau bonus) coexistent dans la même frame — les extraire en modules séparés déplacerait le couplage plutôt que de le réduire. Seule extraction retenue, grain jugé correct : un `waves.js` (le bloc `startWave` + la logique `waveBreak`/déclenchement du niveau bonus dans `update()`), même patron que `bonusLevel.js` (minuteur propre, champs `g` propres).
-
-- [x] Extraire `waves.js` de `states/playing.js` — `startWave()` et la transition de vague/niveau bonus (`updateWaveTransition()`) déplacées ; `states/playing.js` passe de ~590 à ~495 lignes.
-- [x] Fix : la clause de garde de `updateGraze()` (`graze.js`) ne vérifiait pas `g.bonusLevel`/`g.clearingScreen`, contrairement à `resolveCollisions()` — `|| g.clearingScreen` ajouté.
-- [x] Test ajouté dans `frontend/js/graze.test.js` ("le graze ne progresse pas pendant clearingScreen"), avec un test de contrôle qui prouve que le même scénario grazerait bien sans la garde.
-- [x] Commentaire de cartographie "qui écrit quoi" sur `g.novaStock`/`g.novaProgress` ajouté dans `states/playing.js`, juste avant `triggerNova()`.
-- [x] Commentaire d'invariant ajouté en tête de `drawScene()` (`states/playing.js`).
-- [ ] Option toujours en réserve, non faite : un test e2e comparant deux captures d'écran prises en pause (doivent être bit à bit identiques), si l'invariant ci-dessus doit être renforcé au-delà d'un commentaire un jour.
-
-## Session 2 — nouvelles fonctionnalités (meilleur rapport effort/impact) ✅ 2026-09-18
-
-- [x] **Distance parcourue, phase 1 (frontend seul)** — `g.distanceTraveled` accumulée proportionnellement au warp (`DISTANCE.lightYearsPerSecond`, `config.js`), affichée à l'écran de fin de partie et sur la carte de partage. Aucun changement backend. Phase 2 (classement, changement de schéma serveur) reste à faire, non urgente.
-- [x] **QR code sur la carte de partage** (`shareCard.js`) — 100% client-side, encode directement `https://arcadepipe.pazpop.net`. Bibliothèque vendorisée dans `frontend/lib/qrcode.js` ([kazuhikoarase/qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator), MIT — pas celle de Nayuki envisagée initialement, qui n'existe qu'en TypeScript à compiler ; celle-ci est distribuée en JS pur, sans étape de build, cohérente avec le reste du projet). Noir sur blanc volontairement non stylisé (la scannabilité prime sur l'esthétique) — un test e2e (`share-qr.spec.js`) décode le QR après recompression JPEG et vérifie le contraste au pixel près (bug de teinte corrigé en 2.75). Créditée dans le README et l'écran crédits en jeu.
+Sessions 1 (stabilisation de `states/playing.js`) et 2 (distance parcourue, QR code) : **terminées**, détail dans le [CHANGELOG](CHANGELOG.md) (2.62, 2.63).
 
 ## Session 3 — optimisations optionnelles (pas pressé)
 
@@ -63,7 +49,22 @@ Contexte : ArcadePipe est stable et fonctionnel (Sessions 1-2 terminées, 2.76 d
 - [ ] 9 — Messages de fin de partie variables
 - [ ] 10 — Partage réel testé
 
+## À faire à la prochaine session (reporté faute de tokens)
+
+La passe de nettoyage (docs en 3 couches, `docs/`, `storage.js`, exports fantômes, commentaires raccourcis, `frontend/.dockerignore`) a été faite **sans toucher au comportement du jeu** et sans relancer les batteries de tests complètes (seuls un lint et un test de fumée ont été lancés). Tout ce qui suit est explicitement repoussé, avec le contexte pour reprendre sans rien redemander.
+
+- [ ] **Valider la passe de nettoyage** : `cd e2e && npx playwright test` (23 e2e), `cd frontend/js && node --test` (18 tests), `cd frontend && npm run lint`, sur l'ensemble des changements. Vérifier aussi en production que `/js/graze.test.js`, `/js/package.json` et `/lib/PATCHES.md` répondent 404 (ils répondaient 200 avant le `.dockerignore`).
+- [ ] **Précharger les 5 pistes (156 Ko) et simplifier `music.js`.** La cause des 429 (rate-limit Traefik sur le statique) a été retirée le 17/09, et la boucle de fin de piste est corrigée (6e round). Les retries (`_loadRetries`, backoff, `onError`, jeton `_loadToken`, `_loading`, ~60 lignes) ont été écrits pour ces pannes. Idée : charger les 5 `.xm` en mémoire au premier geste et appeler `player.play(buffer)` sans réseau. Garde-fous à adapter : `e2e/tests/music-retry.spec.js` et `music-end.spec.js`. Récit : [docs/audio-saga.md](docs/audio-saga.md).
+- [ ] **Helper unique pour les conditions « combat suspendu ».** Prédicats dupliqués : `graze.js:49` (`!player.alive || invuln > 0 || waveBreak > 0 || dying || shipIntro || clearingScreen`) contre `states/playing.js:135, 425, 455` (`clearingScreen`, `bonusLevel`, `waveBreak`). Cette duplication est à l'origine du bug de la Session 1 (graze pendant le niveau bonus). Proposer `isCombatSuspended(g, player)` après avoir listé les différences volontaires entre sites ; les tests de `graze.test.js` couvrent déjà le cas.
+- [ ] **Vérifier avant de supprimer `watchAudioContext`** (`main.js`, ~30 lignes dont 15 de commentaire). Elle ne fait que logger une fois « AudioContext suspendu » ; la reprise réelle passe par les écouteurs `pointerdown`/`keydown` et `visibilitychange`. Avant de la retirer, confirmer qu'elle n'est pas le filet documenté de la reprise : onglet en arrière-plan 5 minutes, retour, la musique doit continuer.
+- [ ] **Refonte du câblage DOM de `main.js`** (~416 lignes, une quinzaine de sections sans lien entre elles) : sortir le panneau du bas gauche (musique, volumes, tir auto, vitesse, aide, plein écran, CRT) dans un module. Objectif : lisibilité pour un débutant, comportement inchangé. Tests à relancer : `menu-pause`, `gameplay`, `consent`.
+- [ ] **Features d'inspiration** (idées à évaluer, hors de la Session 5 qui reste une liste fermée) : manette via la Gamepad API (détection de connexion, analogique et croix, remappage — [SpeedLazer](https://github.com/speedlazer/speedlazer), [INNBC-STARFIGHTER](https://github.com/InnovativeBioresearch/INNBC-STARFIGHTER)) · interrupteurs de debug hitbox/FPS ([bullethell](https://github.com/selenebun/bullethell)) · démarrage à la vague N par paramètre d'URL ([galaga](https://github.com/civilian7/galaga), utile aux tests) · jeton de session serveur pour le score (le hachage côté client se contourne) · PWA installable hors ligne · leaderboard hebdomadaire · ralenti passif d'esquive (à étudier, inspiré du « slowdown » de bullethell).
+- [ ] **Décision Traefik ou Caddy**, à reposer quand un 2e jeu se précise. Aujourd'hui : Traefik + docker-socket-proxy + portail pour un seul jeu. Un Caddy en frontal (~15 lignes, TLS automatique, `request_body max_size` natif) remplacerait Traefik et le conteneur frontal ; on perdrait le rate-limit (plugin tiers), le portail auto-généré et le routage par labels. Conclusion de la revue : garder tant qu'un 2e jeu est prévu. Fichiers concernés : repo `terraform-infra-pazpop-hetzner`.
+
 ## Autres (non séquencées)
+
+- [ ] **Distance parcourue, phase 2** : l'ajouter au classement (changement de schéma serveur, non urgent).
+- [ ] Test e2e comparant deux captures d'écran prises en pause (doivent être identiques bit à bit), si l'invariant de `drawScene()` (`states/playing.js`) doit être renforcé au-delà d'un commentaire.
 
 - [ ] **Bandeau de consentement qui recouvre le bas du panneau de gauche** sur desktop (boutons Plein écran/version masqués tant que le visiteur n'a pas choisi) — le décaler ou le rétrécir. Cosmétique, rien d'urgent.
 - [ ] **Permettre de changer son choix de consentement** (RGPD : retirer son accord aussi facilement qu'on l'a donné) : ajouter un bouton **« Cookies »** dans le panneau de gauche qui rouvre le bandeau (`js/consent.js` n'affiche aujourd'hui le bandeau que tant qu'aucun choix n'est mémorisé). Prévoir aussi un lien depuis le bandeau vers la section *Données collectées* du README. À faire plus tard, pas urgent.

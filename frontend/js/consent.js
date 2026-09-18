@@ -3,22 +3,16 @@
 // ou "denied") est mémorisé pour ne pas redemander à chaque visite ; tant
 // qu'aucun choix n'a été fait, la bannière reste affichée.
 import { STORAGE_KEYS } from "./config.js";
+import { loadItem, saveItem } from "./storage.js";
 import { loadAnalytics } from "./analytics.js";
 
+// Stockage indisponible : le choix n'est pas mémorisé, on redemande à chaque visite.
 function readConsent() {
-  try {
-    return localStorage.getItem(STORAGE_KEYS.analyticsConsent);
-  } catch {
-    return null; // stockage indisponible (navigation privée...) — redemande à chaque visite, pas bloquant
-  }
+  return loadItem(STORAGE_KEYS.analyticsConsent);
 }
 
 function writeConsent(value) {
-  try {
-    localStorage.setItem(STORAGE_KEYS.analyticsConsent, value);
-  } catch {
-    /* stockage indisponible — le choix ne sera juste pas mémorisé */
-  }
+  saveItem(STORAGE_KEYS.analyticsConsent, value);
 }
 
 export function initConsent() {

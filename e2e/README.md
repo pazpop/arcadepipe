@@ -1,32 +1,31 @@
 # Tests bout-en-bout (Playwright)
 
-`backend`/`frontend/js` (voir le README racine) couvrent la logique pure, mais rien du canvas, de la souris/du tactile ni de l'audio — c'est ce que ce dossier teste, en pilotant un vrai navigateur (Chromium) sur le jeu tel qu'un joueur le vivrait.
-
-> **C'est quoi, "bout-en-bout" (e2e) ?** Un petit robot qui joue au jeu à ta place : il ouvre un vrai navigateur, bouge la souris, clique, attend, prend des captures d'écran — exactement ce qu'on ferait à la main pour vérifier qu'un changement n'a rien cassé, mais écrit une fois et rejouable en une commande (`npm test`) au lieu de tout refaire manuellement à chaque modification. Il ne juge pas si un écran est "joli" (ça reste à l'œil humain via les captures dans `test-results/`) — il attrape surtout les vraies casses : une erreur JS, un bouton qui ne répond plus, un écran qui reste figé.
+Les tests de `backend/` et `frontend/js/` couvrent la logique pure, mais pas le canvas, la souris/le tactile ni l'audio. Ce dossier pilote un vrai navigateur (Chromium) sur le jeu, comme le ferait un joueur : il attrape surtout les vraies casses (erreur JS, bouton mort, écran figé). Le rendu canvas n'est pas inspectable comme du DOM : le « joli » reste à l'œil humain, via les captures de `test-results/`.
 
 ```bash
 cd e2e
 npm install
-npm run install-browsers   # télécharge Chromium pour Playwright (une fois)
-npm test                   # ou : npx playwright test --headed pour voir le navigateur
+npm run install-browsers   # télécharge Chromium (une fois)
+npm test                   # ou : npx playwright test --headed
 ```
 
-`npm test` démarre et arrête automatiquement le serveur statique du frontend (port 5500, même commande que "Lancer en local" dans le README racine) — pas besoin de le lancer à la main. Les résultats (dont un rapport HTML en cas d'échec) et les captures d'écran atterrissent dans `test-results/` (ignoré par git).
+`npm test` démarre le serveur statique du frontend (port 5500). Résultats et captures dans `test-results/` (ignoré par git).
 
-**Ce qui est couvert** (voir `tests/`) :
-- `menu-pause.spec.js` — chargement du menu, clic souris dans la pause, confirmation de sortie de partie, aide de bienvenue (première partie), accès à l'aide depuis le menu/la pause/le bouton du panneau
-- `gameplay.spec.js` — tir manuel vs tir auto (+ persistance), sélection aléatoire de piste musicale, session de jeu prolongée (vague 1 → 2), saisie du nom (nom aléatoire pré-rempli + validation tactile, sans clavier)
-- `powerups-boss.spec.js` — ramassage de bonus (un seul à la fois), bouclier (absorption de coups), premier combat de boss
-- `graze-nova.spec.js` — frôlement des tirs, remplissage de la jauge NOVA, déclenchement via le bouton tactile
-- `bonus-level.spec.js` — déclenchement du niveau bonus, défilement des anneaux, récompense NOVA
-- `music-retry.spec.js` — régression : un 429 sur les fichiers musique ne doit jamais déclencher une rafale de requêtes
-- `music-end.spec.js` — régression : la fin naturelle d'une piste ne déclenche qu'**une** requête pour la suivante (avec 150 ms de latence simulée — sans latence, le serveur local masque le bug) et la musique repart
-- `consent.spec.js` — bandeau de consentement : Google Analytics jamais chargé avant « Accepter », choix mémorisé au rechargement, chargé une seule fois ; bouton Plein écran
-- `share-qr.spec.js` — le QR de la carte de partage se décode (jsQR) après redimensionnement + recompression JPEG, et son contraste noir/blanc est vérifié au pixel près
+## Ce qui est couvert (`tests/`)
 
-**Limite volontaire** : le rendu canvas n'est pas inspectable comme du DOM, donc pas d'assertion pixel-exacte possible. Ces tests valident surtout l'absence d'erreurs JS sur de vraies séquences d'interaction, avec des captures d'écran pour la vérification visuelle humaine — pas un remplacement total du "lancer le jeu et regarder", plutôt un filet qui attrape les régressions qui plantent (erreurs JS, écran figé, flux cassé).
+- `menu-pause` — menu, pause, confirmation de sortie, aide (bienvenue, menu, pause, bouton du panneau)
+- `gameplay` — tir manuel/auto, choix de piste, session prolongée, saisie du pseudo
+- `powerups-boss` — bonus, bouclier, premier boss
+- `graze-nova` — frôlements, jauge NOVA, bouton tactile
+- `bonus-level` — niveau bonus et récompense
+- `music-retry` — un 429 sur les `.xm` ne déclenche pas de rafale de requêtes
+- `music-end` — une fin de piste ne provoque qu'**une** requête (latence simulée : le serveur local, trop rapide, masque le bug)
+- `consent` — Google Analytics jamais chargé avant « Accepter » ; bouton Plein écran
+- `share-qr` — le QR de la carte de partage se décode après recompression JPEG ; contraste vérifié au pixel
 
-**Forcer une constante le temps d'un test** (taux de drop d'un bonus, difficulté d'une vague...) sans toucher au code source ni exposer de point d'accès de debug en production : les modules ES sont mis en cache par URL par le navigateur, donc un import dynamique déclenché depuis le test récupère les *mêmes* objets déjà utilisés par la partie en cours, pas une copie isolée :
+## Forcer une constante le temps d'un test
+
+Sans exposer de point d'accès de debug en production : les modules ES sont mis en cache par URL, donc un import dynamique depuis le test récupère les *mêmes* objets que la partie en cours.
 
 ```js
 await page.evaluate(async () => {
@@ -35,4 +34,4 @@ await page.evaluate(async () => {
 });
 ```
 
-Ça marche pour n'importe quel module déjà chargé par la page — `config.js` pour les constantes, ou `main.js` pour atteindre les instances `music`/`audio` (voir l'export en bas de `frontend/js/main.js`). Voir `tests/helpers.js` pour le détail et d'autres exemples. `skipHints()` (helpers) masque aussi le bandeau de consentement, qui recouvrirait sinon les boutons tactiles du bas de l'écran.
+Marche pour tout module déjà chargé : `config.js` (constantes), `main.js` (instances `music`/`audio`). Voir `tests/helpers.js` : `skipHints()` masque aussi le bandeau de consentement, qui recouvrirait les boutons du bas de l'écran.

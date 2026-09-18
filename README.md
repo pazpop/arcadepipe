@@ -2,130 +2,40 @@
 
 # ArcadePipe 🚀
 
-Mini jeu vidéo (*The Last Starfighter*) avec leaderboard — shoot'em up à défilement horizontal, pixel art généré par code, jouable directement dans le navigateur. Conçu par [pazpop](https://github.com/pazpop), développé avec l'aide d'assistants IA ([Claude](https://claude.com) d'Anthropic et [Lumo](https://lumo.proton.me) de Proton) — décisions de conception et relectures finales humaines.
+Shoot'em up spatial rétro (*The Last Starfighter*) jouable dans le navigateur : pixel art généré par code, musique tracker, classement en ligne. Conçu par [pazpop](https://github.com/pazpop).
 
-Ce repo contient uniquement le jeu (backend + frontend), déployable n'importe où avec `docker-compose.yml` (voir plus bas), sans dépendance externe. L'instance publique, **https://arcadepipe.pazpop.net**, est déployée séparément depuis [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner) — voir *CI/CD* pour le détail de cette séparation.
+▶ **Jouer : https://arcadepipe.pazpop.net**
 
 ![Capture d'écran d'ArcadePipe en jeu](assets/screenshot.png)
-
-## 🎓 Pourquoi ce projet ?
-
-Ce projet (et l'infra qui l'héberge, voir [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner)) est réalisé avec l'aide d'assistants IA — [Claude](https://claude.com) (Anthropic) et [Lumo](https://lumo.proton.me) (Proton) — comme assistants techniques. L'objectif n'est pas de contourner l'apprentissage, mais de l'accélérer : explorer des choix que je n'aurais pas eu le temps de creuser seul, challenger mes propres habitudes, et accélérer les tâches répétitives. Je reste le décideur à chaque étape — je teste avant de faire confiance, je demande des revues de sécurité et de qualité, et j'écarte ce qui est disproportionné pour un projet de cette taille (voir *Sécurité* et *Roadmap* ci-dessous, qui documentent aussi bien ce qui est fait que ce qui est volontairement laissé de côté, et pourquoi). L'IA ne remplace pas l'expertise, elle en démultiplie la portée.
-
-## Stack
-
-| Composant | Techno | Rôle |
-|---|---|---|
-| Backend | FastAPI + `sqlite3` natif | API du leaderboard |
-| Frontend | JS vanilla (modules ES6) + Canvas 2D | Shoot'em up à défilement horizontal, pixel art généré par code |
-| DB | SQLite (WAL), volume Docker | Scores |
-| Musique | [libopenmpt](https://lib.openmpt.org/libopenmpt/) via [chiptune3.js](https://github.com/DrSnuggles/chiptune) (`AudioWorklet`) | Rejoue de vrais fichiers tracker `.xm` (playlist de 5 morceaux dans `frontend/music/`), pas une recomposition |
-
-```mermaid
-flowchart LR
-    Internet -->|HTTP| Proxy["Caddy (frontend)"]
-    Proxy -->|/| Static[Fichiers statiques]
-    Proxy -->|/api/*| Backend
-    Backend --> DB[(SQLite)]
-```
-
-Ce diagramme correspond à `docker-compose.yml` (voir *Docker*) : Caddy sert le jeu et route lui-même `/api/*` vers le backend, sans reverse-proxy externe. L'instance publique (`arcadepipe.pazpop.net`) ajoute Traefik devant (TLS, routage par nom d'hôte entre plusieurs jeux) — géré entièrement par le repo d'infra séparé, invisible depuis ce repo-ci.
 
 ## Lancer en local
 
 ```bash
-cd backend && python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
+cd backend && python -m venv venv && source venv/bin/activate  # Windows : venv\Scripts\activate
 pip install -r requirements.txt && python seed.py && uvicorn main:app --reload
 ```
 ```bash
 cd frontend && python -m http.server 5500   # http://localhost:5500
 ```
 
-## Docker
+Tout-en-un avec Docker : `docker compose up --build -d`, puis http://localhost.
 
-`docker-compose.yml`, à la racine, fait tourner tout le jeu (backend + frontend) sans aucune dépendance externe — publie directement le port 80 et garde toutes les protections de sécurité (non-root, rootfs read-only, `cap_drop: ALL`, rate limiting, CORS). Caddy (frontend) route lui-même `/api/*` vers le backend, pas besoin d'un reverse-proxy en plus.
+## Stack
 
-```bash
-docker compose up --build -d
-# -> http://localhost
-```
+JS vanilla (modules ES6) + Canvas 2D, sans build · FastAPI + SQLite · musique `.xm` lue par libopenmpt (AudioWorklet) · Docker Compose · CI GitHub Actions. L'instance publique est déployée depuis [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner).
 
-Testé de bout en bout (page d'accueil, fichiers statiques, `GET`/`POST /api/scores` via le routage interne, non-root confirmé) avant d'être documenté ici. Port 80 déjà pris ? Changer le mapping `"80:80"` du service `frontend` (ex: `"8080:80"`) et adapter `ALLOWED_ORIGINS` du service `backend` à l'URL réellement utilisée.
+## Aller plus loin
 
-C'est le seul fichier de déploiement Docker de ce repo — celui qui ajoute Traefik/TLS pour l'instance `arcadepipe.pazpop.net` vit dans le repo d'infra séparé (voir *CI/CD*), pas ici.
+- **Code** : [architecture du frontend](frontend/README.md) · [gameplay implémenté](frontend/GAMEPLAY.md) · [backend](backend/README.md) · [tests e2e](e2e/README.md)
+- **Exploitation** : [déploiement](docs/deploiement.md) · [sécurité](docs/securite.md) · [données collectées](docs/donnees-collectees.md)
+- **Suivi** : [changelog](CHANGELOG.md) · [roadmap](ROADMAP.md) · [la saga audio](docs/audio-saga.md)
 
-## Tests
+## 🎓 Pourquoi ce projet ?
 
-Voir [`backend/README.md`](backend/README.md) (pytest, lint) et [`frontend/README.md`](frontend/README.md) (`node --test`).
+Réalisé avec l'aide d'assistants IA ([Claude](https://claude.com), [Lumo](https://lumo.proton.me)) pour explorer et accélérer, pas pour décider : je teste avant de faire confiance et je reste le décideur à chaque étape.
 
-### Tests bout-en-bout (Playwright)
+## Crédits et licence
 
-`backend`/`frontend/js` ci-dessus couvrent la logique pure, mais rien du canvas, de la souris/du tactile ni de l'audio — c'est ce que `e2e/` teste, en pilotant un vrai navigateur (Chromium) sur le jeu tel qu'un joueur le vivrait. Voir [`e2e/README.md`](e2e/README.md) pour le détail (ce qui est couvert, limites, comment forcer une constante le temps d'un test).
-
-```bash
-cd e2e && npm install && npm run install-browsers && npm test
-```
-
-## Sécurité
-
-- CORS restreint (`ALLOWED_ORIGINS`, jamais `"*"`), requêtes SQL paramétrées, entrées validées (Pydantic)
-- Nom de joueur jamais inséré dans du HTML (rendu Canvas côté client, API JSON côté serveur) — aucune surface XSS, sans échappement explicite à maintenir
-- **Rate limiting** (`slowapi`, par IP réelle via `X-Forwarded-For` si un reverse-proxy de confiance le pose devant, sinon l'IP de connexion directe) : `POST /api/scores` à 5/minute, `POST /api/games` (compteur de parties) à 10/minute, `GET /api/scores` et `GET /api/games/count` à 60/minute (lectures bon marché mais toujours limitées, en défense en profondeur)
-- Backend **et** frontend non-root, rootfs read-only, `cap_drop: ALL` (voir `docker-compose.yml` — le frontend garde `NET_BIND_SERVICE`, seule capacité nécessaire pour qu'un Caddy non-root se lie au port 80)
-- Taille des requêtes `POST /api/*` plafonnée par le reverse-proxy (10 Ko, largement suffisant pour un score) — sans ça, un payload énorme serait lu en mémoire avant même que Pydantic ne le rejette. Scopé aux routes API uniquement (jamais aux fichiers statiques/musique, servis par un routeur séparé) pour ne jamais risquer de casser un téléchargement légitime
-- Sauvegarde quotidienne de la base SQLite (timer systemd sur la VPS, testée en conditions réelles — backup/restauration validées) — gérée entièrement dans le repo d'infra séparé (`terraform-infra-pazpop-hetzner/backup/`), pas ici
-- **Non fait volontairement** : score non authentifié (triche possible via `curl`, juste borné à 999999) ; en-têtes de sécurité HTTP additionnels (HSTS, CSP...) laissés au reverse-proxy de qui déploie ce jeu (l'instance `arcadepipe.pazpop.net` les pose via Traefik, dans son repo d'infra séparé) plutôt qu'imposés ici ; `player_name` borné à 20 *codepoints* Unicode (pas 20 caractères visuels — des combinants pourraient en théorie produire un rendu "zalgo") : sans impact sécurité (rendu Canvas2D, pas de HTML), et l'interface du jeu filtre de toute façon la saisie à `[A-Z0-9 ]` — seul un appel direct à l'API en dehors du jeu pourrait le voir
-
-## Données collectées
-
-- **Pseudo, score, vague, ennemis abattus** (`player_name` 1-20 caractères, `score`, `wave`, `kills`) : seules données personnelles-ish stockées, dans SQLite, sans limite de rétention. À cela s'ajoute un simple **compteur global de parties jouées** (`POST /api/games`, aucun payload, aucune donnée sur le joueur).
-- **Adresse IP** : lue depuis `X-Forwarded-For` uniquement pour le rate limiting (`slowapi`) — gardée en mémoire le temps de la fenêtre de 5/minute, jamais écrite en base ni dans un fichier de log applicatif.
-- **Google Analytics** (`js/analytics.js`, gtag.js) sur l'instance publique `arcadepipe.pazpop.net` — pose des cookies de mesure d'audience, **uniquement après consentement** (bandeau Accepter/Refuser, `js/consent.js`, choix mémorisé dans `localStorage`). Nécessite d'autoriser `googletagmanager.com`/`google-analytics.com` sur la CSP (repo d'infra séparé) sans quoi le tag est simplement bloqué.
-
-## CI/CD
-
-`.github/workflows/deploy.yml` : sur push vers `main`, lint backend (`ruff`) + audit des dépendances (`pip-audit`, contre les CVE connues) + lint frontend (`eslint`) puis build + push des images vers GHCR (tags `:latest` et `:<sha>`, public — aucune authentification requise pour `docker pull` où que ce soit).
-
-- Actions GitHub épinglées par SHA de commit (pas par tag `vX`) : un tag peut être redéplacé vers un autre commit sans que rien ne change ici — le SHA est immuable.
-- Images de base (`python:3.11-slim`, `caddy:2-alpine`) épinglées par digest dans les Dockerfiles, pour la même raison.
-- [Dependabot](.github/dependabot.yml) ouvre une PR à chaque mise à jour disponible (`pip`, `github-actions`, `docker`) — aucune veille manuelle nécessaire malgré les pins par SHA/digest.
-
-Ce repo s'arrête là — il ne connaît ni VPS ni serveur cible. L'instance `arcadepipe.pazpop.net` est déployée par un repo d'infra séparé ([`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner)), notifié via un événement `repository_dispatch` une fois les images publiées (voir le CI/CD de ce repo-là pour le détail). Un fork ou un usage communautaire n'a pas ce déclenchement (secret absent) et n'en a pas besoin — voir *Docker* ci-dessus pour se déployer soi-même.
-
-**Choix assumé — les tests ne tournent pas en CI.** Le workflow ne lance que le lint (`ruff`, `eslint`) et l'audit des dépendances (`pip-audit`) : les tests (`pytest`, `node --test`, Playwright) sont lancés à la main avant de pousser. Le risque existe : un push qui casse un test est quand même buildé et déployé. Jugé acceptable pour l'instant (un seul développeur, suite e2e d'environ 2 minutes) ; à reconsidérer si le rythme des changements ou le nombre de contributeurs augmente.
-
-⚠️ GHCR crée les packages en **privé** par défaut au premier push — après le premier run, aller dans Package Settings sur GitHub et les passer en public (sinon `docker compose pull` échoue côté déploiement sans authentification).
-
-## Roadmap
-
-Pistes et travaux futurs, organisés par session de travail suggérée — voir [`ROADMAP.md`](ROADMAP.md).
-
-## Structure
-
-```
-arcadepipe/
-├── backend/    # FastAPI + SQLite + Dockerfile — voir backend/README.md
-├── frontend/   # Dockerfile (Caddy = serveur de fichiers statiques) — voir frontend/README.md, et frontend/GAMEPLAY.md pour le détail du gameplay implémenté
-│   ├── index.html, css/style.css
-│   ├── js/       # config, assets (sprites générés), moteur de jeu (modules ES6)
-│   │   ├── states/ # machine à états : un module par écran (menu, playing, pause...) — voir frontend/README.md, section Architecture
-│   │   ├── audio/  # sfx.js (synthèse), music.js + leaderboard.js (intégrations)
-│   │   └── consent.js, analytics.js  # bandeau de consentement + chargement de Google Analytics après accord
-│   ├── lib/      # chiptune3.js + chiptune3.worklet.js + libopenmpt.worklet.js (lecture de module tracker, AudioWorklet ; le worklet porte 3 correctifs locaux, voir `frontend/lib/PATCHES.md`), qrcode.js (carte de partage)
-│   └── music/    # playlist de .xm — voir Crédits
-├── e2e/        # tests bout-en-bout Playwright — voir section Tests
-├── .github/workflows/  # CI/CD (lint + build + push GHCR + notification de déploiement)
-├── docker-compose.yml  # seul fichier de déploiement Docker de ce repo — voir section Docker
-├── CHANGELOG.md  # changements notables, une entrée par version qui le mérite
-└── ROADMAP.md    # pistes et travaux futurs — voir section Roadmap
-```
-
-## Crédits
-
-- Musique : playlist de 5 morceaux composés pour la scène keygen par **DEViANCE** et **h4x0r** — trouvés via [keygen.music](https://keygen.music/) / [keygenmusic.tk](https://keygenmusic.tk/). Merci à ses autrices/auteurs et à la scène tracker en général. Aucune licence explicite trouvée (les dépôts qui les archivent n'en ont pas non plus) : utilisés ici sciemment pour un projet personnel non-commercial, pas au-delà.
-- Lecture du fichier : [libopenmpt](https://lib.openmpt.org/libopenmpt/) (BSD-3-Clause) via [chiptune3.js](https://github.com/DrSnuggles/chiptune) (MIT) — la même techno que keygenmusic.tk utilise pour son propre lecteur.
-- Génération du QR code sur la carte de partage : [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) par Kazuhiko Arase (MIT).
-
-## Licence
-
-Code sous [MIT](LICENSE). La musique (`frontend/music/`) n'est pas couverte par cette licence — voir Crédits ci-dessus pour son statut.
+- Musique : 5 morceaux de la scène keygen par **DEViANCE** et **h4x0r**, via [keygen.music](https://keygen.music/). Aucune licence explicite trouvée : utilisés sciemment pour un projet personnel non commercial.
+- Lecture : [libopenmpt](https://lib.openmpt.org/libopenmpt/) (BSD-3-Clause) via [chiptune3.js](https://github.com/DrSnuggles/chiptune) (MIT). QR code : [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) (MIT).
+- Code sous [MIT](LICENSE). La musique (`frontend/music/`) n'est pas couverte par cette licence.

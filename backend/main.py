@@ -42,25 +42,11 @@ app.add_middleware(
 
 
 def get_client_ip(request: Request) -> str:
-    # Fiable seulement parce qu'un reverse-proxy de confiance se trouve TOUJOURS
-    # devant cette API, quel que soit le déploiement :
-    #  - Instance publique (repo infra séparé) : Traefik écrase X-Forwarded-For
-    #    par défaut quand aucun trustedIPs n'est configuré (voir traefik.yml) —
-    #    la valeur envoyée par le client est remplacée par l'IP qu'il observe
-    #    réellement avant de transmettre la requête. Revalider ce point avant
-    #    tout redéploiement si trustedIPs est un jour ajouté.
-    #  - Déploiement autonome (docker-compose.yml de ce repo, Caddy en frontal) :
-    #    mécanisme différent de Traefik mais résultat identique. Caddy n'écrase
-    #    PAS un X-Forwarded-For déjà présent — il AJOUTE l'IP réellement
-    #    observée à la fin de la liste (comportement documenté officiellement :
-    #    caddyserver.com/docs/caddyfile/directives/reverse_proxy). Un client
-    #    qui envoie son propre X-Forwarded-For voit donc sa valeur conservée
-    #    en tête, mais c'est sans effet ici puisqu'on lit toujours la
-    #    DERNIÈRE IP — celle que Caddy vient d'ajouter, jamais falsifiable.
-    # Dans les deux cas, c'est pourquoi on lit la DERNIÈRE IP de la chaîne :
-    # c'est celle ajoutée par le proxy de confiance, jamais celle envoyée par
-    # le client. Sans reverse-proxy devant (accès direct au port 8000), cette
-    # fonction ne serait plus fiable — ce n'est pas un déploiement supporté.
+    # On lit la DERNIÈRE IP de X-Forwarded-For : c'est celle que le reverse-proxy
+    # de confiance (Traefik en prod, Caddy en autonome) a ajoutée ou imposée,
+    # jamais une valeur envoyée par le client. Sans proxy devant (accès direct
+    # au port 8000), cette fonction n'est plus fiable — déploiement non supporté.
+    # Si Traefik reçoit un jour `trustedIPs`, revalider ce point.
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
         return forwarded.split(",")[-1].strip()

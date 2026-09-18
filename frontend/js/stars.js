@@ -45,15 +45,10 @@ function makeStar(layer, randomX) {
 }
 
 // Planète/galaxie occasionnelle en fond, une à la fois, fondu en entrée/sortie.
-// Teinte tirée sur tout le cercle chromatique — c'est la désaturation dans
-// drawCelestial (pas une teinte réservée) qui l'empêche de se confondre avec
-// un élément de gameplay : toutes les couleurs de gameplay de ce jeu sont
-// pleinement saturées, donc un décor terne reste reconnaissable comme
-// "arrière-plan" quelle que soit la teinte qu'il tire.
-// Trou noir plus rare que galaxie/planète (silhouette la plus chargée
-// visuellement des trois) — le reste se repartage entre les deux autres.
-// allowBlackhole=false (menu principal, voir updateStarfield) : jamais tiré,
-// sa part se redistribue simplement vers la galaxie.
+// Teinte libre : c'est la désaturation (drawCelestial) qui distingue le décor
+// des couleurs de gameplay, toutes pleinement saturées.
+// Trou noir plus rare (silhouette la plus chargée) ; allowBlackhole=false
+// (menu principal) : sa part revient à la galaxie.
 function makeCelestial(allowBlackhole) {
   const roll = Math.random();
   const type = allowBlackhole && roll < 0.12 ? "blackhole" : roll < 0.6 ? "galaxy" : "planet";

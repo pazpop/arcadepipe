@@ -6,6 +6,7 @@ import { AudioEngine } from "./audio/sfx.js";
 import { MusicPlayer } from "./audio/music.js";
 import { createGame } from "./game.js";
 import { createShareCardCanvas } from "./shareCard.js";
+import { loadItem, saveItem } from "./storage.js";
 import { initConsent } from "./consent.js";
 
 const canvas = document.getElementById("game-canvas");
@@ -65,16 +66,11 @@ function resizeCanvas() {
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 
-// --- Audio : (re)pris à CHAQUE geste utilisateur, pas seulement le premier
-// (règle des navigateurs pour l'AudioContext — resume() ne peut réussir que
-// depuis un vrai geste, jamais depuis la boucle d'animation, voir
-// watchAudioContext plus bas). Si le navigateur suspend le contexte en cours
-// de partie (économie d'énergie), il faut un nouveau geste pour le relancer ;
-// en "Tir automatique", le joueur ne clique jamais sur le canvas en jouant,
-// donc un seul geste initial ne suffirait pas. audio.ensure()/music.start()
-// sont tous deux idempotents (no-op au-delà du premier appel utile), donc
-// rien ne coûte à les rappeler à chaque geste plutôt que de distinguer
-// "premier geste" (démarre tout) et "gestes suivants" (juste un resume).
+// --- Audio : repris à CHAQUE geste utilisateur, pas seulement le premier.
+// resume() ne réussit que depuis un vrai geste (jamais depuis la boucle
+// d'animation) et le navigateur peut suspendre le contexte en cours de partie ;
+// en "Tir automatique" le joueur ne clique plus. ensure() et start() sont
+// idempotents : les rappeler à chaque geste ne coûte rien.
 function beginAudio() {
   audio.ensure(); // reprend le contexte partagé (SFX + musique, voir audio/music.js)
   audio.setMuted(music.muted);
@@ -93,12 +89,7 @@ canvas.addEventListener("pointerup", (e) => {
 // --- Panneau rétractable (bas gauche) : #mc-toggle reste toujours visible,
 // même replié — préférence persistée. ---
 if (mcWrap && mcToggle) {
-  let collapsed = false;
-  try {
-    collapsed = localStorage.getItem(STORAGE_KEYS.panelCollapsed) === "1";
-  } catch {
-    /* stockage indisponible — pas bloquant */
-  }
+  let collapsed = loadItem(STORAGE_KEYS.panelCollapsed) === "1";
   function applyPanelState() {
     mcWrap.classList.toggle("collapsed", collapsed);
     mcToggle.textContent = collapsed ? "▶" : "◀";
@@ -107,11 +98,7 @@ if (mcWrap && mcToggle) {
   mcToggle.addEventListener("click", () => {
     collapsed = !collapsed;
     applyPanelState();
-    try {
-      localStorage.setItem(STORAGE_KEYS.panelCollapsed, collapsed ? "1" : "0");
-    } catch {
-      /* stockage indisponible — pas bloquant */
-    }
+    saveItem(STORAGE_KEYS.panelCollapsed, collapsed ? "1" : "0");
   });
 }
 
@@ -155,21 +142,12 @@ if (sfxVolumeEl) {
 
 // --- Tir manuel (défaut) vs automatique (case à cocher, préférence persistée) ---
 if (autoFireToggle) {
-  let storedAutoFire = false;
-  try {
-    storedAutoFire = localStorage.getItem(STORAGE_KEYS.autoFire) === "1";
-  } catch {
-    /* stockage indisponible — pas bloquant */
-  }
+  const storedAutoFire = loadItem(STORAGE_KEYS.autoFire) === "1";
   autoFireToggle.checked = storedAutoFire;
   input.autoFire = storedAutoFire;
   autoFireToggle.addEventListener("change", () => {
     input.autoFire = autoFireToggle.checked;
-    try {
-      localStorage.setItem(STORAGE_KEYS.autoFire, autoFireToggle.checked ? "1" : "0");
-    } catch {
-      /* stockage indisponible — pas bloquant */
-    }
+    saveItem(STORAGE_KEYS.autoFire, autoFireToggle.checked ? "1" : "0");
   });
 }
 
@@ -216,22 +194,14 @@ if (fullscreenBtn) {
 // sur leur propre horloge audio réelle et ne sont jamais affectés.
 let gameSpeed = 1;
 if (speedBtn) {
-  try {
-    const stored = parseFloat(localStorage.getItem(STORAGE_KEYS.gameSpeed));
-    if (GAME_SPEEDS.includes(stored)) gameSpeed = stored;
-  } catch {
-    /* stockage indisponible — pas bloquant */
-  }
+  const storedSpeed = parseFloat(loadItem(STORAGE_KEYS.gameSpeed));
+  if (GAME_SPEEDS.includes(storedSpeed)) gameSpeed = storedSpeed;
   speedBtn.textContent = `x${gameSpeed}`;
   speedBtn.addEventListener("click", () => {
     const idx = GAME_SPEEDS.indexOf(gameSpeed);
     gameSpeed = GAME_SPEEDS[(idx + 1) % GAME_SPEEDS.length];
     speedBtn.textContent = `x${gameSpeed}`;
-    try {
-      localStorage.setItem(STORAGE_KEYS.gameSpeed, String(gameSpeed));
-    } catch {
-      /* stockage indisponible — pas bloquant */
-    }
+    saveItem(STORAGE_KEYS.gameSpeed, gameSpeed);
   });
 }
 
@@ -317,23 +287,15 @@ window.addEventListener("keydown", (e) => {
 });
 
 function readCrtEnabled() {
-  try {
-    const v = localStorage.getItem(STORAGE_KEYS.crt);
-    return v === null ? true : v === "1";
-  } catch {
-    return true;
-  }
+  const v = loadItem(STORAGE_KEYS.crt);
+  return v === null ? true : v === "1";
 }
 function applyCrt(enabled) {
   if (crtOverlay) crtOverlay.classList.toggle("hidden", !enabled);
 }
 function toggleCrt() {
   const enabled = !readCrtEnabled();
-  try {
-    localStorage.setItem(STORAGE_KEYS.crt, enabled ? "1" : "0");
-  } catch {
-    /* stockage indisponible — pas bloquant */
-  }
+  saveItem(STORAGE_KEYS.crt, enabled ? "1" : "0");
   applyCrt(enabled);
 }
 applyCrt(readCrtEnabled());

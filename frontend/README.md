@@ -53,8 +53,4 @@ Rien du canvas, de la souris/du tactile ni de l'audio n'est couvert ici — voir
 
 ## Lint
 
-Config minimale (`eslint:recommended`, voir `eslint.config.js`) — vérifiée en CI avant chaque build (voir *CI/CD* dans le README racine), symétrique de `ruff` côté backend. `package.json` ici ne sert qu'à ça : le jeu lui-même reste du JS vanilla servi tel quel, aucune dépendance d'exécution.
-
-```bash
-npm install && npm run lint
-```
+`npm install && npm run lint` (ESLint, config minimale `eslint:recommended`, vérifié en CI). `package.json` ne sert qu'à ça : le jeu reste du JS vanilla servi tel quel.

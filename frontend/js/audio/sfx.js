@@ -2,6 +2,7 @@
 // ses propres oscillateurs/noeuds à la volée puis les jette. Rampes de gain
 // de 5-10ms pour éviter tout clic au démarrage/arrêt.
 import { STORAGE_KEYS } from "../config.js";
+import { loadUnitFloat, saveItem } from "../storage.js";
 
 export class AudioEngine {
   // Contexte créé tout de suite (geste utilisateur requis seulement pour le
@@ -11,26 +12,9 @@ export class AudioEngine {
     this.ctx = new (window.AudioContext || window.webkitAudioContext)();
     this.master = this.ctx.createGain();
     this.muted = false;
-    this.masterVolume = this._readFloat(STORAGE_KEYS.sfxVolume, 0.5);
+    this.masterVolume = loadUnitFloat(STORAGE_KEYS.sfxVolume, 0.5);
     this.master.gain.value = this.masterVolume;
     this.master.connect(this.ctx.destination);
-  }
-
-  _readFloat(key, fallback) {
-    try {
-      const v = parseFloat(localStorage.getItem(key));
-      return Number.isFinite(v) ? Math.max(0, Math.min(1, v)) : fallback;
-    } catch {
-      return fallback;
-    }
-  }
-
-  _persist(key, value) {
-    try {
-      localStorage.setItem(key, value);
-    } catch {
-      /* stockage indisponible — pas bloquant */
-    }
   }
 
   // Le contexte doit être repris après un geste utilisateur (règle des
@@ -47,7 +31,7 @@ export class AudioEngine {
   setMasterVolume(v) {
     this.masterVolume = Math.max(0, Math.min(1, v));
     if (this.master && !this.muted) this.master.gain.setTargetAtTime(this.masterVolume, this.ctx.currentTime, 0.01);
-    this._persist(STORAGE_KEYS.sfxVolume, String(this.masterVolume));
+    saveItem(STORAGE_KEYS.sfxVolume, this.masterVolume);
   }
 
   _envGain(duration, peak = 1, attack = 0.005, release = 0.01) {
@@ -248,18 +232,10 @@ export class AudioEngine {
     this._tone({ type: "sine", startFreq: 220, endFreq: 140, duration: 0.08, gain: 0.05 });
   }
 
-  // Konami code (↑↑↓↓←→←→BA, voir main.js) : petit jingle "trouvaille" —
-  // silhouette rythmique courte-courte-courte-longue (comme une fanfare),
-  // avec un éclat aigu par-dessus la note tenue finale. Mélodie originale
-  // composée pour ce jeu, pas une citation.
-  //
-  // Chaque note gère sa propre enveloppe de volume plutôt que _envGain
-  // (utilisée ailleurs pour un son immédiat) : _envGain programme ses rampes
-  // par rapport à `ctx.currentTime` au moment où elle est appelée, ce qui
-  // convient pour un son isolé mais pas ici — appelée une seule fois "à
-  // now" pour les 5 notes, elle les aurait toutes fait ramper (et pour les
-  // dernières, revenir à 0) avant même que leur oscillateur, lui bien
-  // décalé dans le temps, ne commence à produire du son.
+  // Konami code (voir main.js) : jingle court-court-court-long, mélodie originale.
+  // Chaque note a sa propre enveloppe de volume : _envGain programme ses rampes
+  // à partir de `ctx.currentTime` au moment de l'appel, ce qui les ferait
+  // toutes finir avant que les oscillateurs, eux décalés dans le temps, ne sonnent.
   playKonami() {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;

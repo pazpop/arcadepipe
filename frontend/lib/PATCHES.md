@@ -10,7 +10,7 @@ Ce dossier contient du code tiers copié tel quel, **sauf** `chiptune3.worklet.j
 | 2 | `stop()` | Libère `leftBufferPtr`/`rightBufferPtr`, des noms jamais définis : les vrais buffers (`leftPtr`/`rightPtr`, alloués dans `play()`) ne sont jamais libérés. | Libérer `leftPtr`/`rightPtr`. | Seconde fuite, à chaque piste. | Pas de test automatique — relire `stop()`. |
 | 3 | `process()` et `stop()` | Une fois le module terminé, `process()` (~375 appels/s) reposte `end` (ou `err`) **à chaque appel** tant qu'aucune piste n'est rechargée. | `this.stop()` après avoir posté `end`/`err` (un seul message), et `stop()` ne fait plus de retour anticipé quand `modulePtr` vaut déjà 0 (le cas d'erreur doit libérer `leftPtr`/`rightPtr`). | Chaque `end` relance un `fetch` : avec la moindre latence réseau, boucle de requêtes sans fin, plus jamais de musique, RAM qui grimpe. | `e2e/tests/music-end.spec.js` (150 ms de latence simulée : une seule requête après la fin d'une piste). |
 
-Contexte détaillé de ces bugs : `frontend/GAMEPLAY.md`, section *Retour d'expérience* (2e round pour 1 et 2, 6e round pour 3).
+Contexte détaillé de ces bugs : [`docs/audio-saga.md`](../../docs/audio-saga.md) (2e round pour 1 et 2, 6e round pour 3).
 
 ## Checklist si `chiptune3.worklet.js` est remplacé
 

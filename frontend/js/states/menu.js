@@ -1,20 +1,12 @@
 // État "menu" (écran titre) : navigation clavier/souris entre les 4 options
 // (JOUER, CLASSEMENT, AIDE, CRÉDITS — voir MENU_OPTIONS dans hud.js).
 //
-// Interface commune à tous les modules de states/ : update(g, engine, dt)
-// fait avancer la logique d'une frame, draw(c2d, g) dessine l'écran. `g` est
-// le même objet d'état partagé qu'avant la découpe de game.js (pas un
-// sous-objet par état) — restructurer `g` lui-même toucherait chaque endroit
-// qui le lit (hud.js compris) pour un gain surtout cosmétique, donc
-// volontairement laissé de côté ici.
-//
-// `engine` regroupe les objets du moteur (input, audio, pools...) qu'un état
-// n'a pas besoin de recréer, plus `engine.actions` : des rappels vers des
-// actions qui déclenchent un autre état (démarrer une partie, aller au
-// classement) — évite les imports circulaires entre modules de states/
-// pendant que la découpe avance module par module. Nommé "engine" et pas
-// "ctx" pour ne jamais se confondre avec le contexte Canvas2D (souvent
-// appelé `ctx` lui aussi, y compris dans game.js).
+// Interface commune aux modules de states/ : update(g, engine, dt) fait
+// avancer l'écran d'une frame, draw(c2d, g) le dessine. `g` est l'état partagé
+// (un seul objet plat, pas un sous-objet par écran). `engine` regroupe le
+// moteur (input, audio, pools...) plus `engine.actions` : des rappels pour
+// passer à un autre écran sans import circulaire. "engine" et pas "ctx", qui
+// désigne le contexte Canvas2D.
 import { consumeJustPressed } from "../input.js";
 import { drawTwinkleStars } from "../stars.js";
 import { syncHoverWithSound } from "./navHelpers.js";

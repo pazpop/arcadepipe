@@ -6,6 +6,7 @@
 // vide, donc le rendu de la scène elle-même n'est pas propre à "playing" au
 // sens strict, mais vit ici avec le reste de l'état qui la nourrit.
 import { RES_W, RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE } from "../config.js";
+import { loadItem, saveItem } from "../storage.js";
 import { updateStarfield, triggerDeathStarLeave } from "../stars.js";
 import { resetPlayer, updatePlayer, hitPlayer, drawPlayer, applyPowerup, applyShield } from "../player.js";
 import { updateProjectiles, drawProjectiles } from "../projectiles.js";
@@ -37,18 +38,10 @@ function vibrate(pattern) {
 
 // Aide vue une fois par navigateur (revoir via le bouton "Aide" ensuite).
 function hasSeenHint(key) {
-  try {
-    return localStorage.getItem(key) === "1";
-  } catch {
-    return false;
-  }
+  return loadItem(key) === "1";
 }
 function markHintSeen(key) {
-  try {
-    localStorage.setItem(key, "1");
-  } catch {
-    /* stockage indisponible — pas bloquant */
-  }
+  saveItem(key, "1");
 }
 
 // Entrée en douceur du vaisseau (startRun/updateShipIntro) : glisse depuis la
@@ -241,18 +234,12 @@ function resolveCollisions(g, engine) {
   }
 }
 
-// Cartographie "qui écrit quoi" sur g.novaStock/g.novaProgress (voir aussi
-// hud.js, drawNovaGauge, qui les LIT sans jamais les écrire) — 3 écrivains,
-// jamais concurrents entre eux (tout est synchrone dans une même frame,
-// pas de vraie concurrence en JS) :
-//   - graze.js, registerGraze() : incrément à chaque frôlement.
-//   - tryUseNova()/triggerNova() ci-dessous : décrément manuel (déclenchement).
-//   - states/waves.js, applyNovaReward() : paiement du niveau bonus, une
-//     seule fois (appelée exactement au moment où g.bonusLevel.finished passe à true).
-//
-// NOVA : effet instantané (pas un buff) — détruit tous les ennemis actifs
-// et leurs tirs en vol (sinon un mur de balles resterait mortel), jamais
-// le boss (garde un vrai combat malgré un ramassage chanceux).
+// Qui écrit g.novaStock/g.novaProgress (hud.js les lit seulement) :
+//   - graze.js, registerGraze() : +1 à chaque frôlement.
+//   - tryUseNova()/triggerNova() ci-dessous : consommation manuelle.
+//   - states/waves.js, applyNovaReward() : récompense du niveau bonus, une seule fois.
+// NOVA : effet instantané — détruit les ennemis actifs et leurs tirs en vol
+// (jamais le boss).
 function triggerNova(g, engine) {
   const { audio, particles, enemies, projectiles } = engine;
   let killed = 0;
@@ -466,20 +453,13 @@ export function update(g, engine, dt) {
   updateGraze(g, dt, player, projectiles, enemies, particles, audio);
 }
 
-// Rendu de la scène de jeu — aussi appelé pour PAUSED/GAME_OVER (voir le
-// commentaire en tête de fichier) : ces deux écrans dessinent leur overlay
-// par-dessus après cet appel (voir game.js, draw()).
+// Rendu de la scène de jeu — aussi appelé pour PAUSED/GAME_OVER, qui dessinent
+// leur overlay par-dessus (voir game.js, draw()).
 //
-// INVARIANT qui rend le freeze de PAUSED/GAME_OVER correct (vérifié par
-// grep sur tout frontend/js au moment d'écrire ceci, mais implicite — rien
-// ne l'impose au niveau du code) : aucune fonction appelée depuis drawScene()
-// (ni transitivement) ne doit lire performance.now()/Date.now() directement.
-// Tout ce qui est visible ici doit venir de l'état posé par update() (celui
-// de ce fichier ou des sous-systèmes), qui lui ne tourne jamais en dehors du
-// mode PLAYING — draw(), contrairement à update(), continue de tourner à
-// chaque frame quel que soit le mode. Une future animation d'ambiance qui
-// lirait l'horloge murale ici continuerait donc de tourner pendant la pause,
-// silencieusement.
+// INVARIANT (rien ne l'impose dans le code) : rien de ce qui est appelé d'ici
+// ne doit lire performance.now()/Date.now(). Tout doit venir de l'état posé par
+// update(), qui ne tourne qu'en mode PLAYING ; draw() tourne dans tous les
+// modes, donc une animation lisant l'horloge continuerait pendant la pause.
 export function drawScene(c2d, g, engine) {
   const { enemies, powerups, particles, projectiles, player } = engine;
   drawEnemies(c2d, enemies);

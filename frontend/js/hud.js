@@ -454,7 +454,7 @@ export function drawConfirmQuitScreen(ctx, selected) {
 
 // --- Aides de jeu (première partie, premier boss) ---
 
-export function infoContinueRect() {
+function infoContinueRect() {
   return { x: RES_W / 2, y: RES_H * 0.86, w: 200, h: 18 };
 }
 
@@ -464,11 +464,11 @@ export function hitTestInfoContinue(x, y) {
 
 // Pagination (voir states/help.js, HELP_PAGES) — juste au-dessus de
 // CONTINUER, jamais chevauchée quel que soit le contenu de la page.
-export function infoPrevRect() {
+function infoPrevRect() {
   return { x: RES_W * 0.32, y: RES_H * 0.78, w: 70, h: 16 };
 }
 
-export function infoNextRect() {
+function infoNextRect() {
   return { x: RES_W * 0.68, y: RES_H * 0.78, w: 70, h: 16 };
 }
 
@@ -599,7 +599,7 @@ export function drawGameOverScreen(ctx, score, wave, kills, distance) {
 // --- Écran "GAME OVER" intermédiaire (après le ralenti de mort, avant la
 // saisie du nom/le classement) ---
 
-export function gameOverContinueRect() {
+function gameOverContinueRect() {
   return { x: RES_W / 2, y: RES_H * 0.62, w: 200, h: 18 };
 }
 
@@ -624,7 +624,7 @@ export function drawDeathScreen(ctx, score, wave, kills, distance) {
 
 // Bouton tactile pour valider le nom — indispensable sur mobile où le
 // clavier virtuel n'apparaît pas toujours (triggerGameOver dans states/endOfRun.js).
-export function nameEntryValidateRect() {
+function nameEntryValidateRect() {
   return { x: RES_W / 2, y: RES_H * 0.48 + 54, w: 200, h: 18 };
 }
 

@@ -4,6 +4,12 @@ Organisée par session de travail suggérée (issue d'une discussion Lumo/Claude
 
 Sessions 1 (stabilisation de `states/playing.js`) et 2 (distance parcourue, QR code) : **terminées**, détail dans le [CHANGELOG](CHANGELOG.md) (2.62, 2.63).
 
+## Bugs signalés (2026-09-21)
+
+- [ ] **Bug** : les vaisseaux ne devraient pas pouvoir tirer derrière eux.
+- [ ] **Bug** : les boss mettent plusieurs secondes avant de commencer à tirer.
+- [ ] **Bug** : les textes sont illisibles.
+
 ## Session 3 — optimisations optionnelles (pas pressé)
 
 - [ ] **Rang dynamique** (monte par tranche de X grazes sans dégât, redescend au coup encaissé, module vitesse des tirs/taux de spawn) — le code est simple (un `g.rank` + compteur, un multiplicateur lu par `bulletSpeedFactor`/le spawn d'ennemis/les intervalles de tir du boss), **le vrai coût est le tuning** : X grazes par palier, combien on perd par coup, ajuster jusqu'à ce que la pression soit juste — ça ne se devine pas, ça se joue et se réajuste. À lancer seulement quand le jeu est stable et qu'il y a du temps dédié au réglage, pas avant.

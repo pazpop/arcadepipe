@@ -2,6 +2,6 @@ fastapi==0.141.1
 # Dépendance transitive de fastapi, épinglée explicitement : fastapi accepte
 # d'anciennes versions de starlette avec des CVE connues (voir pip-audit en CI).
 starlette==1.7.0
-uvicorn[standard]==0.30.6
+uvicorn[standard]==0.54.0
 pydantic==2.9.2
 slowapi==0.1.10

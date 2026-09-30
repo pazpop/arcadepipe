@@ -5,7 +5,7 @@
 // besoin d'éditer/restaurer le code source : tout repart d'une page fraîche
 // au test suivant.
 import { test, expect } from "@playwright/test";
-import { canvasHelpers, collectErrors, skipHints } from "./helpers.js";
+import { canvasHelpers, collectErrors, gameState, skipHints } from "./helpers.js";
 
 test("un seul bonus à la fois : ramassage, indicateur de buff, pas d'erreur", async ({ page }) => {
   const errors = collectErrors(page);
@@ -20,7 +20,6 @@ test("un seul bonus à la fois : ramassage, indicateur de buff, pas d'erreur", a
 
   const { canvas, startRun, toPage } = canvasHelpers(page);
   await startRun();
-  await page.waitForTimeout(200);
 
   const ship = await toPage(90, 135);
   await page.mouse.move(ship.x, ship.y);
@@ -54,7 +53,6 @@ test("bouclier : ramassage, anneau/indicateur affichés, pas d'erreur", async ({
 
   const { canvas, startRun, toPage } = canvasHelpers(page);
   await startRun();
-  await page.waitForTimeout(200);
 
   const ship = await toPage(90, 135);
   await page.mouse.move(ship.x, ship.y);
@@ -80,26 +78,30 @@ test("premier combat de boss : coque + points faibles s'affichent, pas d'erreur"
   await page.goto("/");
   await skipHints(page);
 
-  // 1 kill/vague -> la vague 4 (boss) arrive en quelques secondes au lieu
-  // de plusieurs minutes.
+  // Boss dès la vague 2 et 1 kill par vague : le combat arrive en quelques
+  // secondes au lieu de plusieurs minutes.
   await page.evaluate(async () => {
     const { DIFFICULTY } = await import("/js/config.js");
+    DIFFICULTY.bossWaveEvery = 2;
     DIFFICULTY.baseWaveKills = 1;
     DIFFICULTY.waveKillsStep = 0;
   });
 
   const { canvas, startRun, toPage } = canvasHelpers(page);
   await startRun();
-  await page.waitForTimeout(200);
 
   const ship = await toPage(90, 135);
   await page.mouse.move(ship.x, ship.y);
   await page.mouse.down();
 
-  // Assez de temps pour traverser les vagues 1-3 et atteindre la vague 4.
-  for (let i = 0; i < 10; i++) {
-    await page.waitForTimeout(1500);
+  // Balaye la hauteur en tirant jusqu'au premier kill, donc jusqu'à la vague 2.
+  const wave = async () => (await gameState(page)).wave;
+  for (let i = 0; i < 40 && (await wave()) < 2; i++) {
+    await page.mouse.move(ship.x, (await toPage(90, 30 + (i % 8) * 30)).y);
+    await page.waitForTimeout(500);
   }
+  expect(await wave()).toBe(2);
+  await page.waitForTimeout(1500); // entrée du boss à l'écran, pour la capture
   await canvas.screenshot({ path: "test-results/boss-encounter.png" });
 
   await page.mouse.up();

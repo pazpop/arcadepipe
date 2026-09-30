@@ -3,7 +3,7 @@
 // accélérées via import dynamique de config.js (voir helpers.js et
 // powerups-boss.spec.js pour le même principe).
 import { test, expect } from "@playwright/test";
-import { canvasHelpers, collectErrors, skipHints } from "./helpers.js";
+import { canvasHelpers, collectErrors, gameState, skipHints } from "./helpers.js";
 
 test("niveau bonus : se déclenche, les anneaux défilent, la jauge NOVA se remplit", async ({ page }) => {
   const errors = collectErrors(page);
@@ -21,15 +21,15 @@ test("niveau bonus : se déclenche, les anneaux défilent, la jauge NOVA se remp
 
   const { startRun } = canvasHelpers(page);
   await startRun();
-  await page.waitForTimeout(200);
 
-  // Vagues 1-9 quasi instantanées (0 kill requis/vague) -> niveau bonus juste avant la vague 10
-  // (rendu au canvas, pas de sélecteur DOM possible — juste laisser le temps).
-  await page.waitForTimeout(8000);
+  // Vagues 1-9 quasi instantanées (0 kill requis/vague) -> niveau bonus juste avant la vague 10.
+  const inBonus = async () => (await gameState(page)).inBonusLevel;
+  await expect.poll(inBonus, { timeout: 20000 }).toBe(true);
   await page.screenshot({ path: "test-results/bonus-level-active.png" });
 
-  // Laisse le niveau se terminer (10 anneaux, ~1.3s d'intervalle + un peu de marge).
-  await page.waitForTimeout(6000);
+  // Fin du niveau (intro + 10 anneaux à ~1.3 s d'intervalle), puis la partie reprend.
+  await expect.poll(inBonus, { timeout: 25000 }).toBe(false);
+  expect((await gameState(page)).wave).toBeGreaterThanOrEqual(10);
   await page.screenshot({ path: "test-results/bonus-level-reward.png" });
 
   expect(errors).toEqual([]);

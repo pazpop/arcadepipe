@@ -12,7 +12,9 @@ const OPENMPT_MODULE_RENDER_INTERPOLATIONFILTER_LENGTH = 3
 let libopenmpt
 
 // init
-libopenmptPromise()
+// Corrigé : promesse gardée pour rejouer les messages reçus avant la fin de
+// l'initialisation du WASM (voir handleMessage_).
+const libopenmptReady = libopenmptPromise()
 .then(res => {
 	libopenmpt = res
 
@@ -111,6 +113,13 @@ class MPT extends AudioWorkletProcessor {
 	}
 
 	handleMessage_(msg) {
+		// Corrigé : un message reçu avant que libopenmpt (WASM) soit prêt faisait
+		// échouer play() sans rien signaler (première piste perdue, musique
+		// muette). Il est rejoué une fois l'initialisation terminée, dans l'ordre.
+		if (!libopenmpt) {
+			libopenmptReady.then(() => { if (libopenmpt) this.handleMessage_(msg) })
+			return
+		}
 		//console.log('[Processor:Received]',msg.data)
 		const v = msg.data.val
 		switch (msg.data.cmd) {

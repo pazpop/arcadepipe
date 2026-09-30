@@ -23,6 +23,19 @@ npm test                   # ou : npx playwright test --headed
 - `consent` — Google Analytics jamais chargé avant « Accepter » ; bouton Plein écran
 - `share-qr` — le QR de la carte de partage se décode après recompression JPEG ; contraste vérifié au pixel
 
+## Attendre un état, pas un délai
+
+Un délai fixe (`page.waitForTimeout`) rend un test instable : trop court sur une machine chargée, il échoue au hasard ; et une action tombée au mauvais moment (un clic pendant le ralenti de mort, par exemple) est ignorée sans que le test ne le voie. On attend donc l'état réel du jeu, lu dans la page via l'instance `game` exportée par `main.js` (`tests/helpers.js`) :
+
+```js
+await startRun();                    // clique JOUER et attend le mode "playing" ("help" si l'aide de bienvenue s'ouvre)
+await page.keyboard.press("KeyP");
+await waitForMode(page, "paused");   // modes : js/states/mode.js
+await expect.poll(async () => (await gameState(page)).wave).toBe(2);
+```
+
+Les clics sont traités aussitôt (`handleTap`), les touches à la frame suivante : après une touche, toujours attendre l'état voulu. Un délai fixe reste légitime seulement quand la **durée elle-même** est ce qu'on vérifie (aucune requête pendant N secondes, session de jeu prolongée, laisser tomber un bonus).
+
 ## Forcer une constante le temps d'un test
 
 Sans exposer de point d'accès de debug en production : les modules ES sont mis en cache par URL, donc un import dynamique depuis le test récupère les *mêmes* objets que la partie en cours.

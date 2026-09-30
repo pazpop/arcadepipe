@@ -2,6 +2,10 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.88] - 2026-09-30
+- **Fix : musique parfois muette pendant toute la première partie.** Une piste envoyée au lecteur avant qu'il soit prêt (nœud audio pas encore créé, ou WASM de libopenmpt pas encore chargé) était perdue sans erreur. Les messages attendent maintenant que le lecteur soit prêt ([correctif n° 4](frontend/lib/PATCHES.md)).
+- Tests e2e : attente de l'état réel du jeu (`waitForMode`, `gameState`) au lieu de délais fixes ; `music-end` stable, et le test du boss atteint enfin un combat de boss.
+
 ## [2.87] - 2026-09-30
 - Fix : taper M ou C dans le pseudo coupait le son / basculait le filtre CRT. Raccourcis clavier ajoutés à l'écran Aide.
 - CI : les tests backend (`pytest`) et frontend (`node --test`) bloquent désormais le build.

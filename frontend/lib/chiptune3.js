@@ -34,7 +34,9 @@ export class ChiptuneJsPlayer {
 		this.handlers = []
 
 		// worklet
-		this.context.audioWorklet.addModule( new URL('./chiptune3.worklet.js', import.meta.url) )
+		// Corrigé : promesse gardée pour différer les messages envoyés avant la
+		// création du nœud (voir postMsg).
+		this.initialized = this.context.audioWorklet.addModule( new URL('./chiptune3.worklet.js', import.meta.url) )
 		.then(()=>{
 			this.processNode = new AudioWorkletNode(this.context, 'libopenmpt-processor', {
 				numberOfInputs: 0,
@@ -104,8 +106,13 @@ export class ChiptuneJsPlayer {
 
 	// methods
 	postMsg(cmd, val) {
+		// Corrigé : avant la création du nœud, le message était jeté sans rien
+		// signaler (première piste perdue) ; il est maintenant envoyé dès que le
+		// nœud existe, dans l'ordre.
 		if (this.processNode)
 			this.processNode.port.postMessage({cmd:cmd,val:val})
+		else
+			this.initialized.then(() => this.processNode?.port.postMessage({cmd:cmd,val:val}))
 	}
 	load(url) {
 		fetch(url)

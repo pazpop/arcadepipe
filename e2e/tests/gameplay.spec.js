@@ -7,7 +7,6 @@ test("le tir est manuel : aucune balle sans clic maintenu, tir dès qu'on mainti
   await skipHints(page);
   const { canvas, startRun, moveLogical, toPage } = canvasHelpers(page);
   await startRun();
-  await page.waitForTimeout(200);
   await moveLogical(90, 135);
 
   await page.waitForTimeout(1000);
@@ -31,7 +30,6 @@ test("la case 'Tir auto' active le tir sans avoir à cliquer, et persiste (local
 
   await page.locator("#autofire-toggle").check();
   await startRun();
-  await page.waitForTimeout(200);
   await moveLogical(90, 135);
   await page.waitForTimeout(600); // tir auto : pas besoin de maintenir le clic
   await canvas.screenshot({ path: "test-results/fire-auto.png" });
@@ -48,7 +46,6 @@ test("une nouvelle partie choisit une piste musicale différente de la précéde
   // sélection elle-même, sans dépendre du chemin UI pour y arriver.
   const errors = collectErrors(page);
   await page.goto("/");
-  await page.waitForTimeout(200); // laisse main.js s'évaluer avant l'import dynamique
 
   const [t1, t2, t3] = await page.evaluate(async () => {
     const { music } = await import("/js/main.js");
@@ -71,7 +68,6 @@ test("vague 1 : transition propre, aucune erreur sur une session de jeu prolong�
   await skipHints(page);
   const { canvas, startRun, toPage } = canvasHelpers(page);
   await startRun();
-  await page.waitForTimeout(200);
 
   const ship = await toPage(90, 135);
   await page.mouse.move(ship.x, ship.y);
@@ -119,7 +115,6 @@ test("nom aléatoire pré-rempli + bouton VALIDER tactile (sans clavier)", async
 
   const { canvas, startRun, toPage, clickLogical } = canvasHelpers(page);
   await startRun();
-  await page.waitForTimeout(200);
 
   // Tire en continu en balayant la hauteur pour enchaîner les vagues 1-3
   // (1 kill chacune) le plus vite possible jusqu'au boss de la vague 4.

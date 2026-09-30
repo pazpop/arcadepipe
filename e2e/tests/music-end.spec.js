@@ -29,17 +29,17 @@ test("fin de piste : une seule requête pour la suivante et la musique repart", 
   await page.mouse.up();
   await page.keyboard.press("Enter"); // JOUER : la musique démarre avec la partie
 
-  // Piste en cours de lecture (métadonnées reçues du worklet). Boucle dans la
-  // page : waitForFunction avec une fonction async retournerait une promesse
-  // (toujours truthy) et n'attendrait rien.
-  await page.evaluate(async () => {
-    const { music } = await import("/js/main.js");
-    const t0 = Date.now();
-    while (!(music.player.duration > 1 && music.player.currentTime > 0)) {
-      if (Date.now() - t0 > 15000) throw new Error("piste jamais démarrée " + JSON.stringify({ s: music.started, d: music.player.duration, t: music.player.currentTime, n: !!music.player.processNode, tok: music._loadToken, ctx: music.player.context.state }));
-      await new Promise((r) => setTimeout(r, 100));
-    }
-  });
+  const lecture = () =>
+    page.evaluate(async () => {
+      const { music } = await import("/js/main.js");
+      return { ends: window.__ends ?? 0, pos: music.player.currentTime, dur: music.player.duration };
+    });
+  // Piste en cours de lecture (métadonnées reçues du worklet). 30 s : le
+  // premier chargement du WASM peut être lent sur une machine chargée.
+  await expect.poll(async () => {
+    const l = await lecture();
+    return l.dur > 1 && l.pos > 0;
+  }, { timeout: 30000 }).toBe(true);
 
   const ended = await page.evaluate(async () => {
     const { music } = await import("/js/main.js");
@@ -53,12 +53,14 @@ test("fin de piste : une seule requête pour la suivante et la musique repart", 
   const before = requests;
   latencyMs = 150;
 
-  await page.waitForTimeout(6000);
-  const stats = await page.evaluate(async () => {
-    const { music } = await import("/js/main.js");
-    return { ends: window.__ends, pos: music.player.currentTime, dur: music.player.duration };
-  });
-  console.log(`[repro] 'end' reçus: ${stats.ends}, requêtes .xm depuis la fin: ${requests - before}, pos=${stats.pos}, dur=${stats.dur}`);
+  // Attend la piste suivante réellement en lecture, puis observe encore 2 s :
+  // une rafale de requêtes (le bug) se produirait dans cet intervalle.
+  await expect.poll(async () => {
+    const l = await lecture();
+    return l.ends >= 1 && l.pos > 0 && l.dur - l.pos > 0.5;
+  }, { timeout: 15000 }).toBe(true);
+  await page.waitForTimeout(2000);
+  const stats = await lecture();
 
   expect(stats.ends).toBeLessThanOrEqual(2);
   expect(requests - before).toBeLessThanOrEqual(2);

@@ -13,6 +13,8 @@
 //     const { DIFFICULTY } = await import("/js/config.js");
 //     DIFFICULTY.baseWaveKills = 1;
 //   });
+import { expect } from "@playwright/test";
+
 export const RES_W = 480;
 export const RES_H = 270;
 
@@ -37,8 +39,11 @@ export function canvasHelpers(page) {
     await page.mouse.move(p.x, p.y);
   }
 
-  async function startRun() {
-    await clickLogical(240, 150); // "JOUER" au menu
+  // "JOUER" au menu, puis attend que la partie ait vraiment démarré. `expected` :
+  // "help" quand l'aide de bienvenue doit s'ouvrir (première partie, sans skipHints).
+  async function startRun(expected = "playing") {
+    await clickLogical(240, 150);
+    await waitForMode(page, expected);
   }
 
   return { canvas, toPage, clickLogical, moveLogical, startRun };
@@ -57,6 +62,21 @@ export async function skipHints(page) {
     localStorage.setItem("arcadepipe_analytics_consent", "denied");
   });
   await page.evaluate(() => document.getElementById("cookie-banner")?.classList.add("hidden"));
+}
+
+// État du jeu lu dans la page (main.js exporte l'instance `game`, voir
+// e2e/README.md). Les clics passent par handleTap, traité aussitôt ; les
+// touches, elles, ne sont lues qu'à la frame suivante : après une touche,
+// toujours attendre l'état attendu plutôt qu'un délai fixe.
+export function gameState(page) {
+  return page.evaluate(async () => {
+    const { game } = await import("/js/main.js");
+    return { mode: game.mode, wave: game.getRunSummary().wave, inBonusLevel: game.inBonusLevel };
+  });
+}
+
+export async function waitForMode(page, mode, timeout = 5000) {
+  await expect.poll(async () => (await gameState(page)).mode, { timeout }).toBe(mode);
 }
 
 export function collectErrors(page) {

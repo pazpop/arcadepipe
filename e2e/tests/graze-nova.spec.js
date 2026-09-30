@@ -20,7 +20,6 @@ test("graze : la jauge NOVA se remplit et le bouton tactile apparaît", async ({
 
   const { startRun } = canvasHelpers(page);
   await startRun();
-  await page.waitForTimeout(200);
 
   const novaBtn = page.locator("#nova-btn");
   await expect(novaBtn).not.toHaveClass(/hidden/, { timeout: 8000 });

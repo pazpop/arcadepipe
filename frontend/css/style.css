@@ -166,19 +166,19 @@ html, body {
 
 /* Bouton pause : plus visible qu'une simple icône dans une rangée — c'est
    le seul moyen de mettre en pause sur mobile (pas de touche Échap). */
-.mc-pause-btn {
+#music-controls .mc-pause-btn {
   width: 100%;
-  font-size: 11px !important;
+  font-size: 11px;
   font-family: monospace;
-  padding: 4px 6px !important;
-  border: 1px solid rgba(78, 225, 255, 0.35) !important;
+  padding: 4px 6px;
+  border: 1px solid rgba(78, 225, 255, 0.35);
   border-radius: 3px;
   text-align: center;
 }
-.mc-pause-btn:hover,
-.mc-pause-btn:active {
+#music-controls .mc-pause-btn:hover,
+#music-controls .mc-pause-btn:active {
   color: #4ee1ff;
-  border-color: #4ee1ff !important;
+  border-color: #4ee1ff;
 }
 /* Fullscreen API absente (ex: iOS Safari) : bouton masqué plutôt que
    visible sans effet au clic (voir main.js, document.fullscreenEnabled). */

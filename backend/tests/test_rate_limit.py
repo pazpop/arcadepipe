@@ -1,9 +1,6 @@
 """Test isolé du rate limiting (slowapi) sur POST /api/scores (5/minute).
 
-Séparé de test_api.py exprès : sa fixture `client` désactive délibérément le
-limiter (`limiter.enabled = False`) pour ne pas polluer ses propres tests
-avec des 429 sans rapport avec ce qu'ils vérifient. Ici, au contraire,
-l'objectif est justement de vérifier que la limite s'applique pour de vrai.
+Séparé de test_api.py, dont la fixture désactive le limiter.
 """
 import pytest
 from fastapi.testclient import TestClient
@@ -15,21 +12,14 @@ from main import app, limiter
 @pytest.fixture
 def client(tmp_path, monkeypatch):
     monkeypatch.setattr(database, "DB_PATH", str(tmp_path / "test_ratelimit.db"))
-    # `limiter` est un singleton partagé par tout le process pytest : si
-    # test_api.py (qui le désactive pour ses propres tests) tourne avant ce
-    # fichier, son `limiter.enabled = False` reste sinon en place ici aussi —
-    # jamais restauré automatiquement entre modules de test. On le force
-    # explicitement plutôt que de dépendre de l'ordre d'exécution.
     monkeypatch.setattr(limiter, "enabled", True)
     with TestClient(app) as c:
         yield c
 
 
 def _post_score(client, ip):
-    # IP forgée via X-Forwarded-For (voir get_client_ip dans main.py : lit
-    # toujours la DERNIÈRE IP de la chaîne) — chaque test utilise une IP
-    # dédiée, jamais réutilisée ailleurs, pour ne dépendre d'aucun état
-    # laissé par d'autres tests qui, eux, désactivent le limiter.
+    # IP forgée via X-Forwarded-For (get_client_ip lit la dernière IP) : une IP
+    # dédiée par test, les compteurs du limiter étant partagés.
     return client.post(
         "/api/scores",
         json={"player_name": "RATELIM", "score": 1},

@@ -1,4 +1,4 @@
-# La saga audio : 6 rounds sur un même symptôme (« la musique se tait »)
+# La saga audio : 7 rounds sur un même symptôme (« la musique se tait »)
 
 Récit complet, conservé tel quel pour la traçabilité et la valeur pédagogique. Résumé des leçons : [GAMEPLAY.md](../frontend/GAMEPLAY.md#retour-dexpérience--la-saga-audio). Correctifs locaux du lecteur : [frontend/lib/PATCHES.md](../frontend/lib/PATCHES.md).
 
@@ -77,3 +77,13 @@ Les deux rounds précédents reposaient sur des hypothèses raisonnées mais jam
 **La correction.** Le worklet appelle `stop()` après `end`/`err` : un seul message, puis silence. Côté page, `onEnded` est ignoré tant qu'un chargement est déjà en cours (`_loading`), pour qu'un message répété ne puisse plus jamais relancer un `fetch` par message, même si le worklet régressait.
 
 **La leçon générale** : un mécanisme de dédoublonnage (jeton de version) suppose que les événements qui le déclenchent sont *rares*. Si la source d'événements peut se répéter à haute fréquence (ici, un message par quantum audio), il faut d'abord la rendre idempotente (« un seul événement ») plutôt que de compter sur la couche du dessus. Et un bug que le serveur de développement masque (latence quasi nulle) se reproduit en simulant la latence, pas en relisant le code.
+
+## Septième round : la première piste perdue
+
+**Le symptôme.** Parfois, toute la première partie restait muette ; la musique revenait à la partie suivante. Le test `music-end` échouait de façon intermittente sur la même cause.
+
+**La vraie cause.** Au premier geste du joueur, deux chargements partent aussitôt, avant que le lecteur soit prêt. Côté page, `postMsg()` jetait tout message envoyé avant la création du nœud audio ; côté worklet, un message arrivé avant l'initialisation de libopenmpt (WASM) échouait. Dans les deux cas, sans erreur visible : la piste n'était jamais jouée, donc aucune fin de piste ne relançait la suivante.
+
+**La correction.** Les messages attendent que le lecteur soit prêt, puis partent dans l'ordre (correctif n° 4 de [PATCHES.md](../frontend/lib/PATCHES.md)).
+
+**La leçon générale** : un message envoyé avant que le destinataire soit prêt doit être mis en attente, jamais jeté en silence. Et un test instable signale souvent un vrai bug de timing, pas seulement un test mal écrit.

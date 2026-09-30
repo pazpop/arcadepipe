@@ -103,7 +103,7 @@ Comment les couleurs et les formes sont décidées et générées.
 - [x] L'intensité d'un bruitage suit celle de son effet visuel — le NOVA (écran qui tremble fort, tout l'écran nettoyé d'un coup) a son propre son "large" (bruit filtré + sub grave), pas le même son qu'une explosion d'ennemi normal, sinon l'impact paraît muet malgré l'écran qui vibre.
 - [x] Un easter egg (aucun effet de jeu) caché derrière une séquence de touches connue des joueurs de jeux vidéo — jamais indiqué en jeu, à découvrir. Jingle audio accompagné d'un petit tilt du canvas, synchronisés.
 - [x] Le contexte audio est explicitement repris quand l'onglet redevient visible et à chaque geste du joueur (pas seulement au premier) — certains navigateurs le suspendent d'eux-mêmes après un moment sans jamais le reprendre, y compris parfois onglet actif, ce qui coupait la musique en permanence.
-- [x] Le chargement d'une piste vérifie le code de statut de la réponse réseau avant de la traiter comme valide (`fetch()` ne rejette jamais sur une erreur HTTP à lui seul) ; en cas d'échec, une nouvelle tentative différée (délai croissant plafonné à 10 s, **sans plafond sur le nombre d'essais** depuis le 5e round) — jamais immédiate, pour ne pas aggraver une limite de requêtes temporaire (voir [`docs/audio-saga.md`](../docs/audio-saga.md), rounds 3 et 5).
+- [x] Le chargement d'une piste vérifie le code de statut de la réponse réseau avant de la traiter comme valide (`fetch()` ne rejette jamais sur une erreur HTTP à lui seul) ; en cas d'échec, une nouvelle tentative différée (délai croissant plafonné à 10 s, **sans plafond sur le nombre d'essais**) — jamais immédiate, pour ne pas aggraver une limite de requêtes temporaire (voir [`docs/audio-saga.md`](../docs/audio-saga.md), rounds 3 et 5).
 - [x] La fin d'une piste n'est signalée **qu'une seule fois** par le lecteur (le worklet s'arrête après `end`), et l'enchaînement vers la piste suivante est ignoré tant qu'un chargement est déjà en cours — sans quoi un message répété relançait un `fetch` par message (boucle de requêtes, plus jamais de musique ; voir [`docs/audio-saga.md`](../docs/audio-saga.md), round 6).
 
 ## Interface & menus
@@ -153,7 +153,7 @@ Comment les couleurs et les formes sont décidées et générées.
 
 ## Retour d'expérience : la saga audio
 
-Un même symptôme (« la musique se tait ») a demandé **6 rounds**, avec 6 causes différentes. Le récit complet est dans [`docs/audio-saga.md`](../docs/audio-saga.md) ; les leçons, round par round :
+Un même symptôme (« la musique se tait ») a demandé **7 rounds**, avec 7 causes différentes. Le récit complet est dans [`docs/audio-saga.md`](../docs/audio-saga.md) ; les leçons, round par round :
 
 1. **Deux opérations asynchrones déclenchées par le même événement sur le même état** : il faut un moyen de savoir laquelle est la plus récente avant d'appliquer son résultat (jeton de version).
 2. **Un même symptôme peut avoir plusieurs causes indépendantes** : vérifier que le correctif précédent couvrait *tous* les chemins, avant de conclure qu'il était faux (ici, une fuite mémoire dans le lecteur tracker).
@@ -161,3 +161,4 @@ Un même symptôme (« la musique se tait ») a demandé **6 rounds**, avec 6 ca
 4. **Un compteur remis à zéro à certains endroits doit l'être à tous les points d'entrée équivalents**, pas seulement là où le bug a été vu.
 5. **Plafonner le délai entre deux essais, pas leur nombre** : plafonner le nombre transforme une panne transitoire en panne permanente.
 6. **Un dédoublonnage (jeton de version) suppose des événements rares** : si la source peut se répéter à haute fréquence, la rendre d'abord idempotente. Et le serveur local, trop rapide, masque les bugs de timing : on les reproduit en simulant la latence.
+7. **Un message envoyé avant que le destinataire soit prêt doit attendre, pas disparaître** : une file d'attente jusqu'à l'initialisation plutôt qu'un envoi perdu sans erreur.

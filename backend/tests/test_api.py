@@ -16,12 +16,9 @@ def client(tmp_path, monkeypatch):
     # la variable d'environnement ne suffit pas une fois le module déjà
     # chargé, il faut patcher l'attribut directement.
     monkeypatch.setattr(database, "DB_PATH", str(tmp_path / "test.db"))
-    # Rate limiting désactivé pour ces tests : le limiter (slowapi) garde son
-    # compteur en mémoire pour tout le process pytest, pas par test — le
-    # désactiver évite qu'une suite qui grandit un jour ne se mette à
-    # dépasser les seuils (5/minute sur /api/scores) sans rapport avec ce
-    # qui est réellement testé ici.
-    limiter.enabled = False
+    # Rate limiting coupé ici (compteurs partagés par tout le process pytest),
+    # testé à part dans test_rate_limit.py ; rétabli après chaque test.
+    monkeypatch.setattr(limiter, "enabled", False)
     with TestClient(app) as c:
         yield c
 

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { canvasHelpers, collectErrors, skipHints } from "./helpers.js";
+import { canvasHelpers, collectErrors, skipHints, waitForMode } from "./helpers.js";
 
 test("le tir est manuel : aucune balle sans clic maintenu, tir dès qu'on maintient", async ({ page }) => {
   const errors = collectErrors(page);
@@ -134,14 +134,13 @@ test("nom aléatoire pré-rempli + bouton VALIDER tactile (sans clavier)", async
   await page.mouse.move(ram.x, ram.y);
   // Attend l'écran GAME OVER (après le ralenti de mort) plutôt qu'un délai
   // fixe : un tap "OK" pendant le ralenti serait ignoré.
-  const mode = () => page.evaluate(async () => (await import("/js/main.js")).game.mode);
-  await expect.poll(mode, { timeout: 15000 }).toBe("game_over");
+  await waitForMode(page, "game_over", 15000);
   await canvas.screenshot({ path: "test-results/name-entry-game-over.png" });
 
   // Écran GAME OVER intermédiaire (voir drawDeathScreen) -> "OK" déclenche
   // triggerGameOver() (states/endOfRun.js) et l'entrée en saisie du nom.
   await clickLogical(240, 168);
-  await expect.poll(mode).toBe("name_entry");
+  await waitForMode(page, "name_entry");
   await canvas.screenshot({ path: "test-results/name-entry-prefilled.png" });
 
   // M et C sont du texte pendant la saisie du pseudo : ni son coupé, ni CRT basculé.
@@ -153,7 +152,7 @@ test("nom aléatoire pré-rempli + bouton VALIDER tactile (sans clavier)", async
 
   // Valide au tap uniquement (bouton VALIDER), jamais via le clavier caché.
   await clickLogical(240, 183.6);
-  await expect.poll(mode).toBe("leaderboard");
+  await waitForMode(page, "leaderboard");
   await canvas.screenshot({ path: "test-results/name-entry-validated.png" });
 
   // ERR_CONNECTION_REFUSED attendu : ce test est le premier à atteindre le

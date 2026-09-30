@@ -78,6 +78,8 @@ export function gameState(page) {
       buff: game.buffType,
       shield: game.shield,
       powerups: game.powerupsOnScreen,
+      boss: game.bossState,
+      bossBullets: game.bossBulletsOnScreen,
     };
   });
 }

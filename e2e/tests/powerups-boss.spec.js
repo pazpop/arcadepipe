@@ -109,7 +109,22 @@ test("premier combat de boss : coque + points faibles s'affichent, pas d'erreur"
     await page.waitForTimeout(500);
   }
   expect(await wave()).toBe(2);
-  await page.waitForTimeout(1500); // entrée du boss à l'écran, pour la capture
+
+  // Tir maintenu, aligné sur un point faible pendant toute l'entrée : le boss
+  // arrive intact, puis tire avant d'être détruit.
+  const duringEntry = [];
+  await expect.poll(async () => {
+    const { boss } = await gameState(page);
+    if (boss && !boss.arrived) {
+      duringEntry.push(boss.weakPoints.length);
+      await page.mouse.move(ship.x, (await toPage(90, boss.weakPoints[0].y)).y);
+    }
+    return boss?.arrived;
+  }, { timeout: 5000, intervals: [100] }).toBe(true);
+  await expect.poll(async () => (await gameState(page)).bossBullets, { timeout: 3000 }).toBeGreaterThan(0);
+  expect((await gameState(page)).boss.weakPoints.length).toBeGreaterThan(0);
+  expect(duringEntry.length).toBeGreaterThan(0);
+  expect(duringEntry.every((n) => n === 4)).toBe(true); // 1er boss : BOSS.weakPointsMin points, aucun détruit pendant l'entrée
   await canvas.screenshot({ path: "test-results/boss-encounter.png" });
 
   await page.mouse.up();

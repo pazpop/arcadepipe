@@ -1,7 +1,7 @@
 // Boss : arme mécanique massive occupant le tiers droit de l'écran, avec
 // 4 à 6 points faibles clignotants (jaunes, puis orange et rouges sous les dégâts). Chaque point détruit accélère
-// et densifie les patterns de tir restants (phases). Victoire quand tous
-// les points faibles sont détruits.
+// et densifie les patterns de tir restants (phases). Invulnérable pendant
+// son entrée à l'écran. Victoire quand tous les points faibles sont détruits.
 import { RES_W, RES_H, BOSS, DIFFICULTY, PALETTE, bulletSpeedFactor } from "./config.js";
 import { buildSprites } from "./assets.js";
 import { patternFan, patternSpiralStep, patternRing } from "./patterns.js";
@@ -66,7 +66,7 @@ export function spawnBoss(waveNumber) {
     spiralAngle: 0,
     sizeScale,
     hueShift: Math.random() * 360,
-    fireTimer: 0.6, // délai avant le 1er tir, une fois arrivé (boss.arrived)
+    fireTimer: 0.3, // délai avant le 1er tir, une fois arrivé (boss.arrived)
     entryDone: false,
     weakPoints: points,
     victory: false,
@@ -94,8 +94,9 @@ export function updateBoss(boss, dt, projectiles, target) {
   }
 
   if (!boss.arrived) {
-    boss.x += (boss.targetX - boss.x) * Math.min(1, dt * 1.5);
-    if (Math.abs(boss.x - boss.targetX) < 1) boss.arrived = true;
+    // Entrée en ~1,5 s (approche exponentielle).
+    boss.x += (boss.targetX - boss.x) * Math.min(1, dt * 3);
+    if (Math.abs(boss.x - boss.targetX) < 2) boss.arrived = true;
     return;
   }
 
@@ -127,6 +128,8 @@ export function updateBoss(boss, dt, projectiles, target) {
 // true = point détruit (l'appelant doit vérifier la victoire), "hit" = touché
 // mais survit, false = aucun point touché.
 export function hitBossWeakPoint(boss, px, py, radius, particlePool, damage = 1) {
+  // Invulnérable pendant l'entrée : sinon détruit avant même son premier tir.
+  if (!boss.arrived) return false;
   for (const p of boss.weakPoints) {
     if (p.destroyed) continue;
     const wx = boss.x + p.ox;

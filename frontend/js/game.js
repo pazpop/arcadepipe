@@ -225,7 +225,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     get inBonusLevel() {
       return g.bonusLevel !== null;
     },
-    // Bonus actif, bouclier et bonus au sol : lus par la suite e2e (e2e/tests/helpers.js).
+    // Bonus actif, bouclier, bonus au sol, boss et ses tirs : lus par la suite e2e (e2e/tests/helpers.js).
     get buffType() {
       return player.buff ? player.buff.type : null;
     },
@@ -234,6 +234,16 @@ export function createGame({ input, audio, music, nameInputEl }) {
     },
     get powerupsOnScreen() {
       return powerups.items.filter((p) => p.active).map((p) => ({ x: p.x, y: p.y }));
+    },
+    get bossState() {
+      if (!g.boss) return null;
+      const b = g.boss;
+      const weakPoints = b.weakPoints.filter((p) => !p.destroyed).map((p) => ({ x: b.x + p.ox, y: b.y + p.oy }));
+      return { arrived: b.arrived, weakPoints };
+    },
+    get bossBulletsOnScreen() {
+      const bossColors = [PALETTE.bulletBossDirect, PALETTE.bulletBossCircular];
+      return projectiles.enemy.items.filter((b) => b.active && bossColors.includes(b.colorOverride)).length;
     },
     // Résumé de la partie qui vient de se terminer — seule source pour la
     // carte de partage (main.js/shareCard.js), pas de champs dupliqués ailleurs.

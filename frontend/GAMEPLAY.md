@@ -62,6 +62,7 @@ Comment les couleurs et les formes sont décidées et générées.
 ## Boss
 
 - [x] Le combat de boss se joue sur plusieurs "points faibles" à détruire un par un (pas une simple jauge à vider) — une barre de vie globale (rouge, distincte du jaune/or de sa coque) reste affichée en plus, pleine largeur et fixe tout en bas de l'écran (convention classique de combat de boss), pour suivre la progression globale du regard sans avoir à la chercher près du boss.
+- [x] Le boss est invulnérable pendant sa courte entrée à l'écran (~1,5 s) et tire presque aussitôt arrivé : impossible de le détruire avant qu'il ait commencé à tirer.
 - [x] Les tirs du boss deviennent plus nombreux et plus rapides à mesure que ses points faibles sont détruits — le combat monte en intensité progressivement.
 - [x] Le tout premier combat de boss rencontré est volontairement plus facile (moins de vie, tirs plus lents) que les suivants, le temps que le joueur en comprenne le fonctionnement.
 - [x] Vaincre un boss donne une vie supplémentaire et un gros bonus de score.

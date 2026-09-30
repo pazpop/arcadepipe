@@ -25,12 +25,12 @@ export class AudioEngine {
 
   setMuted(muted) {
     this.muted = muted;
-    if (this.master) this.master.gain.setTargetAtTime(muted ? 0 : this.masterVolume, this.ctx.currentTime, 0.01);
+    this.master.gain.setTargetAtTime(muted ? 0 : this.masterVolume, this.ctx.currentTime, 0.01);
   }
 
   setMasterVolume(v) {
     this.masterVolume = Math.max(0, Math.min(1, v));
-    if (this.master && !this.muted) this.master.gain.setTargetAtTime(this.masterVolume, this.ctx.currentTime, 0.01);
+    if (!this.muted) this.master.gain.setTargetAtTime(this.masterVolume, this.ctx.currentTime, 0.01);
     saveItem(STORAGE_KEYS.sfxVolume, this.masterVolume);
   }
 
@@ -68,7 +68,6 @@ export class AudioEngine {
   }
 
   _tone({ type = "square", startFreq, endFreq, duration = 0.1, gain = 0.15 }) {
-    if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const osc = this.ctx.createOscillator();
     const g = this._envGain(duration, gain);
@@ -103,7 +102,6 @@ export class AudioEngine {
   // Explosion : bruit blanc filtré passe-bas + glissement de fréquence de
   // coupure, enveloppe courte (Attack 0, Decay ~150ms, pas de Sustain).
   playExplosion() {
-    if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const duration = 0.3;
     const filter = this._noiseBurst(duration, 200, 20);
@@ -121,7 +119,6 @@ export class AudioEngine {
   // Transition "saut spatial" : glissement montant sur 2s avec légère
   // distorsion, synchronisé avec l'accélération visuelle (states/playing.js).
   playWarpTransition() {
-    if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const duration = 2;
     const osc = this.ctx.createOscillator();
@@ -150,7 +147,6 @@ export class AudioEngine {
   // le poids. L'écran tremble déjà fort (triggerShake dans states/playing.js), le son
   // doit suivre sinon l'effet paraît muet malgré l'écran qui vibre.
   playNovaBlast() {
-    if (!this.ctx) return;
     const now = this.ctx.currentTime;
     const duration = 0.6;
     const filter = this._noiseBurst(duration, 500, 20);
@@ -183,7 +179,6 @@ export class AudioEngine {
   // bas) — le mélange donne un "poids" que ni l'un ni l'autre seul ne
   // rendrait, pour bien se distinguer du "pew" aigu du tir normal.
   playShotgunBlast() {
-    if (!this.ctx) return;
     const now = this.ctx.currentTime;
 
     const duration = 0.15;
@@ -237,7 +232,6 @@ export class AudioEngine {
   // à partir de `ctx.currentTime` au moment de l'appel, ce qui les ferait
   // toutes finir avant que les oscillateurs, eux décalés dans le temps, ne sonnent.
   playKonami() {
-    if (!this.ctx) return;
     const now = this.ctx.currentTime;
     // start/duration en secondes depuis "now".
     const notes = [
@@ -268,7 +262,6 @@ export class AudioEngine {
 
   // Ramassage de bonus : deux notes montantes, timbre franc et positif, distinct des tirs/impacts.
   playPowerup() {
-    if (!this.ctx) return;
     const now = this.ctx.currentTime;
     [520, 780].forEach((freq, i) => {
       const start = now + i * 0.06;

@@ -415,9 +415,8 @@ export function update(g, engine, dt) {
   }
 
   // Vagues / transition "saut spatial" / cycle du niveau bonus — voir
-  // states/waves.js. true = déclenchement d'un niveau bonus ce frame, le
-  // reste de cette frame (jusqu'à updateGraze inclus) est sauté, comme le
-  // faisait le `return` original de ce bloc avant son extraction.
+  // states/waves.js. true = déclenchement d'un niveau bonus ce frame : le
+  // reste de cette frame (jusqu'à updateGraze inclus) est sauté.
   if (updateWaveTransition(g, engine, dt)) return;
 
   updateStarfield(starfield, dt, g.warp);

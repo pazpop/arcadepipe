@@ -44,7 +44,7 @@ const game = createGame({ input, audio, music, nameInputEl });
 // Exports pour la suite e2e (e2e/) : un test Playwright peut faire
 // `await import("/js/main.js")` et retrouver ces mêmes instances (modules ES
 // mis en cache par URL). Rien sur `window`, pas de trace en prod.
-export { music, audio };
+export { music, audio, game };
 
 // Bannière RGPD : charge Google Analytics seulement après consentement.
 initConsent();
@@ -163,7 +163,7 @@ if (helpBtn) {
 // --- Bouton plein écran : bascule sur #game-container (pas juste le canvas,
 // pour garder les boutons tactiles superposés accessibles) — n'enlève PAS
 // les bandes noires en paysage mobile (le canvas reste contraint au ratio
-// 16:9 par resizeCanvas, voir ROADMAP.md Session 4), juste la barre
+// 16:9 par resizeCanvas), juste la barre
 // d'adresse du navigateur. Absent sur les navigateurs/contextes qui ne
 // supportent pas l'API (ex: iOS Safari sur iPhone) — bouton alors masqué
 // plutôt que de rester visible pour ne rien faire au clic.
@@ -276,8 +276,10 @@ window.addEventListener("keydown", (e) => {
   }
 });
 
-// --- Mute (M) et bascule CRT (C) ---
+// --- Mute (M) et bascule CRT (C) — jamais pendant la saisie du pseudo, où
+// ces lettres sont du texte. ---
 window.addEventListener("keydown", (e) => {
+  if (game.mode === game.MODE.NAME_ENTRY) return;
   if (e.code === "KeyM") {
     const muted = music.toggleMuted();
     audio.setMuted(muted);
@@ -319,9 +321,8 @@ window.addEventListener("keydown", (e) => {
 // --- Pause auto quand l'onglet/app passe en arrière-plan (mobile : ne pas
 // perdre de vies pendant l'absence) + reprise de l'AudioContext au retour.
 // Certains navigateurs suspendent le contexte audio après un moment en
-// arrière-plan (économie d'énergie) sans jamais le reprendre eux-mêmes —
-// sans ce resume() explicite, revenir sur l'onglet laissait la musique
-// silencieuse en permanence tant qu'aucun contrôle du panneau n'était touché.
+// arrière-plan (économie d'énergie) sans jamais le reprendre eux-mêmes : sans
+// ce resume() explicite, la musique resterait muette au retour sur l'onglet.
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) {
     game.pause();
@@ -330,32 +331,6 @@ document.addEventListener("visibilitychange", () => {
   }
 });
 
-// --- Filet de sécurité supplémentaire : détection de suspension de l'AudioContext.
-// Le resume() sur visibilitychange (ci-dessus) ne couvre que le cas "onglet
-// caché puis revisible" — certains navigateurs/réglages d'économie d'énergie
-// suspendent le contexte après un moment d'inactivité audio perçue MÊME
-// onglet actif au premier plan, sans qu'aucun événement ne le signale. Coût
-// négligeable (une lecture de propriété par frame) pour ne plus dépendre
-// d'un déclencheur précis.
-//
-// Ne PAS appeler resume() ici : depuis la boucle d'animation, ce n'est
-// jamais un vrai geste utilisateur, donc ça échoue systématiquement (le
-// navigateur le refuse) — appeler resume() en boucle ici ne faisait que
-// spammer la console à chaque frame sans jamais réussir. La vraie reprise
-// se fait via les écouteurs pointerdown/keydown permanents ci-dessus ; ici
-// on se contente de logguer UNE FOIS par épisode de suspension (`warned`
-// évite de reloguer tant que ça reste suspendu).
-let warnedSuspended = false;
-function watchAudioContext() {
-  const suspended = audio.ctx.state === "suspended" && music.started;
-  if (suspended && !warnedSuspended) {
-    warnedSuspended = true;
-    console.warn("[audio] AudioContext suspendu de façon inattendue (onglet actif) — un prochain clic/touche le relancera.");
-  } else if (!suspended) {
-    warnedSuspended = false;
-  }
-}
-
 // --- Boucle principale ---
 let lastTime = 0;
 function loop(timestamp) {
@@ -363,7 +338,6 @@ function loop(timestamp) {
   lastTime = timestamp;
   game.update(realDt * gameSpeed);
   game.draw(ctx);
-  watchAudioContext();
   if (novaBtn) {
     novaBtn.classList.toggle("hidden", !(game.mode === game.MODE.PLAYING && game.novaStock > 0 && !game.inBonusLevel));
   }

@@ -28,6 +28,7 @@ const HELP_PAGES = [
     sections: [
       { heading: "BOSS", detail: "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie" },
       { heading: "MUSIQUE", detail: "Playlist aléatoire, réglable en bas à gauche" },
+      { heading: "RACCOURCIS CLAVIER", detail: "Échap/P : pause · Espace : NOVA · M : son · C : filtre rétro" },
     ],
   },
   {

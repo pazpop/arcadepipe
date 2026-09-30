@@ -9,7 +9,7 @@ updates:
     schedule:
       interval: "weekly"
 
-  # Actions GitHub, maintenant épinglées par SHA (voir deploy.yml) —
+  # Actions GitHub, épinglées par SHA (voir deploy.yml) —
   # Dependabot sait lire un SHA + commentaire "# vX" et proposer une PR de
   # bump vers le nouveau SHA correspondant à une nouvelle version, donc le
   # pin par SHA n'empêche pas les mises à jour, juste l'exécution silencieuse
@@ -19,7 +19,7 @@ updates:
     schedule:
       interval: "weekly"
 
-  # Images de base des Dockerfiles, maintenant épinglées par digest (voir
+  # Images de base des Dockerfiles, épinglées par digest (voir
   # backend/Dockerfile, frontend/Dockerfile) — Dependabot ouvre une PR de
   # bump de digest à chaque nouvelle publication du tag suivi (ex: nouveau
   # patch de sécurité Debian pour python:3.11-slim), sans jamais changer le

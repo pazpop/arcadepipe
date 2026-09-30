@@ -40,9 +40,9 @@ function drawBackdrop(ctx) {
 // typeNumber=0 = taille auto (la plus petite qui contient l'URL), niveau de
 // correction 'M' = compromis standard entre taille et tolérance aux dégâts.
 function drawQrCode(ctx, x, y, size) {
-  // Isolé de l'état du canvas : le dernier text() dessiné avant (l'URL, avec
-  // lueur dorée) laisse shadowBlur/shadowColor actifs, ce qui teintait
-  // chaque module du QR (blanc -> crème, noir -> olive) et réduisait son contraste.
+  // Isolé de l'état du canvas : le text() précédent (l'URL, avec lueur) laisse
+  // shadowBlur/shadowColor actifs, qui teinteraient les modules du QR et
+  // réduiraient son contraste.
   ctx.save();
   ctx.shadowBlur = 0;
   ctx.shadowColor = "transparent";
@@ -82,8 +82,7 @@ function drawShareCard(ctx, stats) {
   text(ctx, "SCORE", SIZE / 2, 340, { size: 22, align: "center", color: PALETTE.hud });
   text(ctx, String(stats.score), SIZE / 2, 420, { size: 90, align: "center", color: PALETTE.gold, glow: PALETTE.gold });
 
-  // Grille 2x2 (plutôt qu'une seule rangée de 3) depuis l'ajout de la
-  // distance parcourue — 4 stats ne tenaient plus proprement sur une ligne.
+  // Grille 2x2 : 4 stats ne tiennent pas proprement sur une ligne.
   const colGap = SIZE * 0.28;
   const rows = [
     [

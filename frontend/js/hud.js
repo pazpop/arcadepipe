@@ -15,13 +15,10 @@ const BONUS_SHORT_EFFECT = {
   shield: "absorbe des coups",
 };
 
-// Légende des ennemis (menu Aide, colonne droite) — boss volontairement
-// exclu (sa propre section "BOSS" plus haut suffit, ses patterns changent en
-// combat, et il n'a plus vraiment de "PV" au sens d'un ennemi normal). Sprite
-// réel (assets.js) + même couleur que enemyGlowColor (enemies.js), pas une
-// réinterprétation. PV recopiés à la main depuis TYPE_STATS/GUNNER_HP_BONUS
-// (enemies.js) — pas de pastilles en jeu depuis leur retrait, donc c'est ici
-// leur seule indication visible pour le joueur.
+// Légende des ennemis (écran Aide) — boss exclu (il a sa propre section).
+// Sprite réel (assets.js) + même couleur que enemyGlowColor (enemies.js). PV
+// recopiés à la main depuis TYPE_STATS/GUNNER_HP_BONUS (enemies.js) : c'est la
+// seule indication de PV visible par le joueur.
 const ENEMY_LEGEND = [
   { spriteKey: "enemyNormal", color: PALETTE.enemyNormal, text: "FACILE — 1 PV, pas de tir, ligne droite" },
   { spriteKey: "enemyGunner", color: PALETTE.enemyGunner, text: "MOYEN — 2 PV, tire visé (vague 5+)" },
@@ -146,11 +143,9 @@ export function drawNovaGauge(ctx, stock, max, progress) {
   }
 }
 
-// Barre de vie du boss : pleine largeur, fixe tout en bas de l'écran plutôt
-// qu'accrochée à sa position (petite, se déplaçait avec lui) — convention
-// classique de combat de boss, plus facile à surveiller du coin de l'œil
-// pendant qu'on esquive. Rouge — distinct du jaune/or de sa coque et de ses
-// points faibles (PALETTE.boss/bossWeakOn), jamais réutilisé ailleurs.
+// Barre de vie du boss : pleine largeur, fixe en bas de l'écran (convention
+// classique, facile à surveiller du coin de l'œil en esquivant). Rouge
+// (PALETTE.danger), distinct du jaune/or de sa coque et de ses points faibles.
 export function drawBossHealthBar(ctx, boss) {
   if (!boss || boss.victory) return;
   const frac = bossHealthFraction(boss);
@@ -499,13 +494,10 @@ function wrapLines(ctx, str, maxWidth) {
   return lines;
 }
 
-// Contenu en une seule colonne centrée — plus lisible qu'un découpage en
-// deux colonnes (texte plus grand, moins de coupures de ligne), réparti sur
-// plusieurs pages (page/pageCount, voir states/help.js) pour ne jamais
-// surcharger un seul écran. Chaque page ne contient qu'un seul type de
-// contenu : soit des sections de texte (content.sections), soit une légende
-// (content.showBonusLegend OU content.showEnemyLegend), jamais combinés —
-// c'est justement ce qui manquait de place en deux colonnes.
+// Contenu en une seule colonne centrée, réparti sur plusieurs pages
+// (page/pageCount, voir states/help.js). Chaque page ne contient qu'un seul
+// type de contenu : des sections de texte (content.sections) ou une légende
+// (content.showBonusLegend OU content.showEnemyLegend), jamais combinés.
 export function drawInfoScreen(ctx, content, page = 0, pageCount = 1) {
   ctx.save();
   // Pas de fond opaque ici : le champ d'étoiles (dessiné par game.js avant
@@ -546,8 +538,7 @@ export function drawInfoScreen(ctx, content, page = 0, pageCount = 1) {
   // Légende bonus/ennemis : icônes identiques à ce qui apparaît en jeu
   // (drawPowerupIcon partagé avec powerups.js ; sprite réel d'assets.js pour
   // les ennemis) — le joueur associe l'apparence à l'effet sans avoir à le
-  // vérifier en jeu. Une liste empilée (plus jamais deux légendes côte à
-  // côte) depuis le passage en colonne unique.
+  // vérifier en jeu.
   if (content.showBonusLegend) {
     const rowH = 22;
     Object.keys(POWERUP.types).forEach((type, i) => {

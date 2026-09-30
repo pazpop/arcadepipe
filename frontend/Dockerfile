@@ -1,8 +1,6 @@
-# Pas de build step (vanilla JS) — juste servir les fichiers statiques.
-# On utilise Caddy ici aussi (pas nginx) pour rester sur un seul type
-# d'image entre ce conteneur et le reverse proxy de l'étape 4. Caddyfile
-# personnalisé (compression) plutôt que celui par défaut de l'image, vu la
-# taille de lib/libopenmpt.worklet.js.
+# Pas de build step (vanilla JS) — juste servir les fichiers statiques avec
+# Caddy. Caddyfile personnalisé (compression, route /api/*) plutôt que celui
+# par défaut de l'image, vu la taille de lib/libopenmpt.worklet.js.
 # Épinglé par digest (pas juste par tag) : "2-alpine" est un tag flottant —
 # même raisonnement que backend/Dockerfile. Dependabot (écosystème "docker")
 # ouvre une PR à chaque nouveau digest disponible pour ce tag.
@@ -30,8 +28,7 @@ COPY music/ /usr/share/caddy/music/
 # si Caddy est un jour compromis, l'attaquant hérite des droits de cet
 # utilisateur, pas de root dans le conteneur. /config et /data (autosave de
 # config, cache Caddy) sont montés en tmpfs par docker-compose.yml, pas
-# besoin de les chown ici — Caddy ne s'en sert pas pour de vrais certificats
-# (Traefik termine le TLS, ce Caddyfile ne sert que du HTTP statique).
+# besoin de les chown ici — Caddy ne sert que du HTTP, sans certificat.
 RUN adduser -D -u 1000 caddyuser \
     && chown -R caddyuser:caddyuser /etc/caddy /usr/share/caddy
 USER caddyuser

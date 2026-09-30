@@ -2,7 +2,7 @@
 // galaxies/trous noirs occasionnels.
 import { RES_W, RES_H, PALETTE } from "./config.js";
 
-// Couche rapide/opaque (alpha 0.9) retirée : gênait la lecture des tirs en combat.
+// Deux couches discrètes seulement : une couche rapide et opaque gênerait la lecture des tirs.
 const LAYERS = [
   { count: 40, speedMin: 8, speedMax: 20, size: 1, alpha: 0.35 },
   { count: 35, speedMin: 25, speedMax: 55, size: 1, alpha: 0.55 },
@@ -69,9 +69,8 @@ function makeCelestial(allowBlackhole) {
   };
 }
 
-// Court (était 8-20s) : le fond restait trop souvent totalement vide entre
-// deux corps célestes — quelques secondes suffisent à ne pas donner
-// l'impression qu'ils s'enchaînent sans respiration.
+// Délai court entre deux corps célestes : le fond n'est jamais vide longtemps,
+// sans qu'ils s'enchaînent sans respiration.
 function nextCelestialDelay() {
   return 2 + Math.random() * 3;
 }

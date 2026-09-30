@@ -30,13 +30,6 @@ def init_db():
                 created_at TEXT NOT NULL DEFAULT (datetime('now'))
             )
         """)
-        # Migration pour une DB existante créée avant l'ajout de "kills" :
-        # CREATE TABLE IF NOT EXISTS ne touche pas une table déjà là, et
-        # SQLite n'a pas de "ADD COLUMN IF NOT EXISTS" — on vérifie donc
-        # nous-mêmes avant d'ajouter la colonne.
-        cols = {row["name"] for row in conn.execute("PRAGMA table_info(scores)").fetchall()}
-        if "kills" not in cols:
-            conn.execute("ALTER TABLE scores ADD COLUMN kills INTEGER NOT NULL DEFAULT 0")
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_scores_score ON scores(score DESC)"
         )
@@ -63,9 +56,8 @@ def get_connection():
     # fait attendre jusqu'à 5s que le verrou se libère avant d'abandonner.
     # WAL (voir init_db) réduit déjà beaucoup la contention (les lectures ne
     # bloquent jamais derrière une écriture), mais deux ÉCRITURES simultanées
-    # (deux scores soumis à la même milliseconde) restent possibles sur un
-    # jeu multijoueur en ligne comme celui-ci — sans ce PRAGMA, l'une des deux
-    # échouerait sèchement plutôt que d'attendre son tour.
+    # (deux joueurs qui soumettent un score au même instant) restent possibles
+    # — sans ce PRAGMA, l'une des deux échouerait au lieu d'attendre son tour.
     conn.execute("PRAGMA busy_timeout = 5000")
     try:
         yield conn

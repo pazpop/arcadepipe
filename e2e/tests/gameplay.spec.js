@@ -137,23 +137,28 @@ test("nom aléatoire pré-rempli + bouton VALIDER tactile (sans clavier)", async
   // RIGHT_ZONE_BOUND/BOSS_ZONE_MARGIN dans boss.js) -> contact garanti.
   const ram = await toPage(360, 135);
   await page.mouse.move(ram.x, ram.y);
-  await page.waitForTimeout(5000);
-  // Marge supplémentaire : la séquence de mort (ralenti cinématique) dure
-  // ~1.6s en temps réel avant l'écran GAME OVER (voir g.deathTimer dans
-  // game.js) — sans ça, le tap "OK" pourrait tomber pendant que la partie
-  // tourne encore, sans aucun effet.
-  await page.waitForTimeout(2000);
+  // Attend l'écran GAME OVER (après le ralenti de mort) plutôt qu'un délai
+  // fixe : un tap "OK" pendant le ralenti serait ignoré.
+  const mode = () => page.evaluate(async () => (await import("/js/main.js")).game.mode);
+  await expect.poll(mode, { timeout: 15000 }).toBe("game_over");
   await canvas.screenshot({ path: "test-results/name-entry-game-over.png" });
 
   // Écran GAME OVER intermédiaire (voir drawDeathScreen) -> "OK" déclenche
-  // handleGameOver() et l'entrée en saisie du nom.
+  // triggerGameOver() (states/endOfRun.js) et l'entrée en saisie du nom.
   await clickLogical(240, 168);
-  await page.waitForTimeout(400);
+  await expect.poll(mode).toBe("name_entry");
   await canvas.screenshot({ path: "test-results/name-entry-prefilled.png" });
+
+  // M et C sont du texte pendant la saisie du pseudo : ni son coupé, ni CRT basculé.
+  const crtAvant = await page.locator("#crt-overlay").getAttribute("class");
+  await page.keyboard.press("KeyM");
+  await page.keyboard.press("KeyC");
+  expect(await page.evaluate(async () => (await import("/js/main.js")).music.muted)).toBe(false);
+  expect(await page.locator("#crt-overlay").getAttribute("class")).toBe(crtAvant);
 
   // Valide au tap uniquement (bouton VALIDER), jamais via le clavier caché.
   await clickLogical(240, 183.6);
-  await page.waitForTimeout(300);
+  await expect.poll(mode).toBe("leaderboard");
   await canvas.screenshot({ path: "test-results/name-entry-validated.png" });
 
   // ERR_CONNECTION_REFUSED attendu : ce test est le premier à atteindre le
@@ -161,7 +166,7 @@ test("nom aléatoire pré-rempli + bouton VALIDER tactile (sans clavier)", async
   // suite e2e ne lance jamais de backend (voir webServer dans
   // playwright.config.js, uniquement le serveur statique du frontend), par
   // choix. Le code gère déjà ça proprement (try/catch, voir
-  // handleGameOver/confirmNameEntry dans game.js) : c'est un message
+  // triggerGameOver/confirmNameEntry dans states/endOfRun.js) : c'est un message
   // console de ressource réseau, pas une vraie erreur JS.
   const realErrors = errors.filter((e) => !e.includes("ERR_CONNECTION_REFUSED"));
   expect(realErrors).toEqual([]);

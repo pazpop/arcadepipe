@@ -3,9 +3,7 @@
 Séparé de test_api.py exprès : sa fixture `client` désactive délibérément le
 limiter (`limiter.enabled = False`) pour ne pas polluer ses propres tests
 avec des 429 sans rapport avec ce qu'ils vérifient. Ici, au contraire,
-l'objectif est justement de vérifier que la limite s'applique pour de vrai —
-jusqu'ici jamais couvert, seule différence entre "implémenté" et "vérifié"
-pour ce garde-fou.
+l'objectif est justement de vérifier que la limite s'applique pour de vrai.
 """
 import pytest
 from fastapi.testclient import TestClient

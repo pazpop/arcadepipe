@@ -15,11 +15,12 @@ C'est le seul fichier de déploiement Docker de ce repo. Celui qui ajoute Traefi
 
 ## CI/CD
 
-`.github/workflows/deploy.yml` : sur push vers `main`, lint backend (`ruff`), audit des dépendances (`pip-audit`), lint frontend (`eslint`), puis build et push des images vers GHCR (`:latest` et `:<sha>`, public).
+`.github/workflows/deploy.yml` : sur push vers `main`, lint backend (`ruff`), audit des dépendances (`pip-audit`), lint frontend (`eslint`), tests backend (`pytest`) et frontend (`node --test`), puis build et push des images vers GHCR (`:latest` et `:<sha>`, public).
 
 - Actions GitHub épinglées par SHA de commit, images de base épinglées par digest : un tag peut être redéplacé, un SHA ou un digest non.
 - [Dependabot](../.github/dependabot.yml) ouvre une PR à chaque mise à jour (`pip`, `github-actions`, `docker`).
-- **Choix assumé : les tests (`pytest`, `node --test`, Playwright) ne tournent pas en CI**, seulement le lint et l'audit. Ils sont lancés à la main avant de pousser. Risque : un push qui casse un test est quand même buildé et déployé. Acceptable pour l'instant (un seul développeur, suite e2e d'environ 2 minutes) ; à reconsidérer si le rythme ou le nombre de contributeurs augmente.
+- Un test en échec bloque le build, donc le déploiement.
+- **Choix assumé : les tests e2e (Playwright, ~2 min) ne tournent pas en CI**, ils sont lancés à la main avant de pousser. À reconsidérer si le rythme ou le nombre de contributeurs augmente.
 
 Ce repo ne connaît ni VPS ni serveur cible. L'instance `arcadepipe.pazpop.net` est déployée par [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner), notifié par un événement `repository_dispatch` une fois les images publiées. Un fork n'a pas ce déclenchement (secret absent) et n'en a pas besoin : voir la section Docker ci-dessus.
 

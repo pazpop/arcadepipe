@@ -34,4 +34,4 @@ await page.evaluate(async () => {
 });
 ```
 
-Marche pour tout module déjà chargé : `config.js` (constantes), `main.js` (instances `music`/`audio`). Voir `tests/helpers.js` : `skipHints()` masque aussi le bandeau de consentement, qui recouvrirait les boutons du bas de l'écran.
+Marche pour tout module déjà chargé : `config.js` (constantes), `main.js` (instances `music`/`audio`/`game`). Voir `tests/helpers.js` : `skipHints()` masque aussi le bandeau de consentement, qui recouvrirait les boutons du bas de l'écran.

@@ -65,8 +65,8 @@ export function updatePlayer(player, input, projectiles, dt, onShotFired, canFir
   }
   const buffDef = player.buff ? POWERUP.types[player.buff.type] : null;
 
-  // Tir manuel : clic/doigt maintenu (input.fireHeld), ou input.autoFire
-  // pour l'ancien comportement auto. Cadence plafonnée par fireCooldown,
+  // Tir manuel : clic/doigt maintenu (input.fireHeld), ou tir automatique
+  // (input.autoFire, case à cocher du panneau). Cadence plafonnée par fireCooldown,
   // modulée par le bonus actif. canFire=false (saut spatial, g.clearingScreen
   // dans game.js) gèle le minuteur — sinon RAFALE (cooldown ~44ms) accumule
   // des dizaines de tirs pendant l'attente, saturant l'audio à la reprise.

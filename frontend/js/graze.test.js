@@ -22,14 +22,8 @@ test("dès la vague du 2e boss : deux charges NOVA max", () => {
   assert.equal(novaMaxForWave(DIFFICULTY.bossWaveEvery * 2 + 3), 2);
 });
 
-// Fige la garde ajoutée après une trouvaille de revue d'architecture : le
-// niveau bonus (et le saut spatial) mettent g.clearingScreen à true et
-// vident les pools ennemis/tirs — updateGraze() n'avait jusqu'ici aucune
-// vérification de son cru, protégé seulement par cette coïncidence de
-// données (rien à grazer une fois les pools vides). Ce test grazerait bel
-// et bien sans la garde (voir le test de contrôle juste en dessous), pour
-// ne plus dépendre uniquement de cette coïncidence si un futur hasard du
-// niveau bonus réintroduit quelque chose à grazer.
+// Garde de updateGraze() pendant g.clearingScreen (niveau bonus, saut
+// spatial) : sans elle, ce scénario graze bien (voir le test de contrôle).
 function makeGrazeFixture() {
   const g = { grazeChain: 0, maxGrazeChain: 0, score: 0, novaProgress: 0, novaStock: 0, novaMax: 1, clearingScreen: false };
   const player = { alive: true, invuln: 0, x: 0, y: 0 };

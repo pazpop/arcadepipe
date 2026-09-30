@@ -1,10 +1,8 @@
 # Roadmap
 
-Organisée par session de travail suggérée (issue d'une discussion Lumo/Claude/arbitrage humain le 2026-09-18) plutôt qu'en vrac — chaque session est indépendante, à reprendre quand il y a du temps dédié.
+Organisée par session de travail, chacune indépendante, à reprendre quand il y a du temps dédié. Ce qui est fait est dans le [CHANGELOG](CHANGELOG.md).
 
-Sessions 1 (stabilisation de `states/playing.js`) et 2 (distance parcourue, QR code) : **terminées**, détail dans le [CHANGELOG](CHANGELOG.md) (2.62, 2.63).
-
-## Bugs signalés (2026-09-21)
+## Bugs signalés
 
 - [ ] **Bug** : les vaisseaux ne devraient pas pouvoir tirer derrière eux.
 - [ ] **Bug** : les boss mettent plusieurs secondes avant de commencer à tirer.
@@ -18,16 +16,16 @@ Sessions 1 (stabilisation de `states/playing.js`) et 2 (distance parcourue, QR c
 
 ## Session 4 — mode paysage mobile (pas pressé)
 
-Signalé le 2026-09-18 : sur téléphone en paysage, de grosses bandes noires apparaissent à gauche/droite de l'aire de jeu. Cause : la résolution interne est fixée en 16:9 (480×270, `RES_W`/`RES_H` dans `config.js`), alors que la plupart des écrans de téléphone en paysage sont plus larges (proche de 20:9/21:9) — `resizeCanvas()` (`main.js`) contraint donc la largeur affichée au ratio 16:9 plutôt que de remplir tout l'écran.
+Sur téléphone en paysage, de grosses bandes noires apparaissent à gauche/droite de l'aire de jeu. Cause : la résolution interne est fixée en 16:9 (480×270, `RES_W`/`RES_H` dans `config.js`), alors que la plupart des écrans de téléphone en paysage sont plus larges (proche de 20:9/21:9) — `resizeCanvas()` (`main.js`) contraint donc la largeur affichée au ratio 16:9 plutôt que de remplir tout l'écran.
 
 - Note : le bouton **Plein écran** (2.74) retire la barre d'adresse mais **pas** ces bandes noires — le ratio 16:9 reste imposé par `resizeCanvas()`.
-- [ ] **Élargir la résolution interne** (ou une autre approche à définir) pour réduire les bandes — changement d'architecture, pas un simple ajustement : touche le placement du HUD, les zones d'apparition/tir des ennemis (`LEFT_BOUND`/`FIRE_MIN_X` dans `enemies.js`, tout juste ajoutées), et nécessite une vraie vérification visuelle avant/après (pas juste les tests automatisés). À traiter dans une session dédiée avec le temps de bien tester, pas en aparté d'un autre correctif.
+- [ ] **Élargir la résolution interne** (ou une autre approche à définir) pour réduire les bandes — changement d'architecture, pas un simple ajustement : touche le placement du HUD, les zones d'apparition/tir des ennemis (`LEFT_BOUND`/`FIRE_MIN_X` dans `enemies.js`), et nécessite une vraie vérification visuelle avant/après (pas juste les tests automatisés). À traiter dans une session dédiée avec le temps de bien tester, pas en aparté d'un autre correctif.
 
 ## Session 5 — polish (liste fermée, sans nouveau système de jeu)
 
-Contexte : ArcadePipe est stable et fonctionnel (Sessions 1-2 terminées, 2.76 déployée). Objectif : peaufiner l'existant (game feel, UX, boucle de rejouabilité) — **rien de nouveau côté systèmes de jeu**. Deux consignes : **liste fermée** (aucun ajout en cours de route ; une fois cochée, on déploie et on passe à la promotion) et **une valeur par défaut proposée pour chaque constante à tuner, notée « à ajuster au ressenti »**. Chaque item doit être vérifiable en jouant, avec une mesure objective.
+Objectif : peaufiner l'existant (game feel, UX, boucle de rejouabilité) — **rien de nouveau côté systèmes de jeu**. Deux consignes : **liste fermée** (aucun ajout en cours de route ; une fois cochée, on déploie et on passe à la promotion) et **une valeur par défaut proposée pour chaque constante à tuner, notée « à ajuster au ressenti »**. Chaque item doit être vérifiable en jouant, avec une mesure objective.
 
-État des lieux vérifié dans le code (2026-09-18) — plusieurs items partaient d'une hypothèse « à créer » alors que la base existe déjà :
+État des lieux dans le code (plusieurs items ont déjà une base) :
 
 | # | Item | Sévérité | Effort | Ce qui existe déjà / mesure | Valeur par défaut (à ajuster au ressenti) |
 |---|---|---|---|---|---|
@@ -55,23 +53,17 @@ Contexte : ArcadePipe est stable et fonctionnel (Sessions 1-2 terminées, 2.76 d
 - [ ] 9 — Messages de fin de partie variables
 - [ ] 10 — Partage réel testé
 
-## À faire à la prochaine session (reporté faute de tokens)
+## À faire
 
-La passe de nettoyage (docs en 3 couches, `docs/`, `storage.js`, exports fantômes, commentaires raccourcis, `frontend/.dockerignore`) a été faite **sans toucher au comportement du jeu** et sans relancer les batteries de tests complètes (seuls un lint et un test de fumée ont été lancés). Tout ce qui suit est explicitement repoussé, avec le contexte pour reprendre sans rien redemander.
-
-**Plan de la prochaine session, dans l'ordre** : 1. tests complets ci-dessous (validation finale) · 2. vérification en production si besoin · 3. nettoyage cosmétique (GAMEPLAY.md, tableau de la Session 5, `player.js:69`) · 4. nettoyage du repo d'infra : **fait** (2026-09-18) · 5. promotion.
-
-- [ ] **Valider la passe de nettoyage** : `cd e2e && npx playwright test` (23 e2e), `cd frontend/js && node --test` (18 tests), `cd frontend && npm run lint`, sur l'ensemble des changements. Vérifier aussi en production que `/js/graze.test.js`, `/js/package.json` et `/lib/PATCHES.md` répondent 404 (ils répondaient 200 avant le `.dockerignore`).
-- [ ] **Finaliser le nettoyage (faible coût, sans risque)** :
-  - `frontend/GAMEPLAY.md` : raccourcir les 2-3 puces les plus longues (> 100 mots : graze, NOVA, ennemis qui tirent) vers moins de 100 mots chacune.
+- [ ] Vérifier en production que `/js/graze.test.js`, `/js/package.json` et `/lib/PATCHES.md` répondent 404 (exclus de l'image par `frontend/.dockerignore`).
+- [ ] **Raccourcir la doc** :
+  - `frontend/GAMEPLAY.md` : les 2-3 puces les plus longues (> 100 mots : graze, NOVA, ennemis qui tirent) vers moins de 100 mots chacune.
   - **Tableau de la Session 5 de cette ROADMAP** (~900 mots) : viser ~400 mots, soit avec des cellules plus courtes, soit avec une section « Notes d'exécution » hors du tableau pour les justifications. Chaque item doit rester testable : garder sa sévérité, son effort et sa mesure objective.
-  - `frontend/js/player.js:69` : supprimer la mention historique « l'ancien comportement auto ».
 - [ ] **Test `music-end.spec.js` : instabilité non expliquée.** Il a échoué au moins deux fois avec « piste jamais démarrée » (attente de 15 s dépassée avant que la piste ne joue) avant de passer 4 fois de suite ; cause non trouvée (démarrage à froid du WASM ? serveur de test chargé ?). À faire : le relancer une dizaine de fois, **noter les échecs comme les succès**, puis stabiliser l'attente ou en trouver la cause.
 - [ ] **Prouver que `'unsafe-eval'` est requis** (côté CSP de l'infra, voir la Roadmap de `terraform-infra-pazpop-hetzner`) : c'est supposé, jamais testé. Tester la musique avec la CSP **sans** `'unsafe-eval'`, puis avec `'wasm-unsafe-eval'` seul, sur Chromium et Firefox, avant de conclure dans un sens ou dans l'autre.
-- [ ] **Précharger les 5 pistes (156 Ko) et simplifier `music.js`.** La cause des 429 (rate-limit Traefik sur le statique) a été retirée le 17/09, et la boucle de fin de piste est corrigée (6e round). Les retries (`_loadRetries`, backoff, `onError`, jeton `_loadToken`, `_loading`, ~60 lignes) ont été écrits pour ces pannes. Idée : charger les 5 `.xm` en mémoire au premier geste et appeler `player.play(buffer)` sans réseau. Garde-fous à adapter : `e2e/tests/music-retry.spec.js` et `music-end.spec.js`. Récit : [docs/audio-saga.md](docs/audio-saga.md).
+- [ ] **Précharger les 5 pistes (156 Ko) et simplifier `music.js`.** La cause des 429 (rate-limit Traefik sur le statique) est retirée et la boucle de fin de piste est corrigée (6e round). Les retries (`_loadRetries`, backoff, `onError`, jeton `_loadToken`, `_loading`, ~60 lignes) ont été écrits pour ces pannes. Idée : charger les 5 `.xm` en mémoire au premier geste et appeler `player.play(buffer)` sans réseau. Garde-fous à adapter : `e2e/tests/music-retry.spec.js` et `music-end.spec.js`. Récit : [docs/audio-saga.md](docs/audio-saga.md).
 - [ ] **Helper unique pour les conditions « combat suspendu ».** Prédicats dupliqués : `graze.js:49` (`!player.alive || invuln > 0 || waveBreak > 0 || dying || shipIntro || clearingScreen`) contre `states/playing.js:135, 425, 455` (`clearingScreen`, `bonusLevel`, `waveBreak`). Cette duplication est à l'origine du bug de la Session 1 (graze pendant le niveau bonus). Proposer `isCombatSuspended(g, player)` après avoir listé les différences volontaires entre sites ; les tests de `graze.test.js` couvrent déjà le cas.
-- [ ] **Vérifier avant de supprimer `watchAudioContext`** (`main.js`, ~30 lignes dont 15 de commentaire). Elle ne fait que logger une fois « AudioContext suspendu » ; la reprise réelle passe par les écouteurs `pointerdown`/`keydown` et `visibilitychange`. Avant de la retirer, confirmer qu'elle n'est pas le filet documenté de la reprise : onglet en arrière-plan 5 minutes, retour, la musique doit continuer.
-- [ ] **Refonte du câblage DOM de `main.js`** (~416 lignes, une quinzaine de sections sans lien entre elles) : sortir le panneau du bas gauche (musique, volumes, tir auto, vitesse, aide, plein écran, CRT) dans un module. Objectif : lisibilité pour un débutant, comportement inchangé. Tests à relancer : `menu-pause`, `gameplay`, `consent`.
+- [ ] **Refonte du câblage DOM de `main.js`** (~350 lignes, une quinzaine de sections sans lien entre elles) : sortir le panneau du bas gauche (musique, volumes, tir auto, vitesse, aide, plein écran, CRT) dans un module. Objectif : lisibilité pour un débutant, comportement inchangé. Tests à relancer : `menu-pause`, `gameplay`, `consent`.
 - [ ] **Features d'inspiration** (idées à évaluer, hors de la Session 5 qui reste une liste fermée) : manette via la Gamepad API (détection de connexion, analogique et croix, remappage — [SpeedLazer](https://github.com/speedlazer/speedlazer), [INNBC-STARFIGHTER](https://github.com/InnovativeBioresearch/INNBC-STARFIGHTER)) · interrupteurs de debug hitbox/FPS ([bullethell](https://github.com/selenebun/bullethell)) · démarrage à la vague N par paramètre d'URL ([galaga](https://github.com/civilian7/galaga), utile aux tests) · jeton de session serveur pour le score (le hachage côté client se contourne) · PWA installable hors ligne · leaderboard hebdomadaire · ralenti passif d'esquive (à étudier, inspiré du « slowdown » de bullethell).
 - [ ] **Décision Traefik ou Caddy**, à reposer quand un 2e jeu se précise. Aujourd'hui : Traefik + docker-socket-proxy + portail pour un seul jeu. Un Caddy en frontal (~15 lignes, TLS automatique, `request_body max_size` natif) remplacerait Traefik et le conteneur frontal ; on perdrait le rate-limit (plugin tiers), le portail auto-généré et le routage par labels. Conclusion de la revue : garder tant qu'un 2e jeu est prévu. Fichiers concernés : repo `terraform-infra-pazpop-hetzner`.
 
@@ -85,6 +77,5 @@ La passe de nettoyage (docs en 3 couches, `docs/`, `storage.js`, exports fantôm
 - [ ] **Tests e2e sur Firefox et WebKit** (Safari/iOS), pas seulement Chromium — ajouter deux projets dans `e2e/playwright.config.js`, voir quels tests passent (audio/AudioWorklet, plein écran absent sur iPhone). Le jeu vise le mobile, donc Safari compte. Pas urgent.
 - [ ] Autres améliorations **côté infra** (durcissement de la CSP avec `'wasm-unsafe-eval'`, copie distante et alertes des backups) : suivies dans la *Roadmap* du README de [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner), car ce sont ses fichiers qui sont concernés.
 
-- [ ] Précharger les 5 pistes musicales en mémoire au premier geste (~156 Ko au total) au lieu d'un `fetch` à chaque changement de piste — envisagé pendant la saga audio, **plus justifié** depuis le 6e round (la cause de la boucle de requêtes n'était pas le réseau). Choix d'architecture optionnel, à ne reconsidérer que si de nouveaux incidents réseau réapparaissent.
 - [ ] Score authentifié (jeton signé émis au début de la partie, exigé à la soumission) — pas urgent, le score non authentifié est un risque assumé (voir la section *Sécurité* du [README](README.md))
 - [ ] Scan de vulnérabilités des **images construites** ([Trivy](https://trivy.dev/), en CI juste après le build) — `pip-audit` couvre les dépendances Python déclarées, mais pas les paquets système de l'image finale (ex: libs Debian de `python:3.11-slim`)

@@ -19,8 +19,7 @@
 		root * /usr/share/caddy
 		# Sans ça, un simple F5 peut resservir une version périmée du jeu
 		# directement depuis le cache disque du navigateur, sans même
-		# vérifier auprès du serveur (heuristique de fraîcheur — aucun
-		# Cache-Control explicite n'était envoyé avant). "no-cache" ne veut
+		# vérifier auprès du serveur (heuristique de fraîcheur). "no-cache" ne veut
 		# PAS dire "ne pas mettre en cache" : ça force une revalidation
 		# (ETag/Last-Modified, déjà fournis par file_server) à chaque
 		# chargement — un fichier inchangé revient en 304 sans

@@ -1,7 +1,6 @@
 // Config minimale (eslint:recommended) — filet de sécurité, pas une
 // transformation du style existant. Symétrique de ruff côté backend
-// (voir backend/pyproject.toml), le frontend étant devenu le plus gros
-// morceau du repo sans aucune analyse statique jusqu'ici.
+// (voir backend/pyproject.toml).
 import js from "@eslint/js";
 
 export default [

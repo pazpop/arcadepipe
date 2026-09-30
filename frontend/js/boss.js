@@ -109,18 +109,18 @@ export function updateBoss(boss, dt, projectiles, target) {
     const firstBoss = isFirstBoss(boss.wave);
     const speed = BOSS.bulletSpeed * bulletSpeedFactor(boss.wave) * (firstBoss ? BOSS.firstBossSpeedMul : 1);
     const countMul = firstBoss ? BOSS.firstBossBulletCountMul : 1;
-    const alive = destroyedCount(boss);
-    if (alive % 3 === 0) {
+    const destroyed = destroyedCount(boss);
+    if (destroyed % 3 === 0) {
       // courbe légère : les bords de l'éventail s'ouvrent en "fleur", le centre reste droit.
-      patternFan(projectiles, boss.x - 20, boss.y, target, speed, Math.max(3, Math.round((5 + alive) * countMul)), Math.PI / 2.2, 0.6);
-    } else if (alive % 3 === 1) {
+      patternFan(projectiles, boss.x - 20, boss.y, target, speed, Math.max(3, Math.round((5 + destroyed) * countMul)), Math.PI / 2.2, 0.6);
+    } else if (destroyed % 3 === 1) {
       boss.spiralAngle += 0.4;
-      patternSpiralStep(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.9, 3 + Math.min(3, alive));
+      patternSpiralStep(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.9, 3 + Math.min(3, destroyed));
     } else {
       // curve modeste : l'anneau tourne légèrement en s'étendant ("pinwheel").
-      patternRing(projectiles, boss.x - 20, boss.y, speed * 0.8, Math.max(6, Math.round((10 + alive * 2) * countMul)), 0.5);
+      patternRing(projectiles, boss.x - 20, boss.y, speed * 0.8, Math.max(6, Math.round((10 + destroyed * 2) * countMul)), 0.5);
     }
-    boss.fireTimer = Math.max(0.35, 1.2 - alive * 0.12) * (firstBoss ? BOSS.firstBossFireIntervalMul : 1);
+    boss.fireTimer = Math.max(0.35, 1.2 - destroyed * 0.12) * (firstBoss ? BOSS.firstBossFireIntervalMul : 1);
   }
 }
 

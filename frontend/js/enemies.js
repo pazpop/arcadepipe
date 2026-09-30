@@ -88,9 +88,8 @@ const GUNNER_HP_BONUS = 1;
 // ennemi normal — exclusif avec élite/gunner (voir spawnEnemyWave).
 const KAMIKAZE_MIN_WAVE = 4;
 const KAMIKAZE_CHANCE = 0.12;
-// Plafond de kamikazes actifs simultanément — plusieurs à la fois dans une
-// vague déjà chargée en ennemis/tirs devenait vraiment dur à esquiver, vu
-// qu'ils poursuivent activement plutôt que suivre une trajectoire fixe.
+// Plafond de kamikazes actifs simultanément : ils poursuivent le joueur, trop
+// nombreux à la fois ils deviennent inesquivables dans une vague chargée.
 const KAMIKAZE_MAX_ACTIVE = 2;
 
 // Pas de vraie physique de collision — juste un espacement à la génération
@@ -202,10 +201,8 @@ export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
       en.leaving = false;
       continue;
     }
-    // En fuite : ne tire plus (pas de dernier tir vache). En dérivant vers la
-    // gauche (vx négatif), un élite/gunner pouvait franchir tout l'écran et
-    // continuer de tirer depuis le tiers gauche — le joueur doit pouvoir
-    // rester concentré sur les 2/3 droits (voir FIRE_MIN_X plus haut).
+    // En fuite : ne tire plus. Dans le tiers gauche non plus (FIRE_MIN_X) : le
+    // joueur doit pouvoir rester concentré sur les 2/3 droits.
     if ((en.type === "elite" || en.gunner) && !en.leaving && en.x > FIRE_MIN_X) {
       en.fireTimer -= dt;
       if (en.fireTimer <= 0) {
@@ -222,7 +219,7 @@ export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
 
 // Couleur du palier de menace (facile/moyen/difficile — voir PALETTE dans
 // config.js) — partagée entre le rendu (sprite/glow) et les explosions, pour
-// qu'un vaisseau jaune explose en jaune plutôt qu'en vert par défaut.
+// qu'un vaisseau explose dans sa propre couleur.
 export function enemyGlowColor(en) {
   if (en.type === "elite") return PALETTE.enemyElite;
   if (en.type === "kamikaze") return PALETTE.danger;

@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.82";
+export const VERSION = "2.87";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -18,21 +18,16 @@ export const PALETTE = {
   player: "#4ee1ff",
   playerGlow: "#8ef4ff",
   bulletPlayer: "#ffe66d",
-  // Rose, partagé par tous les tirs d'ennemis normaux (élite + gunner) —
-  // la distinction de couleur qui existait entre les deux ne changeait rien
-  // à la façon de les esquiver (même tir visé dans les deux cas), donc plus
-  // de bruit visuel qu'autre chose. Voir bulletBossDirect/bulletBossCircular
-  // ci-dessous pour les tirs du boss, volontairement bien distincts de celui-ci.
+  // Rose, partagé par tous les tirs d'ennemis normaux (élite + gunner) : même
+  // tir visé, donc même façon de l'esquiver. Les tirs du boss ont leurs
+  // propres couleurs (bulletBossDirect/bulletBossCircular ci-dessous).
   bulletEnemy: "#ff5d9e",
   // Tirs du boss : deux couleurs distinctes selon le style, pour que le
   // joueur sache quoi en faire d'un coup d'œil — direct = un vecteur à
   // esquiver sur le côté, circulaire = un mur à traverser par les trous.
   bulletBossDirect: "#5a7dff", // éventail visé (patternFan) — froid, tranche avec le rose des ennemis normaux
   bulletBossCircular: "#e8f4ff", // spirale/anneau (patternSpiralStep/patternRing) — blanc-glacé, contraste maximal pour les patterns les plus denses
-  // Rouge d'alerte générique (HUD : vies, bannières, avertissements) —
-  // distinct de la couleur des ennemis "faciles" depuis que celle-ci est
-  // passée au vert (code couleur par palier ci-dessous), les deux usages
-  // n'ont plus de raison de partager la même valeur.
+  // Rouge d'alerte générique (HUD : vies, bannières, avertissements, kamikaze).
   danger: "#ff5d73",
   // Code couleur des ennemis façon jeu de rôle — voir GAMEPLAY.md, section
   // Charte graphique. Le jaune/or reste exclusif au boss (aucun autre
@@ -40,7 +35,7 @@ export const PALETTE = {
   // normal "vaut" le boss.
   enemyNormal: "#27be4d", // facile (petit vaisseau)
   enemyGunner: "#2748be", // moyen (variante d'ennemi normal qui tire aussi, dès la vague 5) — bleu, pour ne pas empiéter sur le jaune/or réservé au boss
-  enemyElite: "#c86bff", // difficile (violet, inchangé)
+  enemyElite: "#c86bff", // difficile (violet)
   boss: "#ffcc33", // or — jamais réutilisé ailleurs
   bossWeakOn: "#fff44a", // jaune vif — doit trancher net avec la coque du boss
   bossWeakHit: "#ff9a3d", // encaissé un coup, pas encore critique
@@ -97,8 +92,7 @@ export function bulletSpeedFactor(wave) {
 // Bonus temporaires lâchés par les ennemis détruits. "power" : dégâts
 // renforcés, tir plus lent. "rapid" : tir très rapide, dégâts réduits.
 // "shield" : absorbe un nombre fixe de coups (shieldHits), pas temporisé.
-// NOVA n'en fait plus partie : ressource stockable rechargée par le graze,
-// pas un drop (voir NOVA plus bas et graze.js).
+// NOVA n'est pas un bonus : ressource rechargée par le graze (voir NOVA plus bas).
 export const POWERUP = {
   duration: 20, // secondes d'effet une fois ramassé (sans effet sur "shield")
   shieldHits: 3, // nombre de coups absorbés avant que le bouclier se brise
@@ -192,13 +186,11 @@ export const GRAZE = {
   // projectiles.js).
   bodyCooldown: 1.5,
   baseScore: 15, // multiplié par la taille de la chaîne courante (voir graze.js)
-  grazePerCharge: 12, // nombre de grazes pour remplir une charge NOVA (baissé de 20 : jugé trop lent à charger)
+  grazePerCharge: 12, // nombre de grazes pour remplir une charge NOVA
 };
 
-// NOVA : ressource stockable rechargée par le graze (au lieu d'un drop à
-// effet immédiat) — voir triggerNova/tryUseNova dans states/playing.js.
 // Distance parcourue durant la run, affichée en fin de partie/carte de
-// partage (voir GAMEPLAY.md, ROADMAP.md Session 2) — purement cosmétique,
+// partage (voir GAMEPLAY.md) — purement cosmétique,
 // pas une vraie mesure physique : juste un taux choisi pour donner un ordre
 // de grandeur satisfaisant sur une run typique (quelques centaines
 // d'années-lumière), accumulé proportionnellement au warp (states/playing.js)
@@ -208,6 +200,8 @@ export const DISTANCE = {
   lightYearsPerSecond: 1,
 };
 
+// NOVA : ressource stockable rechargée par le graze — voir triggerNova/
+// tryUseNova dans states/playing.js.
 export const NOVA = {
   color: PALETTE.gold,
   baseMaxStock: 1,

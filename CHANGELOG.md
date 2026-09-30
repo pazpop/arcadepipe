@@ -2,6 +2,11 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.87] - 2026-09-30
+- Fix : taper M ou C dans le pseudo coupait le son / basculait le filtre CRT. Raccourcis clavier ajoutés à l'écran Aide.
+- CI : les tests backend (`pytest`) et frontend (`node --test`) bloquent désormais le build.
+- Nettoyage sans changement de comportement : code mort (`watchAudioContext`, gardes audio inutiles, migration `kills`), commentaires faux ou historiques.
+
 ## [2.82] - 2026-09-18
 - Nettoyage sans changement de comportement : stockage local factorisé (`js/storage.js`), exports inutiles retirés, commentaires raccourcis, `frontend/.dockerignore` (tests et docs ne sont plus servis en production).
 - Docs en 3 couches : README racine réduit, détail dans `docs/` (déploiement, sécurité, données collectées, [saga audio](docs/audio-saga.md) intégrale), CHANGELOG et ROADMAP condensés.

@@ -1,8 +1,7 @@
 // Vagues : démarrage d'une vague (statistiques, boss ou non) et transition
 // entre deux vagues (saut spatial, déclenchement/conclusion du niveau
-// bonus) — extrait de states/playing.js (voir ROADMAP.md, Session 1) sur le
-// même patron que bonusLevel.js : son propre minuteur (g.waveBreak), ses
-// propres champs g, peu de dépendances croisées avec le reste de "playing".
+// bonus) — même patron que bonusLevel.js : son propre minuteur (g.waveBreak),
+// ses propres champs g, peu de dépendances croisées avec le reste de "playing".
 import { RES_H, DIFFICULTY, BONUS_LEVEL } from "../config.js";
 import { spawnDeathStarBackdrop } from "../stars.js";
 import { spawnBoss } from "../boss.js";

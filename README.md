@@ -28,7 +28,7 @@ JS vanilla (modules ES6) + Canvas 2D, sans build · FastAPI + SQLite · musique 
 
 - **Code** : [architecture du frontend](frontend/README.md) · [gameplay implémenté](frontend/GAMEPLAY.md) · [backend](backend/README.md) · [tests e2e](e2e/README.md)
 - **Exploitation** : [déploiement](docs/deploiement.md) · [sécurité](docs/securite.md) · [données collectées](docs/donnees-collectees.md)
-- **Suivi** : [changelog](CHANGELOG.md) · [roadmap](ROADMAP.md) · [la saga audio](docs/audio-saga.md)
+- **Suivi** : [changelog](CHANGELOG.md) · [roadmap](ROADMAP.md)
 
 ## 🎓 Pourquoi ce projet ?
 

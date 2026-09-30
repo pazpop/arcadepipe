@@ -2,7 +2,7 @@
 # Caddy. Caddyfile personnalisé (compression, route /api/*) plutôt que celui
 # par défaut de l'image, vu la taille de lib/libopenmpt.worklet.js.
 # Épinglé par digest (voir docs/deploiement.md) ; Dependabot propose les mises à jour.
-FROM caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+FROM caddy:2-alpine@sha256:6aeddd44c3078b0f9a35206472a11420648a79c184603ef95957d0a20044cb2b
 
 # setcap donne au binaire caddy la capacité de se lier au port 80 (<1024)
 # sans être root — indispensable puisqu'on abandonne root plus bas. libcap

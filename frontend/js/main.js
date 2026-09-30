@@ -231,7 +231,8 @@ if (shareBtn) {
     a.href = url;
     a.download = "arcadepipe-score.png";
     a.click();
-    URL.revokeObjectURL(url);
+    // Libérée après un délai : révoquée tout de suite, certains navigateurs annulent le téléchargement.
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
 
     try {
       await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);

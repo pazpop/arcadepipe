@@ -1,7 +1,10 @@
 name: Build & Deploy
 
+# Lint et tests aussi sur les PR (Dependabot compris) ; build et déploiement seulement sur main.
 on:
   push:
+    branches: [main]
+  pull_request:
     branches: [main]
 
 env:
@@ -62,6 +65,7 @@ jobs:
         run: node --test
 
   build-and-push:
+    if: github.event_name == 'push'
     needs: [lint, tests]
     runs-on: ubuntu-latest
     permissions:

@@ -15,7 +15,7 @@ C'est le seul fichier de déploiement Docker de ce repo. Celui qui ajoute Traefi
 
 ## CI/CD
 
-`.github/workflows/deploy.yml` : sur push vers `main`, lint backend (`ruff`), audit des dépendances (`pip-audit`), lint frontend (`eslint`), tests backend (`pytest`) et frontend (`node --test`), puis build et push des images vers GHCR (`:latest` et `:<sha>`, public).
+`.github/workflows/deploy.yml` : sur chaque PR et chaque push vers `main`, lint backend (`ruff`), audit des dépendances (`pip-audit`), lint frontend (`eslint`), tests backend (`pytest`) et frontend (`node --test`), puis, sur `main` seulement, build et push des images vers GHCR (`:latest` et `:<sha>`, public). Les PR de Dependabot sont donc testées avant fusion.
 
 - Actions GitHub épinglées par SHA de commit, images de base épinglées par digest : un tag peut être redéplacé, un SHA ou un digest non.
 - [Dependabot](../.github/dependabot.yml) ouvre une PR à chaque mise à jour (`pip`, `github-actions`, `docker`).

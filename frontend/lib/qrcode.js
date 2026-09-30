@@ -16,9 +16,8 @@
 //---------------------------------------------------------------------
 //
 // Vendorisé depuis github.com/kazuhikoarase/qrcode-generator
-// (js/dist/qrcode.js) pour la carte de partage (shareCard.js) — même
-// principe que lib/chiptune3.js : une bibliothèque tierce en fichier local
-// plutôt qu'une dépendance npm, cohérent avec "aucune dépendance
+// (js/dist/qrcode.js) pour la carte de partage (shareCard.js) : une
+// bibliothèque tierce en fichier local plutôt qu'une dépendance npm, cohérent avec "aucune dépendance
 // d'exécution" (voir frontend/README.md). Seule modification par rapport à
 // l'original : le repli UMD (AMD/CommonJS) en toute fin de fichier a été
 // remplacé par un simple `export default qrcode;`, ce projet n'utilisant

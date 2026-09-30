@@ -1,6 +1,6 @@
 # La saga audio : 7 rounds sur un même symptôme (« la musique se tait »)
 
-Récit complet, conservé tel quel pour la traçabilité et la valeur pédagogique. Résumé des leçons : [GAMEPLAY.md](../frontend/GAMEPLAY.md#retour-dexpérience--la-saga-audio). Correctifs locaux du lecteur : [frontend/lib/PATCHES.md](../frontend/lib/PATCHES.md).
+Récit conservé pour sa valeur pédagogique. Le lecteur tracker (libopenmpt, chiptune3) dont il parle a depuis été remplacé par des MP3 lus par un élément `<audio>` ; son code et ses correctifs locaux restent dans l'historique Git. Résumé des leçons : [GAMEPLAY.md](../frontend/GAMEPLAY.md#retour-dexpérience--la-saga-audio).
 
 Un exemple concret de problème rencontré pendant le développement, pour illustrer une vraie démarche de résolution plutôt qu'une liste de fonctionnalités.
 
@@ -84,6 +84,6 @@ Les deux rounds précédents reposaient sur des hypothèses raisonnées mais jam
 
 **La vraie cause.** Au premier geste du joueur, deux chargements partent aussitôt, avant que le lecteur soit prêt. Côté page, `postMsg()` jetait tout message envoyé avant la création du nœud audio ; côté worklet, un message arrivé avant l'initialisation de libopenmpt (WASM) échouait. Dans les deux cas, sans erreur visible : la piste n'était jamais jouée, donc aucune fin de piste ne relançait la suivante.
 
-**La correction.** Les messages attendent que le lecteur soit prêt, puis partent dans l'ordre (correctif n° 4 de [PATCHES.md](../frontend/lib/PATCHES.md)).
+**La correction.** Les messages attendent que le lecteur soit prêt, puis partent dans l'ordre.
 
 **La leçon générale** : un message envoyé avant que le destinataire soit prêt doit être mis en attente, jamais jeté en silence. Et un test instable signale souvent un vrai bug de timing, pas seulement un test mal écrit.

@@ -71,7 +71,14 @@ export async function skipHints(page) {
 export function gameState(page) {
   return page.evaluate(async () => {
     const { game } = await import("/js/main.js");
-    return { mode: game.mode, wave: game.getRunSummary().wave, inBonusLevel: game.inBonusLevel };
+    return {
+      mode: game.mode,
+      wave: game.getRunSummary().wave,
+      inBonusLevel: game.inBonusLevel,
+      buff: game.buffType,
+      shield: game.shield,
+      powerups: game.powerupsOnScreen,
+    };
   });
 }
 

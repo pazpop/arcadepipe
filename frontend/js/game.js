@@ -225,6 +225,16 @@ export function createGame({ input, audio, music, nameInputEl }) {
     get inBonusLevel() {
       return g.bonusLevel !== null;
     },
+    // Bonus actif, bouclier et bonus au sol : lus par la suite e2e (e2e/tests/helpers.js).
+    get buffType() {
+      return player.buff ? player.buff.type : null;
+    },
+    get shield() {
+      return player.shield;
+    },
+    get powerupsOnScreen() {
+      return powerups.items.filter((p) => p.active).map((p) => ({ x: p.x, y: p.y }));
+    },
     // Résumé de la partie qui vient de se terminer — seule source pour la
     // carte de partage (main.js/shareCard.js), pas de champs dupliqués ailleurs.
     getRunSummary() {

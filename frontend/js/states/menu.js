@@ -11,15 +11,14 @@ import { consumeJustPressed } from "../input.js";
 import { drawTwinkleStars } from "../stars.js";
 import { syncHoverWithSound } from "./navHelpers.js";
 import { MODE } from "./mode.js";
+import * as helpState from "./help.js";
 import * as hud from "../hud.js";
 
 function selectMenuOption(g, engine, index) {
   if (index === 0) engine.actions.startRun();
   else if (index === 1) engine.actions.goToLeaderboard(MODE.MENU);
-  else if (index === 2) {
-    g.helpReturnTo = MODE.MENU;
-    g.mode = MODE.HELP;
-  } else if (index === 3) {
+  else if (index === 2) helpState.open(g, MODE.MENU);
+  else if (index === 3) {
     g.mode = MODE.CREDITS;
     g.creditsScroll = 0;
   }

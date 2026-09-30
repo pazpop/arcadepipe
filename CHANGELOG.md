@@ -2,6 +2,10 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.91] - 2026-09-30
+- Fix : l'Aide ouverte depuis le menu principal reprend à la page 1.
+- Tests e2e bonus et bouclier : vérifient le ramassage réel et la règle « un seul bonus à la fois » au lieu de simples attentes fixes.
+
 ## [2.90] - 2026-09-30
 - Nettoyage sans changement de comportement : client HTTP du classement déplacé de `js/audio/leaderboard.js` vers `js/api.js`, références périmées corrigées dans les commentaires et les docs, commentaires historiques retirés. Docs raccourcies (GAMEPLAY.md, tableau de la Session 5 de la ROADMAP). CI : `npm ci`.
 

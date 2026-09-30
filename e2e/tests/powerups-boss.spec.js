@@ -1,72 +1,80 @@
-// Ces deux scénarios (bonus, combat de boss) sont trop lents à atteindre en
-// conditions normales pour un test rapide (taux de drop faible, plusieurs
-// vagues avant le premier boss) — on force temporairement les constantes
-// concernées via un import dynamique de config.js (voir helpers.js). Pas
-// besoin d'éditer/restaurer le code source : tout repart d'une page fraîche
-// au test suivant.
+// Bonus et combat de boss : trop lents à atteindre en conditions normales
+// (taux de drop faible, plusieurs vagues avant le premier boss). Constantes
+// forcées via un import dynamique de config.js (voir helpers.js) ; chaque
+// test repart d'une page fraîche.
 import { test, expect } from "@playwright/test";
 import { canvasHelpers, collectErrors, gameState, skipHints } from "./helpers.js";
 
-test("un seul bonus à la fois : ramassage, indicateur de buff, pas d'erreur", async ({ page }) => {
-  const errors = collectErrors(page);
-  await page.goto("/");
-  await skipHints(page);
+// Tire en balayant la hauteur jusqu'à un drop, puis va chercher le bonus au
+// sol, jusqu'à ce que `picked(state)` soit vrai.
+async function fireUntilPicked(page, picked) {
+  const { toPage } = canvasHelpers(page);
+  await page.mouse.down();
+  for (let i = 0; i < 80; i++) {
+    const s = await gameState(page);
+    if (picked(s)) return s;
+    const target = s.powerups.length ? s.powerups[0] : { x: 90, y: 30 + (i % 8) * 30 };
+    const p = await toPage(target.x, target.y);
+    await page.mouse.move(p.x, p.y);
+    await page.waitForTimeout(250);
+  }
+  return gameState(page);
+}
 
-  await page.evaluate(async () => {
+// 100 % de drop, un seul type de bonus, chute rapide et longue durée de vie :
+// le bonus est au sol dès le premier kill et ne disparaît pas avant d'être ramassé.
+async function forceDrops(page, weights) {
+  await page.evaluate(async (w) => {
     const { POWERUP } = await import("/js/config.js");
     POWERUP.dropChanceNormal = 1;
     POWERUP.dropChanceElite = 1;
-  });
+    POWERUP.fallSpeed = 60;
+    POWERUP.lifetime = 60;
+    POWERUP.typeWeights = w;
+  }, weights);
+}
 
-  const { canvas, startRun, toPage } = canvasHelpers(page);
+test("un seul bonus à la fois : ramassé, puis aucun autre drop tant qu'il est actif", async ({ page }) => {
+  const errors = collectErrors(page);
+  await page.goto("/");
+  await skipHints(page);
+  await forceDrops(page, { power: 1, rapid: 0, shotgun: 0, shield: 0 });
+
+  const { canvas, startRun } = canvasHelpers(page);
   await startRun();
 
-  const ship = await toPage(90, 135);
-  await page.mouse.move(ship.x, ship.y);
-  await page.mouse.down();
+  const s = await fireUntilPicked(page, (st) => st.buff !== null);
+  expect(s.buff).toBe("power");
+  await canvas.screenshot({ path: "test-results/powerup-collected.png" });
 
-  // Premiers kills : avec 100% de drop, un bonus doit apparaître vite.
-  await page.waitForTimeout(4000);
-  await canvas.screenshot({ path: "test-results/powerup-dropped-and-collected.png" });
-
-  // Un deuxième passage un peu plus long pour vérifier qu'aucun second bonus
-  // ne s'affiche tant que le premier est actif ou encore au sol (voir
-  // "un seul bonus à l'écran" dans resolveCollisions()).
-  await page.waitForTimeout(4000);
-  await canvas.screenshot({ path: "test-results/powerup-single-at-a-time.png" });
+  // Les kills continuent (tir maintenu, 100 % de drop) : aucun bonus ne doit
+  // apparaître au sol tant que le premier est actif (resolveCollisions()).
+  const { toPage } = canvasHelpers(page);
+  for (let i = 0; i < 12; i++) {
+    const p = await toPage(90, 30 + (i % 8) * 30);
+    await page.mouse.move(p.x, p.y);
+    await page.waitForTimeout(250);
+    const st = await gameState(page);
+    expect(st.buff).toBe("power");
+    expect(st.powerups).toEqual([]);
+  }
 
   await page.mouse.up();
   expect(errors).toEqual([]);
 });
 
-test("bouclier : ramassage, anneau/indicateur affichés, pas d'erreur", async ({ page }) => {
+test("bouclier : ramassé, charges affichées, pas d'erreur", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);
+  await forceDrops(page, { power: 0, rapid: 0, shotgun: 0, shield: 1 });
 
-  await page.evaluate(async () => {
-    const { POWERUP } = await import("/js/config.js");
-    POWERUP.dropChanceNormal = 1;
-    POWERUP.dropChanceElite = 1;
-    POWERUP.typeWeights = { power: 0, rapid: 0, shield: 1, nova: 0 };
-  });
-
-  const { canvas, startRun, toPage } = canvasHelpers(page);
+  const { canvas, startRun } = canvasHelpers(page);
   await startRun();
 
-  const ship = await toPage(90, 135);
-  await page.mouse.move(ship.x, ship.y);
-  await page.mouse.down();
-
-  // Avec 100% de drop et le bouclier forcé, il doit apparaître et être
-  // ramassé -> l'anneau autour du vaisseau + "BOUCLIER x3" (voir
-  // drawShieldIndicator dans hud.js) doivent être visibles. Deux passages
-  // (comme le test de bonus existant) : un seul kill aligné avec la
-  // trajectoire de tir suffit, mais ça peut prendre plus d'un passage selon
-  // les positions d'apparition aléatoires des ennemis.
-  await page.waitForTimeout(4000);
-  await page.waitForTimeout(4000);
-  await page.waitForTimeout(4000); // laisse le bonus tomber jusqu'au vaisseau et se faire ramasser
+  const s = await fireUntilPicked(page, (st) => st.shield > 0);
+  expect(s.shield).toBeGreaterThan(0);
+  expect(s.buff).toBeNull(); // indépendant des bonus d'arme
   await canvas.screenshot({ path: "test-results/shield-active.png" });
 
   await page.mouse.up();

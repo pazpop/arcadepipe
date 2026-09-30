@@ -18,8 +18,8 @@ npm test                   # ou : npx playwright test --headed
 - `powerups-boss` — bonus, bouclier, premier boss
 - `graze-nova` — frôlements, jauge NOVA, bouton tactile
 - `bonus-level` — niveau bonus et récompense
-- `music-retry` — un 429 sur les `.xm` ne déclenche pas de rafale de requêtes
-- `music-end` — une fin de piste ne provoque qu'**une** requête (latence simulée : le serveur local, trop rapide, masque le bug)
+- `music-retry` — un 429 sur les pistes ne déclenche pas de rafale de requêtes
+- `music-end` — une fin de piste enchaîne sur une autre piste, qui joue réellement
 - `consent` — Google Analytics jamais chargé avant « Accepter » ; bouton Plein écran
 - `share-qr` — le QR de la carte de partage se décode après recompression JPEG ; contraste vérifié au pixel
 

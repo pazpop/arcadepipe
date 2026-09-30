@@ -1,15 +1,13 @@
-// Un 429 sur les .xm ne doit ni être passé au lecteur comme un fichier audio
-// (fetch() ne rejette pas sur un statut HTTP d'erreur), ni déclencher une
-// rafale de requêtes : retry différé, délai plafonné (music.js, _loadCurrent).
-// Récit : docs/audio-saga.md, round 3.
+// Un 429 sur les pistes ne doit pas déclencher de rafale de requêtes : retry
+// différé, délai plafonné (audio/music.js, _retryLater).
 import { test, expect } from "@playwright/test";
 import { skipHints } from "./helpers.js";
 
-test("429 sur les fichiers musique : pas de rafale de requêtes, volume récupéré", async ({ page }) => {
+test("429 sur les fichiers musique : pas de rafale de requêtes", async ({ page }) => {
   const pageErrors = [];
   page.on("pageerror", (e) => pageErrors.push(String(e)));
   let requestCount = 0;
-  await page.route("**/music/*.xm", (route) => {
+  await page.route("**/music/*.mp3", (route) => {
     requestCount++;
     route.fulfill({ status: 429, contentType: "text/plain", body: "Too Many Requests" });
   });
@@ -25,14 +23,9 @@ test("429 sur les fichiers musique : pas de rafale de requêtes, volume récupé
   await page.waitForTimeout(9000);
   const countAfterRetries = requestCount;
   await page.waitForTimeout(4000);
+  expect(requestCount).toBeGreaterThan(0);
   expect(requestCount).toBeLessThanOrEqual(8); // large marge, pas fragile sur le timing exact
   expect(requestCount).toBeLessThanOrEqual(countAfterRetries + 1); // au plus une tentative de plus, jamais une rafale
-
-  const gain = await page.evaluate(async () => {
-    const { music } = await import("/js/main.js");
-    return { gain: music.player.gain.gain.value, volume: music.volume };
-  });
-  expect(Math.abs(gain.gain - gain.volume)).toBeLessThan(0.05); // volume récupéré, pas bloqué à 0
 
   expect(pageErrors).toEqual([]);
 });

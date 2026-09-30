@@ -2,6 +2,10 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.100] - 2026-09-30
+- **Nouvelle musique** : 3 morceaux originaux de [mall-e](https://mall-e.bandcamp.com/), en MP3, crédité et remercié dans le jeu et le README.
+- Lecteur tracker (`.xm`, libopenmpt, chiptune3) retiré : les pistes sont lues par un simple élément `<audio>` branché sur l'AudioContext des bruitages. Plus de WebAssembly, donc plus besoin de `'unsafe-eval'` dans la CSP.
+
 ## [2.93] - 2026-09-30
 - Zoom du navigateur autorisé (accessibilité) ; le canvas bloque toujours les gestes pendant le jeu (`touch-action: none`).
 - Nettoyage : CSS sans `!important`, meta `keywords` retirée, tests backend sans état global partagé, ROADMAP raccourcie (sujets d'infra suivis côté terraform), 7e round de la saga audio documenté.

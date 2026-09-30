@@ -3,3 +3,4 @@
 **/package.json
 **/*.md
 node_modules/
+**/*.wav

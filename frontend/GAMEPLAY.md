@@ -96,15 +96,15 @@ Comment les couleurs et les formes sont décidées et générées.
 ## Audio
 
 - [x] Tous les bruitages (tirs, explosions, etc.) sont générés directement par du code audio, sans aucun fichier son à charger.
-- [x] La musique, elle, est une vraie playlist de morceaux (fichiers de musique "tracker"), jouée dans un ordre aléatoire qui évite de rejouer deux fois de suite le même morceau.
+- [x] La musique, elle, est une vraie playlist de morceaux (MP3, composés par mall-e), jouée dans un ordre aléatoire qui évite de rejouer deux fois de suite le même morceau.
 - [x] Musique et bruitages partagent le même circuit audio interne plutôt que d'en avoir chacun un séparé (nécessaire pour que le son fonctionne correctement sur certains navigateurs mobiles).
 - [x] Réglages de volume séparés pour la musique et les bruitages, plus une coupure du son complète — tout est mémorisé d'une visite à l'autre.
 - [x] Changement de musique en fondu (le son baisse puis remonte) plutôt qu'une coupure nette, pour éviter un clic audible désagréable.
 - [x] L'intensité d'un bruitage suit celle de son effet visuel — le NOVA (écran qui tremble fort, tout l'écran nettoyé d'un coup) a son propre son "large" (bruit filtré + sub grave), pas le même son qu'une explosion d'ennemi normal, sinon l'impact paraît muet malgré l'écran qui vibre.
 - [x] Un easter egg (aucun effet de jeu) caché derrière une séquence de touches connue des joueurs de jeux vidéo — jamais indiqué en jeu, à découvrir. Jingle audio accompagné d'un petit tilt du canvas, synchronisés.
 - [x] Le contexte audio est explicitement repris quand l'onglet redevient visible et à chaque geste du joueur (pas seulement au premier) — certains navigateurs le suspendent d'eux-mêmes après un moment sans jamais le reprendre, y compris parfois onglet actif, ce qui coupait la musique en permanence.
-- [x] Le chargement d'une piste vérifie le code de statut de la réponse réseau avant de la traiter comme valide (`fetch()` ne rejette jamais sur une erreur HTTP à lui seul) ; en cas d'échec, une nouvelle tentative différée (délai croissant plafonné à 10 s, **sans plafond sur le nombre d'essais**) — jamais immédiate, pour ne pas aggraver une limite de requêtes temporaire (voir [`docs/audio-saga.md`](../docs/audio-saga.md), rounds 3 et 5).
-- [x] La fin d'une piste n'est signalée **qu'une seule fois** par le lecteur (le worklet s'arrête après `end`), et l'enchaînement vers la piste suivante est ignoré tant qu'un chargement est déjà en cours — sans quoi un message répété relançait un `fetch` par message (boucle de requêtes, plus jamais de musique ; voir [`docs/audio-saga.md`](../docs/audio-saga.md), round 6).
+- [x] Une piste qui ne se charge pas (réseau, 429...) est retentée après un délai croissant plafonné à 10 s, **sans plafond sur le nombre d'essais** — jamais immédiatement, pour ne pas aggraver une limite de requêtes temporaire.
+- [x] La fin d'une piste enchaîne sur une autre, tirée au hasard ; changer de piste abandonne le chargement en cours, aucune réponse périmée ne peut s'imposer.
 
 ## Interface & menus
 
@@ -149,7 +149,7 @@ Comment les couleurs et les formes sont décidées et générées.
 
 - [x] Tests automatiques sur la logique du jeu qui ne dépend pas de l'affichage (calculs, règles), rapides à exécuter.
 - [x] Tests automatiques qui pilotent un vrai navigateur pour vérifier les scénarios plus longs à atteindre normalement (obtenir un bonus, rencontrer un boss), en accélérant temporairement certains réglages le temps du test seulement.
-- [x] Les scénarios réseau (fin de piste, 429) sont testés avec de la **latence simulée** : le serveur local répond en quelques ms et masque les bugs de timing (voir [`docs/audio-saga.md`](../docs/audio-saga.md), round 6).
+- [x] Les scénarios audio (fin de piste, 429 sur les pistes) ont leurs propres tests de navigateur.
 
 ## Retour d'expérience : la saga audio
 

@@ -1,6 +1,5 @@
-# libopenmpt.worklet.js pèse ~1.5 Mo non compressé : la compression n'est pas
-# activée par défaut dans le Caddyfile embarqué de l'image officielle, on la
-# rajoute explicitement (gzip/zstd divisent grossièrement la taille par 3).
+# Compression des fichiers texte (JS, CSS, HTML), absente du Caddyfile par
+# défaut de l'image officielle.
 :80 {
 	encode zstd gzip
 

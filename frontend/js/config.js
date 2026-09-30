@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.93";
+export const VERSION = "2.100";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -132,14 +132,8 @@ export const BOSS = {
 
 export const AUDIO = {
   masterVolume: 0.5,
-  // Playlist de fichiers tracker .xm (voir Crédits), jamais resynthétisée.
-  tracks: [
-    { file: "music/age-of-empires-3.xm", title: "Age of Empires III", artist: "DEViANCE" },
-    { file: "music/battle-for-middle-earth.xm", title: "Battle for Middle-Earth", artist: "DEViANCE" },
-    { file: "music/mercedes-benz-world-racing.xm", title: "Mercedes-Benz World Racing", artist: "DEViANCE" },
-    { file: "music/neverwinter-nights.xm", title: "Neverwinter Nights", artist: "DEViANCE" },
-    { file: "music/prototype.xm", title: "Prototype", artist: "h4x0r" },
-  ],
+  // Playlist : morceaux de mall-e (voir Crédits).
+  tracks: ["music/first.mp3", "music/second.mp3", "music/third.mp3"],
 };
 
 export const STORAGE_KEYS = {

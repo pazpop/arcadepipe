@@ -1,6 +1,5 @@
-# Pas de build step (vanilla JS) — juste servir les fichiers statiques avec
-# Caddy. Caddyfile personnalisé (compression, route /api/*) plutôt que celui
-# par défaut de l'image, vu la taille de lib/libopenmpt.worklet.js.
+# Pas de build step (vanilla JS) : fichiers statiques servis par Caddy, avec un
+# Caddyfile personnalisé (compression, route /api/*).
 # Épinglé par digest (voir docs/deploiement.md) ; Dependabot propose les mises à jour.
 FROM caddy:2-alpine@sha256:6aeddd44c3078b0f9a35206472a11420648a79c184603ef95957d0a20044cb2b
 

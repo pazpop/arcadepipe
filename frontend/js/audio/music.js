@@ -1,129 +1,90 @@
-// Musique : playlist de fichiers tracker .xm via chiptune3.js (AudioWorklet).
-// Le flux ne se recrée jamais en changeant d'écran — seul un changement de
-// piste ou stop/play y touche.
+// Musique : playlist de fichiers MP3 (AUDIO.tracks) lue par un élément <audio>,
+// branché sur l'AudioContext partagé avec les bruitages.
 import { AUDIO, STORAGE_KEYS } from "../config.js";
-import { ChiptuneJsPlayer } from "../../lib/chiptune3.js";
 import { loadItem, loadUnitFloat, saveItem } from "../storage.js";
 
+const FADE_S = 0.02; // fondu au changement de piste (évite le clic)
+const RETRY_MAX_DELAY_MS = 10000;
+
 export class MusicPlayer {
-  // `audioContext` partagé avec le moteur SFX plutôt qu'un second créé par
-  // chiptune3 — un contexte jamais repris dans un geste utilisateur reste
-  // "verrouillé" sur iOS.
+  // AudioContext partagé : un second contexte, jamais repris dans un geste
+  // utilisateur, resterait "verrouillé" sur iOS.
   constructor(audioContext) {
-    // repeatCount 0 : une piste ne boucle pas, on enchaîne via onEnded.
-    this.player = new ChiptuneJsPlayer({
-      repeatCount: 0,
-      stereoSeparation: 100,
-      interpolationFilter: 4, // cubique (openmpt : 1=aucun, 2=linéaire, 4=cubique, 8=sinc)
-      context: audioContext,
+    this.context = audioContext;
+    this.audio = new Audio();
+    this.gain = audioContext.createGain();
+    audioContext.createMediaElementSource(this.audio).connect(this.gain);
+    this.gain.connect(audioContext.destination);
+
+    // Une piste ne boucle pas : fin de piste = autre piste au hasard.
+    this.audio.addEventListener("ended", () => this.playRandom());
+    this.audio.addEventListener("playing", () => {
+      this._retries = 0;
+      this._fadeTo(this._targetGain());
     });
-    // Avec un contexte externe, chiptune3 ne connecte pas sa sortie : sans cette ligne, silence.
-    this.player.gain.connect(audioContext.destination);
-    // Ignoré pendant un chargement : un 'end' répété ne doit jamais relancer un
-    // fetch par message (voir docs/audio-saga.md, 6e round).
-    this.player.onEnded(() => {
-      if (!this._loading) this.playRandom();
-    });
-    // Module invalide côté worklet ("ptr") : autre piste, après un délai —
-    // jamais immédiatement, sinon boucle fetch -> échec -> fetch en rafale.
-    this.player.onError((e) => {
-      console.warn("[music] onError", e);
-      if (e && e.type !== "Load") {
-        this._loadRetries += 1;
-        const delay = Math.min(10000, 2000 * this._loadRetries);
-        setTimeout(() => this.playRandom(), delay);
-      }
-    });
+    // Échec de chargement ou de décodage (réseau, 429...) : nouvelle tentative
+    // différée (2 s, 4 s... plafonné à 10 s), jamais immédiate, sans limite de nombre.
+    this.audio.addEventListener("error", () => this._retryLater());
+
+    this._retries = 0;
+    this._retryTimer = null;
     this.started = false;
     this.paused = false;
     this.muted = loadItem(STORAGE_KEYS.muted) === "1";
     this.volume = loadUnitFloat(STORAGE_KEYS.volume, AUDIO.masterVolume);
     const savedTrack = parseInt(loadItem(STORAGE_KEYS.track), 10);
-    this.trackIndex = Number.isFinite(savedTrack) ? savedTrack : 0;
-    if (this.trackIndex < 0 || this.trackIndex >= AUDIO.tracks.length) this.trackIndex = 0;
-    // Incrémenté à chaque _loadCurrent() : une réponse réseau périmée est ignorée.
-    this._loadToken = 0;
-    // Échecs consécutifs, remis à 0 dès qu'un chargement réussit.
-    this._loadRetries = 0;
-    // true du lancement d'un chargement jusqu'à son aboutissement.
-    this._loading = false;
+    this.trackIndex = savedTrack >= 0 && savedTrack < AUDIO.tracks.length ? savedTrack : 0;
+    this.gain.gain.value = 0; // monte au premier "playing"
   }
 
-  _applyGain() {
-    this.player.setVol(this.muted ? 0 : this.volume);
+  _targetGain() {
+    return this.muted ? 0 : this.volume;
   }
 
-  get currentTrack() {
-    return AUDIO.tracks[this.trackIndex];
-  }
-
-  // fetch fait ici (pas player.load()) pour ignorer une réponse périmée (jeton)
-  // et couper le volume le temps de la bascule (évite le clic).
-  _loadCurrent() {
-    const token = ++this._loadToken;
-    this._loading = true;
-    const track = this.currentTrack;
-    this.paused = false;
-
-    const g = this.player.gain.gain;
-    const now = this.player.context.currentTime;
+  _fadeTo(value) {
+    const g = this.gain.gain;
+    const now = this.context.currentTime;
     g.cancelScheduledValues(now);
-    g.setValueAtTime(g.value, now);
-    g.linearRampToValueAtTime(0, now + 0.02);
+    g.setTargetAtTime(value, now, FADE_S / 3);
+  }
 
-    fetch(track.file)
-      .then((r) => {
-        // fetch() ne rejette pas sur un statut HTTP d'erreur : sans ce contrôle,
-        // un 429 serait passé au lecteur comme un fichier audio.
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.arrayBuffer();
-      })
-      .then((buf) => {
-        if (token !== this._loadToken) return; // supplantée par une piste demandée depuis
-        this._loadRetries = 0;
-        this._loading = false;
-        this.player.play(buf);
-        const target = this.muted ? 0 : this.volume;
-        const t = this.player.context.currentTime;
-        g.cancelScheduledValues(t);
-        g.setValueAtTime(0, t);
-        g.linearRampToValueAtTime(target, t + 0.03);
-      })
-      .catch((err) => {
-        if (token !== this._loadToken) return; // supplantée, la piste plus récente gère le volume
-        console.warn("[music] échec de chargement", track.file, err);
-        // Le fondu de sortie a déjà coupé le son : on remonte le volume.
-        const target = this.muted ? 0 : this.volume;
-        const t = this.player.context.currentTime;
-        g.cancelScheduledValues(t);
-        g.linearRampToValueAtTime(target, t + 0.03);
-        // Nouvelle tentative différée (2 s, 4 s, ... plafonné à 10 s), sans limite
-        // de nombre : une panne longue doit se résorber seule (voir docs/audio-saga.md).
-        this._loadRetries += 1;
-        const delay = Math.min(10000, 2000 * this._loadRetries);
-        setTimeout(() => {
-          if (token === this._loadToken) this._loadCurrent();
-        }, delay);
-      });
+  // Fondu de sortie, puis la nouvelle source : l'élément abandonne de lui-même
+  // le chargement précédent, aucune réponse périmée ne peut s'imposer.
+  _load() {
+    clearTimeout(this._retryTimer);
+    this._retryTimer = null;
+    this.paused = false;
+    this._fadeTo(0);
+    const file = AUDIO.tracks[this.trackIndex];
+    setTimeout(() => {
+      this.audio.src = file;
+      this.audio.play().catch(() => {}); // refus ou interruption : "error" gère les vrais échecs
+    }, FADE_S * 1000);
+  }
+
+  _retryLater() {
+    if (this._retryTimer) return;
+    this._retries += 1;
+    const delay = Math.min(RETRY_MAX_DELAY_MS, 2000 * this._retries);
+    this._retryTimer = setTimeout(() => {
+      this._retryTimer = null;
+      if (!this.paused) this._load(); // musique arrêtée par le joueur entre-temps : on n'insiste pas
+    }, delay);
   }
 
   start() {
     if (this.started) return;
     this.started = true;
-    this._loadRetries = 0; // nouvelle demande explicite, pas une relance
-    this._loadCurrent();
+    this._load();
   }
 
   next() {
     this.trackIndex = (this.trackIndex + 1) % AUDIO.tracks.length;
     saveItem(STORAGE_KEYS.track, this.trackIndex);
-    if (this.started) {
-      this._loadRetries = 0;
-      this._loadCurrent();
-    }
+    if (this.started) this._load();
   }
 
-  // Tirée au début de chaque partie — jamais deux fois la même piste d'affilée.
+  // Tirée au début de chaque partie et en fin de piste — jamais deux fois la même d'affilée.
   playRandom() {
     if (AUDIO.tracks.length > 1) {
       let idx;
@@ -133,21 +94,23 @@ export class MusicPlayer {
       this.trackIndex = idx;
     }
     saveItem(STORAGE_KEYS.track, this.trackIndex);
-    this._loadRetries = 0; // tous les points d'entrée remettent le compteur à 0
-    if (this.started) this._loadCurrent();
+    if (this.started) this._load();
   }
 
-  // Bascule stop/lecture — vraie pause du moteur (pas juste volume à zéro).
-  // togglePause() est un no-op silencieux tant qu'aucune piste n'est chargée.
+  // Bascule stop/lecture (vraie pause, pas juste le volume à zéro).
   toggleStop() {
     if (!this.started) return;
-    this.player.togglePause();
+    if (this.paused) {
+      this.audio.play().catch(() => {});
+    } else {
+      this.audio.pause();
+    }
     this.paused = !this.paused;
   }
 
   setMuted(muted) {
     this.muted = muted;
-    this._applyGain();
+    this._fadeTo(this._targetGain());
     saveItem(STORAGE_KEYS.muted, muted ? "1" : "0");
   }
 
@@ -158,7 +121,7 @@ export class MusicPlayer {
 
   setVolume(v) {
     this.volume = Math.max(0, Math.min(1, v));
-    this._applyGain();
+    this._fadeTo(this._targetGain());
     saveItem(STORAGE_KEYS.volume, this.volume);
   }
 }

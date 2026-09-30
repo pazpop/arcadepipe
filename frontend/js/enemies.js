@@ -149,13 +149,13 @@ export function spawnEnemyWave(pool, waveNumber, eliteChance) {
 }
 
 // Vitesse de base des ennemis en fuite (avant le warp, x10 max — voir
-// update() dans states/playing.js) : assez rapide pour quitter l'écran bien
+// updateWaveTransition dans states/waves.js) : assez rapide pour quitter l'écran bien
 // avant la fin du saut spatial.
 const LEAVE_SPEED = 90;
 
 // Fin de vague : les ennemis actifs défilent vers la gauche comme le fond
 // (plus naturel qu'une disparition instantanée) — voir aussi le filet de
-// sécurité dans startWave (states/playing.js).
+// sécurité dans startWave (states/waves.js).
 export function setEnemiesLeaving(pool) {
   for (const en of pool.items) {
     if (!en.active) continue;

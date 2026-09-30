@@ -8,7 +8,7 @@ import { consumeJustPressed } from "../input.js";
 import { syncHover } from "./navHelpers.js";
 import { MODE } from "./mode.js";
 import * as leaderboardScreen from "./leaderboardScreen.js";
-import { fetchTopScores, submitScore, recordGamePlayed } from "../audio/leaderboard.js";
+import { fetchTopScores, submitScore, recordGamePlayed } from "../api.js";
 import * as hud from "../hud.js";
 
 // Pseudo mémorisé d'une partie à l'autre — pré-remplit la saisie du nom (triggerGameOver).

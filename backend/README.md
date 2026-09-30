@@ -19,7 +19,7 @@ pip install -r requirements-dev.txt && pytest   # 27 tests
 
 ## Lint
 
-Voir `pyproject.toml` (vérifié en CI avant chaque build — voir *CI/CD* dans le README racine) :
+Voir `pyproject.toml` (vérifié en CI avant chaque build, voir [docs/deploiement.md](../docs/deploiement.md#cicd)) :
 
 ```bash
 ruff check .   # inclus dans requirements-dev.txt ci-dessus

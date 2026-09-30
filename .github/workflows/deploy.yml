@@ -15,11 +15,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      # Épinglé par SHA (pas par tag) : un tag comme "v7" peut être redéplacé
-      # vers un autre commit (compromission du mainteneur, prise de contrôle
-      # du repo...) sans qu'aucun changement n'apparaisse ici — le SHA, lui,
-      # est immuable. Dependabot (.github/dependabot.yml) ouvre une PR de
-      # bump à chaque nouvelle version, donc rien à surveiller à la main.
+      # Actions épinglées par SHA (voir docs/deploiement.md).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
@@ -28,11 +24,7 @@ jobs:
         run: |
           pip install ruff
           ruff check backend
-      # pip-audit : vérifie les CVE connues des dépendances Python
-      # installées (base pypi.org/PyPI Advisory Database), pas les mêmes
-      # versions figées indéfiniment que ruff (qui ne vérifie que le style).
-      # exit-code non nul si une CVE est trouvée -> bloque le build, pas
-      # juste un avertissement silencieux dans les logs.
+      # pip-audit : une CVE connue dans les dépendances Python bloque le build.
       - name: pip-audit (backend)
         run: |
           pip install pip-audit
@@ -43,7 +35,7 @@ jobs:
       - name: eslint (frontend)
         working-directory: frontend
         run: |
-          npm install
+          npm ci
           npm run lint
 
   # Tests de logique pure (quelques secondes) : backend (pytest) et frontend
@@ -103,12 +95,8 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:${{ github.sha }}
 
-      # Ce repo ne connaît jamais l'IP du VPS ni les détails Traefik — le
-      # déploiement réel (docker-compose.yml avec labels Traefik, SSH) vit
-      # dans github.com/pazpop/terraform-infra-pazpop-hetzner, notifié ici
-      # une fois les images publiées. La condition `if` évite que cette
-      # étape s'exécute (et échoue faute de secret) sur un fork/usage
-      # communautaire — le build+push ci-dessus reste utile en soi.
+      # Le déploiement vit dans terraform-infra-pazpop-hetzner, notifié ici.
+      # Sautée sur un fork (secret absent).
       - name: Notifier terraform-infra-pazpop-hetzner
         if: ${{ github.repository == 'pazpop/arcadepipe' }}
         uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4

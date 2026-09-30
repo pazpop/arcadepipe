@@ -1,6 +1,5 @@
-// Patterns de tirs ennemis réutilisables : éventail, spirale, tir visé.
-// Chaque pattern reçoit (projectiles, x, y, elapsed, target, speedMul) et se
-// charge lui-même de peupler le pool de tirs ennemis.
+// Patterns de tirs ennemis réutilisables : tir visé, éventail, spirale, anneau.
+// Chacun peuple lui-même le pool de tirs ennemis (projectiles.enemy).
 import { fireEnemyBullet } from "./projectiles.js";
 import { PALETTE } from "./config.js";
 
@@ -27,7 +26,7 @@ export function patternFan(projectiles, x, y, target, speed, count = 5, spreadRa
 }
 
 // Spirale : angle tourne d'un pas fixe à chaque appel — l'appelant incrémente
-// `state.angle` lui-même. Couleur "circulaire" par défaut (tous les bras,
+// `angle` lui-même (boss.spiralAngle). Couleur "circulaire" par défaut (tous les bras,
 // pas juste le premier — un pattern dense doit rester lisible d'un bloc).
 export function patternSpiralStep(projectiles, x, y, angle, speed, arms = 3, color = PALETTE.bulletBossCircular) {
   for (let i = 0; i < arms; i++) {

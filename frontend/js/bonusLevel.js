@@ -45,7 +45,7 @@ function spawnRing(bl) {
 }
 
 // Fraction d'anneaux réussis sur le total — c'est elle qui détermine combien
-// la jauge NOVA se remplit (voir applyNovaReward dans states/playing.js).
+// la jauge NOVA se remplit (voir applyNovaReward dans states/waves.js).
 export function bonusLevelRewardFraction(bl) {
   if (!bl || BONUS_LEVEL.ringCount <= 0) return 0;
   return bl.passedCount / BONUS_LEVEL.ringCount;

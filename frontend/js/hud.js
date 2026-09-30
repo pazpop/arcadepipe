@@ -475,8 +475,7 @@ export function hitTestInfoNext(x, y) {
   return hitTestSingle(x, y, infoNextRect());
 }
 
-// Découpe une chaîne en lignes qui tiennent dans maxWidth (measureText) —
-// nécessaire pour les colonnes, deux fois plus étroites que l'écran.
+// Découpe une chaîne en lignes qui tiennent dans maxWidth (measureText).
 function wrapLines(ctx, str, maxWidth) {
   const words = str.split(" ");
   const lines = [];

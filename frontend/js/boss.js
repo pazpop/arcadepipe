@@ -1,5 +1,5 @@
 // Boss : arme mécanique massive occupant le tiers droit de l'écran, avec
-// 4 à 6 points faibles rouges clignotants. Chaque point détruit accélère
+// 4 à 6 points faibles clignotants (jaunes, puis orange et rouges sous les dégâts). Chaque point détruit accélère
 // et densifie les patterns de tir restants (phases). Victoire quand tous
 // les points faibles sont détruits.
 import { RES_W, RES_H, BOSS, DIFFICULTY, PALETTE, bulletSpeedFactor } from "./config.js";

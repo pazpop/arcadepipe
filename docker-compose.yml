@@ -42,8 +42,7 @@ services:
     read_only: true
     tmpfs:
       # /config,/data : XDG_CONFIG_HOME/XDG_DATA_HOME de Caddy (autosave de
-      # config, cache) — pas de vrais certificats ici (pas de TLS en
-      # standalone, voir Roadmap si besoin d'HTTPS direct un jour).
+      # config, cache) — pas de certificats : pas de TLS en autonome.
       - /tmp
       - /config
       - /data

@@ -1,9 +1,7 @@
 # Pas de build step (vanilla JS) — juste servir les fichiers statiques avec
 # Caddy. Caddyfile personnalisé (compression, route /api/*) plutôt que celui
 # par défaut de l'image, vu la taille de lib/libopenmpt.worklet.js.
-# Épinglé par digest (pas juste par tag) : "2-alpine" est un tag flottant —
-# même raisonnement que backend/Dockerfile. Dependabot (écosystème "docker")
-# ouvre une PR à chaque nouveau digest disponible pour ce tag.
+# Épinglé par digest (voir docs/deploiement.md) ; Dependabot propose les mises à jour.
 FROM caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
 
 # setcap donne au binaire caddy la capacité de se lier au port 80 (<1024)

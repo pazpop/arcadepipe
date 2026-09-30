@@ -1,29 +1,18 @@
 version: 2
 updates:
-  # Dépendances Python du backend (requirements.txt) — ouvre une PR dès
-  # qu'une nouvelle version sort, indépendamment de pip-audit (qui, lui, ne
-  # signale un problème qu'APRÈS qu'une CVE soit publiée sur la version
-  # déjà figée ici). Les deux sont complémentaires, pas redondants.
+  # PR à chaque nouvelle version (pip-audit, lui, ne signale qu'une CVE publiée).
   - package-ecosystem: "pip"
     directory: "/backend"
     schedule:
       interval: "weekly"
 
-  # Actions GitHub, épinglées par SHA (voir deploy.yml) —
-  # Dependabot sait lire un SHA + commentaire "# vX" et proposer une PR de
-  # bump vers le nouveau SHA correspondant à une nouvelle version, donc le
-  # pin par SHA n'empêche pas les mises à jour, juste l'exécution silencieuse
-  # d'un tag qu'on ne surveille pas soi-même.
+  # Actions (épinglées par SHA) et images de base (épinglées par digest) :
+  # voir docs/deploiement.md.
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
 
-  # Images de base des Dockerfiles, épinglées par digest (voir
-  # backend/Dockerfile, frontend/Dockerfile) — Dependabot ouvre une PR de
-  # bump de digest à chaque nouvelle publication du tag suivi (ex: nouveau
-  # patch de sécurité Debian pour python:3.11-slim), sans jamais changer le
-  # tag lui-même.
   - package-ecosystem: "docker"
     directory: "/backend"
     schedule:

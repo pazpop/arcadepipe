@@ -1,9 +1,7 @@
-// État "classement" — nommé leaderboardScreen (pas leaderboard.js, déjà pris
-// par audio/leaderboard.js qui fait les appels fetch eux-mêmes). Révèle les
-// scores un par un (effet de liste qui se déroule) une fois chargés,
+// État "classement" : révèle les scores un par un (effet de liste qui se déroule) une fois chargés,
 // retour à g.leaderboardReturnTo (menu, ou fin de partie via goToLeaderboard).
 import { consumeJustPressed } from "../input.js";
-import { fetchTopScores, fetchGamesPlayedCount } from "../audio/leaderboard.js";
+import { fetchTopScores, fetchGamesPlayedCount } from "../api.js";
 import * as hud from "../hud.js";
 import { MODE } from "./mode.js";
 

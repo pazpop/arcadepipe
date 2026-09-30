@@ -1,9 +1,6 @@
-// Régression : fin naturelle d'une piste -> UNE seule requête pour la suivante,
-// et la musique repart. Avant correctif, le worklet reposait 'end' à chaque
-// quantum audio (des centaines/s) tant qu'aucune nouvelle piste n'était
-// chargée ; chaque 'end' relançait un fetch avec un nouveau jeton -> les
-// réponses arrivaient toujours périmées -> boucle de GET sans fin, jamais de
-// musique, RAM qui grimpe.
+// Fin naturelle d'une piste : UNE seule requête pour la suivante, et la musique
+// repart. Garde-fou des correctifs n° 3 (un 'end' par quantum audio relançait
+// un fetch à chaque fois) et n° 4 (première piste jouée) de lib/PATCHES.md.
 import { test, expect } from "@playwright/test";
 import { skipHints } from "./helpers.js";
 

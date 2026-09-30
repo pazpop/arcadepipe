@@ -41,7 +41,7 @@ test("la case 'Tir auto' active le tir sans avoir à cliquer, et persiste (local
 
 test("une nouvelle partie choisit une piste musicale différente de la précédente", async ({ page }) => {
   // Teste directement music.playRandom() (voir onEnded dans audio/music.js
-  // et son appel dans startRun() de game.js) plutôt que de naviguer tout un
+  // et son appel dans startRun() de states/playing.js) plutôt que de naviguer tout un
   // cycle menu -> pause -> confirmation -> menu : ça isole la logique de
   // sélection elle-même, sans dépendre du chemin UI pour y arriver.
   const errors = collectErrors(page);
@@ -89,7 +89,7 @@ test("nom aléatoire pré-rempli + bouton VALIDER tactile (sans clavier)", async
   // Sur mobile, focus() sur le champ caché arrive après un `await` (hors du
   // geste utilisateur d'origine) : la plupart des navigateurs mobiles
   // refusent alors d'ouvrir le clavier virtuel. D'où le nom aléatoire déjà
-  // rempli (voir randomPilotName() dans game.js) et le bouton "VALIDER"
+  // rempli (voir randomPilotName() dans states/endOfRun.js) et le bouton "VALIDER"
   // tactile (voir hitTestNameEntryValidate dans hud.js) — ce test vérifie
   // qu'on peut valider le score uniquement au tap, sans jamais toucher au
   // clavier.
@@ -101,8 +101,8 @@ test("nom aléatoire pré-rempli + bouton VALIDER tactile (sans clavier)", async
   // ennemis ni les tirs du joueur (purement horizontaux, voir
   // projectiles.js) ne sont fiables pour déclencher ça vite (hitbox
   // minuscule, "style danmaku", voir PLAYER.hitboxRadius) : on force plutôt
-  // une progression ultra rapide (1 kill/vague) jusqu'à la vague 4 (premier
-  // boss, voir DIFFICULTY.bossWaveEvery), puis on fonce directement dans sa
+  // une progression ultra rapide (1 kill/vague) jusqu'au premier boss
+  // (vague DIFFICULTY.bossWaveEvery), puis on fonce directement dans sa
   // coque — collision déterministe (position connue), pas de RNG d'élite à
   // espérer (voir hitsBossHull dans boss.js, ajouté pour que foncer dans le
   // boss fasse mal au joueur, pas seulement l'inverse).
@@ -116,8 +116,8 @@ test("nom aléatoire pré-rempli + bouton VALIDER tactile (sans clavier)", async
   const { canvas, startRun, toPage, clickLogical } = canvasHelpers(page);
   await startRun();
 
-  // Tire en continu en balayant la hauteur pour enchaîner les vagues 1-3
-  // (1 kill chacune) le plus vite possible jusqu'au boss de la vague 4.
+  // Tire en continu en balayant la hauteur pour enchaîner les vagues
+  // (1 kill chacune) le plus vite possible jusqu'au premier boss.
   await page.mouse.move((await toPage(90, 135)).x, (await toPage(90, 135)).y);
   await page.mouse.down();
   for (let i = 0; i < 24; i++) {

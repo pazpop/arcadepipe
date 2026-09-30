@@ -62,7 +62,7 @@ class ScoreIn(BaseModel):
     player_name: str = Field(min_length=1, max_length=20)
     # Borne haute large mais réaliste : filtre les valeurs absurdes envoyées
     # à la main sans prétendre empêcher la triche (le score vient du client,
-    # rien ne le garantit authentique — voir Points d'attention du README).
+    # rien ne le garantit authentique — voir docs/securite.md).
     score: int = Field(ge=0, le=999_999)
     wave: int = Field(default=1, ge=1, le=9_999)
     kills: int = Field(default=0, ge=0, le=999_999)
@@ -71,7 +71,7 @@ class ScoreIn(BaseModel):
     @classmethod
     def player_name_not_blank(cls, v: str) -> str:
         # Field() ne vérifie que la longueur brute : "   " (3 espaces) passe
-        # sinon. Le .trim() côté client (game.js) ne protège pas un appel
+        # sinon. Le .trim() côté client (states/endOfRun.js) ne protège pas un appel
         # direct à l'API.
         v = v.strip()
         if not v:
@@ -115,10 +115,8 @@ def games_count(request: Request):
     return {"count": database.count_games_played()}
 
 
-# Une partie sur deux ne bat aucun score qualifiant (voir handleGameOver
-# côté frontend) : sans ce compteur séparé, la table 'scores' ne reflète
-# jamais le vrai nombre de parties jouées, seulement celles qui ont un jour
-# fait le top. Pas de payload — juste "une partie vient de se terminer".
+# Toutes les parties terminées, qualifiées ou non (triggerGameOver côté
+# frontend) : 'scores' ne garde que celles du top. Pas de payload.
 @app.post("/api/games", status_code=201)
 @limiter.limit("10/minute")
 def create_game(request: Request):

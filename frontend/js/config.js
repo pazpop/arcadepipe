@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.106";
+export const VERSION = "2.107";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -118,7 +118,7 @@ export const POWERUP = {
 export const BOSS = {
   weakPointsMin: 4,
   weakPointsMax: 6,
-  weakPointHp: 3,
+  weakPointHp: 5,
   phaseSpeedupFactor: 1.35, // patterns plus denses par point faible détruit
   bulletSpeed: 90,
   // 1er combat de boss (isFirstBoss() dans boss.js) volontairement plus

@@ -1,5 +1,5 @@
 # Épinglé par digest (voir docs/deploiement.md) ; Dependabot propose les mises à jour.
-FROM python:3.11-slim@sha256:9534e5a8e315485d4061ed659af0fd78a284c015f9b73661b41d6bab25604534
+FROM python:3.13-slim@sha256:7c61056e61ac89e852de05f3dc6fa51a6dd2181797bceed46aa725dd7cb2cd3b
 
 WORKDIR /app
 

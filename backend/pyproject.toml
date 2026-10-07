@@ -1,5 +1,5 @@
 [tool.ruff]
-target-version = "py311"
+target-version = "py313"
 # 110 plutôt que le défaut 88 (façon black) : quelques commentaires en
 # français dépassent 88 sans que ce soit un vrai problème de lisibilité —
 # évite un reformatage massif sans valeur ajoutée.

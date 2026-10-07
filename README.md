@@ -36,6 +36,6 @@ Réalisé avec l'aide d'assistants IA ([Claude](https://claude.com), [Lumo](http
 
 ## Crédits et licence
 
-- Musique : 3 morceaux de **[mall-e](https://mall-e.bandcamp.com/)**. Un grand merci à lui !
+- Musique : 4 morceaux de **[mall-e](https://mall-e.bandcamp.com/)**. Un grand merci à lui !
 - QR code : [qrcode-generator](https://github.com/kazuhikoarase/qrcode-generator) (MIT).
 - Code sous [MIT](LICENSE). La musique (`frontend/music/`) appartient à mall-e et n'est pas couverte par cette licence.

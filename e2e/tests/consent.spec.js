@@ -50,6 +50,39 @@ test("Accepter : Google Analytics chargé une seule fois, choix mémorisé", asy
   expect(errors).toEqual([]);
 });
 
+test("bouton Cookies : rouvre le bandeau ; accepter après un refus charge Analytics", async ({ page }) => {
+  const gtm = await trackGtm(page);
+  await page.goto("/");
+  await page.click("#cookie-decline");
+  await page.click("#cookie-btn");
+  await expect(page.locator("#cookie-banner")).toBeVisible();
+  await page.click("#cookie-accept");
+  await expect(page.locator("#cookie-banner")).toBeHidden();
+  await expect.poll(() => gtm.length).toBe(1);
+});
+
+test("bouton Cookies : retirer son accord coupe Analytics, efface ses cookies, et tient au rechargement", async ({ page }) => {
+  const gtm = await trackGtm(page);
+  await page.goto("/");
+  await page.click("#cookie-accept");
+  await expect.poll(() => gtm.length).toBe(1);
+  await page.evaluate(() => (document.cookie = "_ga=GA1.1.123; path=/"));
+
+  await page.click("#cookie-btn");
+  await page.click("#cookie-decline");
+  const state = await page.evaluate(() => ({
+    disabled: Object.entries(window).some(([k, v]) => k.startsWith("ga-disable-") && v === true),
+    cookies: document.cookie,
+  }));
+  expect(state.disabled).toBe(true);
+  expect(state.cookies).not.toContain("_ga");
+
+  await page.reload();
+  await expect(page.locator("#cookie-banner")).toBeHidden();
+  await page.waitForTimeout(300);
+  expect(gtm.length).toBe(1); // rien de plus après le rechargement
+});
+
 test("bouton Plein écran : présent, clic sans erreur", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");

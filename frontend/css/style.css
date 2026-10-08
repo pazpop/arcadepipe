@@ -303,6 +303,9 @@ html, body {
   font-size: 12px;
   text-align: center;
 }
+.cookie-banner a {
+  color: #4ee1ff;
+}
 .cookie-banner.hidden {
   display: none;
 }

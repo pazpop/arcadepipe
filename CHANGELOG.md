@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.120] - 2026-10-08
+- **Bouton « Cookies »** dans le panneau de gauche : rouvre le bandeau de consentement pour changer son choix à tout moment. Refuser après avoir accepté coupe Google Analytics sur-le-champ et efface ses cookies. Le bandeau renvoie vers la page des données collectées.
+
 ## [2.119] - 2026-10-08
 - Rappel « INTACT +500 » sous les vies tant que la vague est sans dégât ; clignote en rouge 1 s au premier coup encaissé, puis disparaît jusqu'à la vague suivante.
 - Micro-gel à l'impact réservé aux événements rares : plus rien sur un kill normal, 0,08 s sur un élite, 0,13 s sur un point faible, 0,14 s à la victoire sur le boss (`HIT_STOP`, à ajuster au ressenti).

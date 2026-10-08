@@ -51,7 +51,6 @@ Objectif : peaufiner l'existant (game feel, UX, boucle de rejouabilité) — **r
 - [ ] **Distance parcourue, phase 2** : l'ajouter au classement (changement de schéma serveur, non urgent).
 - [ ] Test e2e comparant deux captures d'écran prises en pause (doivent être identiques bit à bit), si l'invariant de `drawScene()` (`states/playing.js`) doit être renforcé au-delà d'un commentaire.
 
-- [ ] **Permettre de changer son choix de consentement** (RGPD : retirer son accord aussi facilement qu'on l'a donné) : ajouter un bouton **« Cookies »** dans le panneau de gauche qui rouvre le bandeau (`js/consent.js` n'affiche aujourd'hui le bandeau que tant qu'aucun choix n'est mémorisé). Prévoir aussi un lien depuis le bandeau vers [docs/donnees-collectees.md](docs/donnees-collectees.md). À faire plus tard, pas urgent.
 - [ ] **Tests e2e sur Firefox et WebKit** (Safari/iOS), pas seulement Chromium — ajouter deux projets dans `e2e/playwright.config.js`, voir quels tests passent (audio, plein écran absent sur iPhone). Le jeu vise le mobile, donc Safari compte. Pas urgent.
 - [ ] Côté **infra** (décision Traefik ou Caddy, copie distante et alertes des backups) : suivi dans la *Roadmap* du README de [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner).
 

@@ -69,7 +69,7 @@ def test_scores_a_egalite_le_premier_arrive_reste_devant(client):
 
 
 def test_seuls_les_meilleurs_scores_sont_gardes(client, monkeypatch):
-    monkeypatch.setattr(database, "MAX_SCORES", 3)
+    monkeypatch.setattr(database, "MAX_STORED_SCORES", 3)
     for score in [10, 50, 30, 40, 20]:
         client.post("/api/scores", json={"player_name": "TEST", "score": score})
     assert [s["score"] for s in client.get("/api/scores?limit=100").json()] == [50, 40, 30]

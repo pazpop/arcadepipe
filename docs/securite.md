@@ -4,7 +4,7 @@
 
 - **CORS** restreint (`ALLOWED_ORIGINS`, jamais `"*"` par défaut), requêtes SQL paramétrées, entrées validées (Pydantic).
 - **Pseudo** limité à ce que le jeu saisit : 1 à 8 lettres majuscules, chiffres ou espaces.
-- **Table des scores bornée** : seuls les 100 meilleurs sont gardés.
+- **Table des scores bornée** : seuls les 10 000 meilleurs sont gardés (100 au plus sont lisibles). La marge est voulue : de faux scores peuvent occuper le classement, pas effacer les vrais, qui reviennent une fois les faux supprimés de la base.
 - **Aucune surface XSS** : le pseudo n'est jamais inséré dans du HTML (rendu Canvas côté client, JSON côté serveur).
 - **Rate limiting** (`slowapi`, par IP réelle via `X-Forwarded-For` derrière un reverse-proxy de confiance) : `POST /api/scores` 5/min, `POST /api/games` 10/min, `GET /api/scores` et `GET /api/games/count` 60/min.
 - **Conteneurs** backend et frontend non-root, rootfs read-only, `cap_drop: ALL` (le frontend garde `NET_BIND_SERVICE`, nécessaire à Caddy non-root sur le port 80).

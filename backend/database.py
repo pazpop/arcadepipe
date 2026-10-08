@@ -13,9 +13,13 @@ from contextlib import contextmanager
 # un volume monté (/data/arcadepipe.db, voir Dockerfile).
 DB_PATH = os.environ.get("DB_PATH", "./arcadepipe.db")
 
-# Nombre de scores gardés en base : les meilleurs seulement, autant que le
-# maximum lisible par GET /api/scores. Sans ça, la table grossirait sans fin.
+# Maximum de scores renvoyés par GET /api/scores.
 MAX_SCORES = 100
+
+# Nombre de scores gardés en base : les meilleurs seulement, sinon la table
+# grossirait sans fin. Bien plus que MAX_SCORES : si de faux scores inondent
+# le classement, les vrais restent en base et reviennent une fois les faux supprimés.
+MAX_STORED_SCORES = 10_000
 
 
 def init_db():
@@ -70,11 +74,11 @@ def insert_score(player_name: str, score: int, wave: int = 1, kills: int = 0) ->
             "RETURNING id, player_name, score, wave, kills, created_at",
             (player_name, score, wave, kills),
         ).fetchone()
-        # Ne garde que les MAX_SCORES meilleurs (le nouveau score compris, s'il en fait partie).
+        # Ne garde que les MAX_STORED_SCORES meilleurs (le nouveau score compris, s'il en fait partie).
         conn.execute(
             "DELETE FROM scores WHERE id NOT IN "
             "(SELECT id FROM scores ORDER BY score DESC, id LIMIT ?)",
-            (MAX_SCORES,),
+            (MAX_STORED_SCORES,),
         )
         conn.commit()
         return dict(row)

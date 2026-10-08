@@ -30,11 +30,14 @@ function invalidate(prefix) {
   }
 }
 
-export function fetchTopScores(limit = 10) {
-  return getJson(`/api/scores?limit=${limit}`);
+// Taille du classement affiché, et seuil pour y entrer.
+export const TOP_SIZE = 10;
+
+export function fetchTopScores() {
+  return getJson(`/api/scores?limit=${TOP_SIZE}`);
 }
 
-export async function submitScore(playerName, score, wave = 1, kills = 0) {
+export async function submitScore(playerName, score, wave, kills) {
   const res = await fetch(`${API_BASE}/api/scores`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -42,12 +45,7 @@ export async function submitScore(playerName, score, wave = 1, kills = 0) {
     signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
   invalidate("/api/scores"); // le classement vient (peut-être) de changer
-  if (!res.ok) {
-    const err = new Error(`HTTP ${res.status}`);
-    err.status = res.status;
-    throw err;
-  }
-  return res.json();
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
 }
 
 // Compteur global (toutes parties, pas seulement celles qui qualifient pour

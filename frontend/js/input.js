@@ -1,7 +1,7 @@
 // Entrées clavier + tactile unifiées : le reste du jeu ne lit que
 // `input.x/y` (position cible du vaisseau en coordonnées internes) et
 // `input.keys` (Set des touches actives) sans se soucier de la source.
-import { RES_W, RES_H, INPUT } from "./config.js";
+import { RES_W, RES_H, INPUT, PLAYER } from "./config.js";
 
 // Client (souris/tactile) -> coordonnées logiques internes (RES_W x RES_H),
 // bornées aux limites du canvas. Partagé par la visée (ci-dessous) et le tap
@@ -18,7 +18,7 @@ export function canvasToLogical(canvas, clientX, clientY) {
 
 export function createInput(canvas) {
   const input = {
-    x: RES_W * 0.18,
+    x: PLAYER.restX,
     y: RES_H / 2,
     keys: new Set(),
     pointerActive: false,
@@ -74,14 +74,13 @@ export function createInput(canvas) {
     },
     { passive: false }
   );
-  canvas.addEventListener(
-    "touchend",
-    (e) => {
-      e.preventDefault();
-      if (e.touches.length === 0) input.fireHeld = false;
-    },
-    { passive: false }
-  );
+  // Doigt levé, ou geste annulé par le système (notification, geste d'accueil).
+  function handleTouchEnd(e) {
+    e.preventDefault();
+    if (e.touches.length === 0) input.fireHeld = false;
+  }
+  canvas.addEventListener("touchend", handleTouchEnd, { passive: false });
+  canvas.addEventListener("touchcancel", handleTouchEnd, { passive: false });
 
   return input;
 }

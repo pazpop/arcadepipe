@@ -127,6 +127,7 @@ export default {
   "board.wave": "WAVE",
   "board.kills": "KILLS",
   "board.empty": "No scores yet.",
+  "board.error": "Leaderboard unavailable right now.",
   "board.back": "ESC / TAP — BACK",
 
   // --- Credits ---

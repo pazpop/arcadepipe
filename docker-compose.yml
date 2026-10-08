@@ -1,11 +1,7 @@
-# Seul fichier de déploiement Docker de ce repo — pour quiconque veut faire
-# tourner ArcadePipe SANS l'infra pazpop (Traefik, réseau externe
-# `traefik-public`, terraform-infra-pazpop-hetzner). Caddy (frontend) route
-# lui-même /api/* vers le backend (voir la route ajoutée dans
-# frontend/Caddyfile), pas besoin d'un reverse-proxy externe. Le déploiement
-# pazpop (avec Traefik devant) vit entièrement dans l'autre repo
-# (terraform-infra-pazpop-hetzner/docker/arcadepipe/docker-compose.yml) —
-# celui-ci ne connaît ni l'IP du VPS ni Traefik, et ne le connaîtra jamais.
+# Déploiement autonome d'ArcadePipe, sans reverse-proxy externe : Caddy
+# (frontend) route lui-même /api/* vers le backend (voir frontend/Caddyfile).
+# Le déploiement de l'instance publique (Traefik devant) vit dans le repo
+# terraform-infra-pazpop-hetzner.
 #
 # Usage :
 #   docker compose up --build -d

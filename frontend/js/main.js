@@ -1,6 +1,7 @@
-// Point d'entrée : bootstrapping (canvas, entrées, audio) + boucle
-// requestAnimationFrame avec delta-time borné.
-import { RES_W, RES_H, STORAGE_KEYS, GAME_SPEEDS, VERSION } from "./config.js";
+// Point d'entrée : crée le jeu, branche les boutons et les touches de la page,
+// puis lance la boucle d'animation.
+import { STORAGE_KEYS, GAME_SPEEDS, VERSION } from "./config.js";
+import { createRenderer } from "./renderer.js";
 import { createInput, canvasToLogical } from "./input.js";
 import { AudioEngine } from "./audio/sfx.js";
 import { MusicPlayer } from "./audio/music.js";
@@ -10,376 +11,213 @@ import { loadItem, saveItem } from "./storage.js";
 import { initConsent } from "./consent.js";
 import { t, nextLang, translateDom } from "./i18n.js";
 
-const canvas = document.getElementById("game-canvas");
-const ctx = canvas.getContext("2d");
-// Le canvas est rendu à la résolution réelle de l'écran (resizeCanvas), mais
-// tout le jeu dessine en coordonnées logiques RES_W x RES_H : renderScale
-// fait la conversion (voir loop). Sans ça, un texte de 7 px logiques n'a que
-// 7 pixels de haut, agrandis ensuite en bouillie illisible.
-let renderScale = 1;
-// shadowBlur ignore la transformation du contexte (spécification Canvas) :
-// on le met à l'échelle ici plutôt qu'à chaque appel, sinon les halos
-// rétrécissent quand la résolution monte.
-const shadowBlurProp = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(ctx), "shadowBlur");
-Object.defineProperty(ctx, "shadowBlur", {
-  get() {
-    return shadowBlurProp.get.call(this) / renderScale;
-  },
-  set(v) {
-    shadowBlurProp.set.call(this, v * renderScale);
-  },
-});
+const $ = (id) => document.getElementById(id);
 
-const nameInputEl = document.getElementById("name-input");
-const crtOverlay = document.getElementById("crt-overlay");
-const musicStopBtn = document.getElementById("music-stop-btn");
-const musicNextBtn = document.getElementById("music-next-btn");
-const musicVolumeEl = document.getElementById("music-volume");
-const pauseBtn = document.getElementById("pause-btn");
-const mcWrap = document.getElementById("mc-wrap");
-const mcToggle = document.getElementById("mc-toggle");
-const sfxVolumeEl = document.getElementById("sfx-volume");
-const autoFireToggle = document.getElementById("autofire-toggle");
-const helpBtn = document.getElementById("help-btn");
-const fullscreenBtn = document.getElementById("fullscreen-btn");
-const speedBtn = document.getElementById("speed-btn");
-const novaBtn = document.getElementById("nova-btn");
-const shareBtn = document.getElementById("share-btn");
-const versionLabel = document.getElementById("version-label");
-if (versionLabel) versionLabel.textContent = `v${VERSION}`;
-
-// Langue : textes du HTML traduits d'entrée ; le bouton affiche le nom de la
-// langue courante et passe à la suivante (voir i18n.js).
-translateDom();
-document.getElementById("lang-btn")?.addEventListener("click", nextLang);
+const canvas = $("game-canvas");
+const renderer = createRenderer(canvas);
+const nameInputEl = $("name-input");
 
 const input = createInput(canvas);
 const audio = new AudioEngine();
 const music = new MusicPlayer(audio.ctx); // même AudioContext que les bruitages — voir audio/music.js
-
 const game = createGame({ input, audio, music, nameInputEl });
 
-// Exports pour la suite e2e (e2e/) : un test Playwright peut faire
-// `await import("/js/main.js")` et retrouver ces mêmes instances (modules ES
-// mis en cache par URL). Rien sur `window`, pas de trace en prod.
-export { music, audio, game };
+// Pour la suite e2e : un test peut faire `await import("/js/main.js")` et
+// retrouver ces mêmes instances (un module n'est évalué qu'une fois par page).
+export { music, game };
 
-// Bannière RGPD : charge Google Analytics seulement après consentement.
+translateDom();
+$("version-label").textContent = `v${VERSION}`;
+$("lang-btn").addEventListener("click", nextLang);
 initConsent();
 
-// --- Redimensionnement responsive : ratio 480x270 gardé, agrandi au max.
-// ponytail: densité plafonnée à 2 (un téléphone à 3 rendrait 2,25 fois plus de
-// pixels pour un gain invisible) ; à baisser si un appareil rame.
-const MAX_PIXEL_RATIO = 2;
-function resizeCanvas() {
-  const ratio = RES_W / RES_H;
-  let w = window.innerWidth;
-  let h = window.innerHeight;
-  if (w / h > ratio) {
-    w = h * ratio;
-  } else {
-    h = w / ratio;
-  }
-  canvas.style.width = `${Math.floor(w)}px`;
-  canvas.style.height = `${Math.floor(h)}px`;
-  // Changer width/height efface le canvas et remet le contexte à zéro :
-  // seulement si la taille change vraiment, et imageSmoothingEnabled à refaire
-  // (sinon drawImage lisse les sprites en blobs flous).
-  const pixelRatio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO);
-  const bw = Math.max(RES_W, Math.round(Math.floor(w) * pixelRatio));
-  if (canvas.width !== bw) {
-    canvas.width = bw;
-    canvas.height = Math.round((bw * RES_H) / RES_W);
-    ctx.imageSmoothingEnabled = false;
-  }
-  renderScale = canvas.width / RES_W;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-
-// --- Audio : repris à CHAQUE geste utilisateur, pas seulement le premier.
-// resume() ne réussit que depuis un vrai geste (jamais depuis la boucle
-// d'animation) et le navigateur peut suspendre le contexte en cours de partie ;
-// en "Tir automatique" le joueur ne clique plus. ensure() et start() sont
-// idempotents : les rappeler à chaque geste ne coûte rien.
+// --- Audio : repris à chaque geste, pas seulement au premier. Le navigateur
+// n'accepte resume() que depuis un vrai geste et peut suspendre le contexte en
+// cours de partie. ensure() et start() sont sans effet s'il n'y a rien à faire.
 function beginAudio() {
-  audio.ensure(); // reprend le contexte partagé (SFX + musique, voir audio/music.js)
+  audio.ensure();
   audio.setMuted(music.muted);
-  music.start(); // no-op si déjà démarré (voir music.js)
+  music.start();
 }
 window.addEventListener("pointerdown", beginAudio);
 window.addEventListener("keydown", beginAudio);
 
-// --- Tap/clic générique (menu, classement, crédits) — converti en
-// coordonnées logiques internes (480x270) avant d'être transmis au jeu.
+// --- Tap ou clic dans le jeu (menus), en coordonnées logiques.
 canvas.addEventListener("pointerup", (e) => {
   const p = canvasToLogical(canvas, e.clientX, e.clientY);
   game.handleTap(p.x, p.y);
 });
 
-// --- Panneau rétractable (bas gauche) : #mc-toggle reste toujours visible,
-// même replié — préférence persistée. ---
-if (mcWrap && mcToggle) {
-  let collapsed = loadItem(STORAGE_KEYS.panelCollapsed) === "1";
-  function applyPanelState() {
-    mcWrap.classList.toggle("collapsed", collapsed);
-    mcToggle.textContent = collapsed ? "▶" : "◀";
-  }
+// --- Panneau de réglages (bas gauche), rétractable ; #mc-toggle reste visible.
+const mcWrap = $("mc-wrap");
+const mcToggle = $("mc-toggle");
+let panelCollapsed = loadItem(STORAGE_KEYS.panelCollapsed) === "1";
+function applyPanelState() {
+  mcWrap.classList.toggle("collapsed", panelCollapsed);
+  mcToggle.textContent = panelCollapsed ? "▶" : "◀";
+}
+applyPanelState();
+mcToggle.addEventListener("click", () => {
+  panelCollapsed = !panelCollapsed;
   applyPanelState();
-  mcToggle.addEventListener("click", () => {
-    collapsed = !collapsed;
-    applyPanelState();
-    saveItem(STORAGE_KEYS.panelCollapsed, collapsed ? "1" : "0");
-  });
-}
+  saveItem(STORAGE_KEYS.panelCollapsed, panelCollapsed ? "1" : "0");
+});
 
-// --- Bouton pause (mobile — pas d'équivalent tactile à Échap/P) ---
-if (pauseBtn) {
-  pauseBtn.addEventListener("click", () => {
-    audio.ensure();
-    game.pause(); // no-op si une partie n'est pas en cours (déjà en pause, au menu...)
-  });
-}
+// Seul moyen de mettre en pause au tactile (pas de touche Échap). Sans effet hors partie.
+$("pause-btn").addEventListener("click", () => game.pause());
 
-// --- Contrôles musique (stop/lecture, piste suivante, volume) ---
-if (musicVolumeEl) musicVolumeEl.value = String(Math.round(music.volume * 100));
-if (musicStopBtn) {
+// --- Musique : stop/lecture, piste suivante, volume.
+const musicStopBtn = $("music-stop-btn");
+const musicVolumeEl = $("music-volume");
+musicStopBtn.addEventListener("click", () => {
+  music.toggleStop();
   musicStopBtn.textContent = music.paused ? "▶" : "⏹";
-  musicStopBtn.addEventListener("click", () => {
-    audio.ensure(); // au cas où c'est le tout premier geste de la session
-    music.toggleStop();
-    musicStopBtn.textContent = music.paused ? "▶" : "⏹";
+});
+$("music-next-btn").addEventListener("click", () => music.next());
+musicVolumeEl.value = String(Math.round(music.volume * 100));
+musicVolumeEl.addEventListener("input", () => music.setVolume(Number(musicVolumeEl.value) / 100));
+
+// --- Volume des bruitages, indépendant de celui de la musique.
+const sfxVolumeEl = $("sfx-volume");
+sfxVolumeEl.value = String(Math.round(audio.masterVolume * 100));
+sfxVolumeEl.addEventListener("input", () => audio.setMasterVolume(Number(sfxVolumeEl.value) / 100));
+
+// --- Tir automatique (case à cocher) : sinon il faut maintenir le clic.
+const autoFireToggle = $("autofire-toggle");
+autoFireToggle.checked = loadItem(STORAGE_KEYS.autoFire) === "1";
+input.autoFire = autoFireToggle.checked;
+autoFireToggle.addEventListener("change", () => {
+  input.autoFire = autoFireToggle.checked;
+  saveItem(STORAGE_KEYS.autoFire, autoFireToggle.checked ? "1" : "0");
+});
+
+$("help-btn").addEventListener("click", () => game.openHelp());
+
+// --- Plein écran sur #game-container (pas le canvas seul : les boutons posés
+// par-dessus doivent rester visibles). Bouton masqué si le navigateur n'a pas
+// l'API (iPhone).
+const fullscreenBtn = $("fullscreen-btn");
+if (document.fullscreenEnabled) {
+  fullscreenBtn.addEventListener("click", () => {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else $("game-container").requestFullscreen().catch(() => {}); // refus du navigateur : rien à faire
   });
-}
-if (musicNextBtn) {
-  musicNextBtn.addEventListener("click", () => {
-    audio.ensure();
-    music.next();
+  document.addEventListener("fullscreenchange", () => {
+    fullscreenBtn.textContent = t(document.fullscreenElement ? "panel.fullscreen.exit" : "panel.fullscreen");
   });
-}
-if (musicVolumeEl) {
-  musicVolumeEl.addEventListener("input", () => {
-    music.setVolume(Number(musicVolumeEl.value) / 100);
-  });
+} else {
+  fullscreenBtn.classList.add("hidden");
 }
 
-// --- Volume des bruitages (indépendant de celui de la musique) ---
-if (sfxVolumeEl) {
-  sfxVolumeEl.value = String(Math.round(audio.masterVolume * 100));
-  sfxVolumeEl.addEventListener("input", () => {
-    audio.setMasterVolume(Number(sfxVolumeEl.value) / 100);
-  });
-}
-
-// --- Tir manuel (défaut) vs automatique (case à cocher, préférence persistée) ---
-if (autoFireToggle) {
-  const storedAutoFire = loadItem(STORAGE_KEYS.autoFire) === "1";
-  autoFireToggle.checked = storedAutoFire;
-  input.autoFire = storedAutoFire;
-  autoFireToggle.addEventListener("change", () => {
-    input.autoFire = autoFireToggle.checked;
-    saveItem(STORAGE_KEYS.autoFire, autoFireToggle.checked ? "1" : "0");
-  });
-}
-
-// --- Bouton Aide (panneau bas gauche) : ouvre l'écran d'aide directement,
-// depuis le menu principal ou en pleine partie. ---
-if (helpBtn) {
-  helpBtn.addEventListener("click", () => {
-    audio.ensure();
-    game.openHelp();
-  });
-}
-
-// --- Bouton plein écran : bascule sur #game-container (pas juste le canvas,
-// pour garder les boutons tactiles superposés accessibles) — n'enlève PAS
-// les bandes noires en paysage mobile (le canvas reste contraint au ratio
-// 16:9 par resizeCanvas), juste la barre
-// d'adresse du navigateur. Absent sur les navigateurs/contextes qui ne
-// supportent pas l'API (ex: iOS Safari sur iPhone) — bouton alors masqué
-// plutôt que de rester visible pour ne rien faire au clic.
-if (fullscreenBtn) {
-  if (!document.fullscreenEnabled) {
-    fullscreenBtn.classList.add("hidden");
-  } else {
-    fullscreenBtn.addEventListener("click", () => {
-      audio.ensure();
-      if (document.fullscreenElement) {
-        document.exitFullscreen();
-      } else {
-        document.getElementById("game-container").requestFullscreen().catch(() => {
-          /* refusé par le navigateur (hors geste utilisateur direct...) — pas bloquant */
-        });
-      }
-    });
-    document.addEventListener("fullscreenchange", () => {
-      fullscreenBtn.textContent = t(document.fullscreenElement ? "panel.fullscreen.exit" : "panel.fullscreen");
-    });
-  }
-}
-
-// --- Vitesse du jeu (x1/x1.5/x2, cycle au clic) : multiplie le delta-time
-// envoyé à game.update() ci-dessous — accélère tout ce qui dépend du temps
-// de façon uniforme (déplacement, cadence de tir, apparition des ennemis...),
-// donc la difficulté relative ne change pas. La musique/les bruitages tournent
-// sur leur propre horloge audio réelle et ne sont jamais affectés.
-let gameSpeed = 1;
-if (speedBtn) {
-  const storedSpeed = parseFloat(loadItem(STORAGE_KEYS.gameSpeed));
-  if (GAME_SPEEDS.includes(storedSpeed)) gameSpeed = storedSpeed;
+// --- Vitesse du jeu (x1, x1.5, x2 au clic) : multiplie le temps écoulé envoyé
+// à game.update() (voir loop). Tout accélère du même facteur, donc la
+// difficulté relative ne change pas ; la musique et les bruitages gardent leur vitesse.
+const speedBtn = $("speed-btn");
+const storedSpeed = parseFloat(loadItem(STORAGE_KEYS.gameSpeed));
+let gameSpeed = GAME_SPEEDS.includes(storedSpeed) ? storedSpeed : 1;
+speedBtn.textContent = `x${gameSpeed}`;
+speedBtn.addEventListener("click", () => {
+  gameSpeed = GAME_SPEEDS[(GAME_SPEEDS.indexOf(gameSpeed) + 1) % GAME_SPEEDS.length];
   speedBtn.textContent = `x${gameSpeed}`;
-  speedBtn.addEventListener("click", () => {
-    const idx = GAME_SPEEDS.indexOf(gameSpeed);
-    gameSpeed = GAME_SPEEDS[(idx + 1) % GAME_SPEEDS.length];
-    speedBtn.textContent = `x${gameSpeed}`;
-    saveItem(STORAGE_KEYS.gameSpeed, gameSpeed);
-  });
-}
+  saveItem(STORAGE_KEYS.gameSpeed, gameSpeed);
+});
 
-// --- Bouton NOVA (tactile) : pose un jeton générique dans input.justPressed,
-// consommé exactement comme une touche clavier (voir states/playing.js). ---
-if (novaBtn) {
-  novaBtn.addEventListener("click", () => {
-    audio.ensure();
-    input.justPressed.add("NovaTrigger");
-  });
-}
+// --- Bouton NOVA (tactile) : lu par le jeu comme une touche (states/playing.js).
+const novaBtn = $("nova-btn");
+novaBtn.addEventListener("click", () => input.justPressed.add("NovaTrigger"));
 
-// --- Bouton "Partager" (visible juste après la fin d'une partie, voir
-// loop() plus bas) : image PNG carrée (score/vague/kills/meilleure chaîne
-// de frôlements, voir shareCard.js) — copiée dans le presse-papier quand le
-// navigateur le permet, TOUJOURS aussi proposée en téléchargement (support
-// du presse-papier image inégal d'un navigateur à l'autre, le téléchargement
-// marche partout). Le clic est le geste utilisateur exigé par l'API Clipboard.
-if (shareBtn) {
-  shareBtn.addEventListener("click", async () => {
-    const canvas2 = createShareCardCanvas(game.getRunSummary());
-    const blob = await new Promise((resolve) => canvas2.toBlob(resolve, "image/png"));
-    if (!blob) return;
+// --- Bouton Partager (fin de partie) : image PNG du résultat (shareCard.js),
+// toujours téléchargée, et copiée dans le presse-papier si le navigateur le permet.
+const shareBtn = $("share-btn");
+shareBtn.addEventListener("click", async () => {
+  const card = createShareCardCanvas(game.getRunSummary());
+  const blob = await new Promise((resolve) => card.toBlob(resolve, "image/png"));
+  if (!blob) return;
 
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "arcadepipe-score.png";
-    a.click();
-    // Libérée après un délai : révoquée tout de suite, certains navigateurs annulent le téléchargement.
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = "arcadepipe-score.png";
+  link.click();
+  // Libérée après un délai : révoquée tout de suite, certains navigateurs annulent le téléchargement.
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-    try {
-      await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-      const original = shareBtn.textContent;
-      shareBtn.textContent = t("share.done");
-      setTimeout(() => (shareBtn.textContent = original), 2000);
-    } catch {
-      /* Clipboard API image indisponible sur ce navigateur — le
-         téléchargement ci-dessus a déjà eu lieu, rien de plus à faire. */
-    }
-  });
-}
+  // Le clic a pris le focus : le rendre au champ du pseudo, sinon la frappe ne passe plus.
+  if (game.mode === game.MODE.NAME_ENTRY) nameInputEl.focus();
 
-// --- Konami code (easter egg, aucun effet de jeu — juste un son + un tilt
-// visuel du canvas, voir konami-tilt dans css/style.css) ---
-const KONAMI_SEQUENCE = [
-  "ArrowUp", "ArrowUp", "ArrowDown", "ArrowDown",
-  "ArrowLeft", "ArrowRight", "ArrowLeft", "ArrowRight",
-  "KeyB", "KeyA",
-];
-let konamiProgress = 0;
-window.addEventListener("keydown", (e) => {
-  if (e.code === KONAMI_SEQUENCE[konamiProgress]) {
-    konamiProgress++;
-  } else {
-    // Touche inattendue : on recommence à zéro, sauf si elle correspond
-    // justement à la première touche de la séquence (permet d'enchaîner
-    // deux tentatives sans devoir marquer une pause entre les deux).
-    konamiProgress = e.code === KONAMI_SEQUENCE[0] ? 1 : 0;
-  }
-  if (konamiProgress === KONAMI_SEQUENCE.length) {
-    konamiProgress = 0;
-    audio.ensure();
-    audio.playKonami();
-    // Force un redémarrage propre de l'animation même si le code est refait
-    // avant la fin de la précédente — retirer/rajouter la classe seule ne
-    // suffit pas (le navigateur ne "voit" pas de changement sans un reflow
-    // forcé entre les deux, ici via la simple lecture de offsetWidth).
-    canvas.classList.remove("konami-tilt");
-    void canvas.offsetWidth;
-    canvas.classList.add("konami-tilt");
+  try {
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
+    shareBtn.textContent = t("share.done");
+    setTimeout(() => (shareBtn.textContent = t("share.button")), 2000);
+  } catch {
+    /* copie d'image indisponible sur ce navigateur : le téléchargement a déjà eu lieu */
   }
 });
 
-// --- Mute (M) et bascule CRT (C) — jamais pendant la saisie du pseudo, où
-// ces lettres sont du texte. ---
-window.addEventListener("keydown", (e) => {
-  if (game.mode === game.MODE.NAME_ENTRY) return;
-  if (e.code === "KeyM") {
-    const muted = music.toggleMuted();
-    audio.setMuted(muted);
-  } else if (e.code === "KeyC") {
-    toggleCrt();
-  }
-});
-
-function readCrtEnabled() {
-  const v = loadItem(STORAGE_KEYS.crt);
-  return v === null ? true : v === "1";
-}
-function applyCrt(enabled) {
-  if (crtOverlay) crtOverlay.classList.toggle("hidden", !enabled);
-}
+// --- Filtre rétro CRT (touche C).
+const crtOverlay = $("crt-overlay");
+let crtEnabled = loadItem(STORAGE_KEYS.crt) !== "0";
+crtOverlay.classList.toggle("hidden", !crtEnabled);
 function toggleCrt() {
-  const enabled = !readCrtEnabled();
-  saveItem(STORAGE_KEYS.crt, enabled ? "1" : "0");
-  applyCrt(enabled);
+  crtEnabled = !crtEnabled;
+  crtOverlay.classList.toggle("hidden", !crtEnabled);
+  saveItem(STORAGE_KEYS.crt, crtEnabled ? "1" : "0");
 }
-applyCrt(readCrtEnabled());
 
-// --- Saisie du nom : un <input> caché reçoit le focus (clavier virtuel
-// mobile), sa valeur est répercutée dans le jeu à chaque frappe.
-if (nameInputEl) {
-  nameInputEl.addEventListener("input", () => {
-    game.setNameEntryText(nameInputEl.value);
-  });
-  nameInputEl.addEventListener("keydown", (e) => {
-    if (e.code === "Enter") game.confirmNameEntry();
-  });
-}
+// --- Raccourcis clavier. e.key (la lettre) et non e.code (la position de la
+// touche) : M et A ne sont pas au même endroit sur un clavier AZERTY.
 window.addEventListener("keydown", (e) => {
-  if (game.mode === game.MODE.NAME_ENTRY && e.code === "Enter" && document.activeElement !== nameInputEl) {
-    game.confirmNameEntry();
+  const key = (e.key || "").toLowerCase();
+  if (game.mode === game.MODE.NAME_ENTRY) {
+    // Les lettres sont le pseudo ; seule Entrée valide.
+    if (key === "enter" && !e.repeat) game.confirmNameEntry();
+    return;
   }
+  if (key === "m") audio.setMuted(music.toggleMuted());
+  else if (key === "c") toggleCrt();
+  checkKonami(key);
 });
 
-// --- Pause auto quand l'onglet/app passe en arrière-plan (mobile : ne pas
-// perdre de vies pendant l'absence) + reprise de l'AudioContext au retour.
-// Certains navigateurs suspendent le contexte audio après un moment en
-// arrière-plan (économie d'énergie) sans jamais le reprendre eux-mêmes : sans
-// ce resume() explicite, la musique resterait muette au retour sur l'onglet.
+// --- Konami code : un jingle et le canvas qui penche (konami-tilt, css/style.css). Aucun effet de jeu.
+const KONAMI_SEQUENCE = ["arrowup", "arrowup", "arrowdown", "arrowdown", "arrowleft", "arrowright", "arrowleft", "arrowright", "b", "a"];
+let konamiProgress = 0;
+function checkKonami(key) {
+  if (key === KONAMI_SEQUENCE[konamiProgress]) konamiProgress++;
+  else konamiProgress = key === KONAMI_SEQUENCE[0] ? 1 : 0; // une mauvaise touche peut être le début d'un nouvel essai
+  if (konamiProgress < KONAMI_SEQUENCE.length) return;
+  konamiProgress = 0;
+  audio.playKonami();
+  // Relance l'animation même si elle est en cours : lire offsetWidth force le
+  // navigateur à prendre en compte le retrait de la classe avant son retour.
+  canvas.classList.remove("konami-tilt");
+  void canvas.offsetWidth;
+  canvas.classList.add("konami-tilt");
+}
+
+// --- Saisie du pseudo : un champ caché reçoit la frappe (et ouvre le clavier
+// virtuel sur mobile) ; le jeu affiche sa valeur.
+nameInputEl.addEventListener("input", () => game.setNameEntryText(nameInputEl.value));
+
+// --- Onglet en arrière-plan : pause, pour ne pas perdre de vies pendant
+// l'absence. Au retour, reprise du contexte audio, que certains navigateurs
+// suspendent sans jamais le relancer.
 document.addEventListener("visibilitychange", () => {
-  if (document.hidden) {
-    game.pause();
-  } else {
-    audio.ensure();
-  }
+  if (document.hidden) game.pause();
+  else audio.ensure();
 });
 
-// --- Boucle principale ---
+// --- Boucle principale.
 let lastTime = 0;
 function loop(timestamp) {
-  const realDt = Math.min(0.05, (timestamp - lastTime) / 1000 || 0); // borné avant le multiplicateur de vitesse, pas après
+  // Temps écoulé borné à 50 ms : après un onglet gelé, le jeu ne fait pas un bond.
+  const dt = Math.min(0.05, (timestamp - lastTime) / 1000 || 0);
   lastTime = timestamp;
-  game.update(realDt * gameSpeed);
-  ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
-  game.draw(ctx);
-  if (novaBtn) {
-    novaBtn.classList.toggle("hidden", !(game.mode === game.MODE.PLAYING && game.novaStock > 0 && !game.inBonusLevel));
-  }
-  if (shareBtn) {
-    // GAME_OVER (juste après la mort) et NAME_ENTRY (pendant/après la
-    // saisie du pseudo) : la fenêtre naturelle où le joueur vient de voir
-    // son résultat, avant de repartir vers le classement/le menu.
-    shareBtn.classList.toggle("hidden", !(game.mode === game.MODE.GAME_OVER || game.mode === game.MODE.NAME_ENTRY));
-  }
+  game.update(dt * gameSpeed);
+  renderer.applyScale();
+  game.draw(renderer.ctx);
+  const { mode, MODE } = game;
+  novaBtn.classList.toggle("hidden", !(mode === MODE.PLAYING && game.novaStock > 0 && !game.inBonusLevel));
+  shareBtn.classList.toggle("hidden", mode !== MODE.GAME_OVER && mode !== MODE.NAME_ENTRY);
   requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);

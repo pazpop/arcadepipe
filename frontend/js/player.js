@@ -5,27 +5,20 @@ import { buildSprites, drawWithGlow } from "./assets.js";
 import { firePlayerBullet, firePlayerPellets } from "./projectiles.js";
 
 export function createPlayer() {
-  return {
-    x: RES_W * 0.18,
-    y: RES_H / 2,
-    fireTimer: 0,
-    invuln: 0,
-    lives: PLAYER.startingLives,
-    alive: true,
-    buff: null, // { type: "power" | "rapid" | "shotgun", timer } — voir POWERUP dans config.js
-    shield: 0, // coups restants absorbés par le bouclier (indépendant de `buff`, pas de minuteur)
-  };
+  const player = {};
+  resetPlayer(player);
+  return player;
 }
 
 export function resetPlayer(player) {
-  player.x = RES_W * 0.18;
+  player.x = PLAYER.restX;
   player.y = RES_H / 2;
   player.fireTimer = 0;
   player.invuln = PLAYER.invulnDuration * 0.5;
   player.lives = PLAYER.startingLives;
   player.alive = true;
-  player.buff = null;
-  player.shield = 0;
+  player.buff = null; // { type: "power" | "rapid" | "shotgun", timer } — voir POWERUP dans config.js
+  player.shield = 0; // coups restants absorbés par le bouclier (indépendant de `buff`, pas de minuteur)
 }
 
 // Ramasser un bonus d'arme remplace l'effet en cours (pas de cumul). Le

@@ -67,7 +67,7 @@ export function spawnBoss(waveNumber) {
     sizeScale,
     hueShift: Math.random() * 360,
     fireTimer: 0.3, // délai avant le 1er tir, une fois arrivé (boss.arrived)
-    entryDone: false,
+    elapsed: 0, // secondes depuis l'arrivée, pour le flottement vertical
     weakPoints: points,
     victory: false,
     victoryTimer: 0,
@@ -100,8 +100,8 @@ export function updateBoss(boss, dt, projectiles, target) {
     return;
   }
 
-  boss.y += Math.sin(performance.now() / 900) * 6 * dt;
-  boss.y = Math.max(RES_H * 0.3, Math.min(RES_H * 0.7, boss.y));
+  boss.elapsed += dt;
+  boss.y = RES_H / 2 + Math.sin(boss.elapsed / 0.9) * 5.4;
 
   for (const p of boss.weakPoints) p.blink += dt * 6;
 

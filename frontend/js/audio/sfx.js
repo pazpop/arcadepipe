@@ -17,8 +17,8 @@ export class AudioEngine {
     this.master.connect(this.ctx.destination);
   }
 
-  // Le contexte doit être repris après un geste utilisateur (règle des
-  // navigateurs) — appeler ensure() au premier clic/touch/keydown.
+  // Le contexte doit être repris depuis un geste utilisateur (règle des
+  // navigateurs) : appelé à chaque clic, tap ou touche (voir main.js).
   ensure() {
     if (this.ctx.state === "suspended") this.ctx.resume();
   }
@@ -34,13 +34,14 @@ export class AudioEngine {
     saveItem(STORAGE_KEYS.sfxVolume, this.masterVolume);
   }
 
-  _envGain(duration, peak = 1, attack = 0.005, release = 0.01) {
+  // Enveloppe de volume d'une note : montée, tenue, descente. `start` permet
+  // de programmer une note qui démarre plus tard (mélodies).
+  _envGain(duration, peak = 1, attack = 0.005, release = 0.01, start = this.ctx.currentTime) {
     const g = this.ctx.createGain();
-    const now = this.ctx.currentTime;
-    g.gain.setValueAtTime(0, now);
-    g.gain.linearRampToValueAtTime(peak, now + attack);
-    g.gain.setValueAtTime(peak, now + Math.max(attack, duration - release));
-    g.gain.linearRampToValueAtTime(0, now + duration);
+    g.gain.setValueAtTime(0, start);
+    g.gain.linearRampToValueAtTime(peak, start + attack);
+    g.gain.setValueAtTime(peak, start + Math.max(attack, duration - release));
+    g.gain.linearRampToValueAtTime(0, start + duration);
     return g;
   }
 
@@ -67,10 +68,11 @@ export class AudioEngine {
     return filter;
   }
 
-  _tone({ type = "square", startFreq, endFreq, duration = 0.1, gain = 0.15 }) {
-    const now = this.ctx.currentTime;
+  // `delay` (secondes) et `release` : pour enchaîner plusieurs notes.
+  _tone({ type = "square", startFreq, endFreq = startFreq, duration = 0.1, gain = 0.15, delay = 0, release = 0.01 }) {
+    const now = this.ctx.currentTime + delay;
     const osc = this.ctx.createOscillator();
-    const g = this._envGain(duration, gain);
+    const g = this._envGain(duration, gain, 0.005, release, now);
     osc.type = type;
     osc.frequency.setValueAtTime(startFreq, now);
     osc.frequency.exponentialRampToValueAtTime(Math.max(1, endFreq), now + duration);
@@ -217,9 +219,9 @@ export class AudioEngine {
   // Seuil de chaîne atteint (GRAZE.milestones) : double tic plus aigu que le
   // plus haut palier de playGraze, pour que le cap s'entende.
   playGrazeMilestone() {
-    const tic = (freq) => this._tone({ type: "sine", startFreq: freq, endFreq: freq * 1.15, duration: 0.05, gain: 0.07 });
-    tic(1900);
-    setTimeout(() => tic(2400), 70);
+    [1900, 2400].forEach((freq, i) => {
+      this._tone({ type: "sine", startFreq: freq, endFreq: freq * 1.15, duration: 0.05, gain: 0.07, delay: i * 0.07 });
+    });
   }
 
   // Anneau du niveau bonus (bonusLevel.js) réussi : note franche, un peu plus
@@ -235,52 +237,24 @@ export class AudioEngine {
     this._tone({ type: "sine", startFreq: 220, endFreq: 140, duration: 0.08, gain: 0.05 });
   }
 
-  // Konami code (voir main.js) : jingle court-court-court-long, mélodie originale.
-  // Chaque note a sa propre enveloppe de volume : _envGain programme ses rampes
-  // à partir de `ctx.currentTime` au moment de l'appel, ce qui les ferait
-  // toutes finir avant que les oscillateurs, eux décalés dans le temps, ne sonnent.
+  // Konami code (voir main.js) : jingle court-court-court-long.
   playKonami() {
-    const now = this.ctx.currentTime;
-    // start/duration en secondes depuis "now".
     const notes = [
-      { freq: 392, start: 0, duration: 0.1 }, // sol
-      { freq: 523, start: 0.1, duration: 0.1 }, // do
-      { freq: 659, start: 0.2, duration: 0.12 }, // mi
-      { freq: 784, start: 0.32, duration: 0.3 }, // sol aigu, tenue — le "ta-daa" final
-      { freq: 1175, start: 0.38, duration: 0.15 }, // ré très aigu, éclat par-dessus la tenue
+      { freq: 392, delay: 0, duration: 0.1 }, // sol
+      { freq: 523, delay: 0.1, duration: 0.1 }, // do
+      { freq: 659, delay: 0.2, duration: 0.12 }, // mi
+      { freq: 784, delay: 0.32, duration: 0.3 }, // sol aigu, tenue — le "ta-daa" final
+      { freq: 1175, delay: 0.38, duration: 0.15 }, // ré très aigu, éclat par-dessus la tenue
     ];
-    for (const { freq, start, duration } of notes) {
-      const t = now + start;
-      const osc = this.ctx.createOscillator();
-      const g = this.ctx.createGain();
-      const attack = 0.008;
-      const release = duration * 0.4;
-      g.gain.setValueAtTime(0, t);
-      g.gain.linearRampToValueAtTime(0.15, t + attack);
-      g.gain.setValueAtTime(0.15, t + Math.max(attack, duration - release));
-      g.gain.linearRampToValueAtTime(0, t + duration);
-      osc.type = "square";
-      osc.frequency.setValueAtTime(freq, t);
-      osc.connect(g);
-      g.connect(this.master);
-      osc.start(t);
-      osc.stop(t + duration + 0.02);
+    for (const { freq, delay, duration } of notes) {
+      this._tone({ startFreq: freq, duration, delay, release: duration * 0.4 });
     }
   }
 
   // Ramassage de bonus : deux notes montantes, timbre franc et positif, distinct des tirs/impacts.
   playPowerup() {
-    const now = this.ctx.currentTime;
     [520, 780].forEach((freq, i) => {
-      const start = now + i * 0.06;
-      const osc = this.ctx.createOscillator();
-      const g = this._envGain(0.12, 0.12, 0.005, 0.08);
-      osc.type = "square";
-      osc.frequency.setValueAtTime(freq, start);
-      osc.connect(g);
-      g.connect(this.master);
-      osc.start(start);
-      osc.stop(start + 0.14);
+      this._tone({ startFreq: freq, duration: 0.12, gain: 0.12, delay: i * 0.06, release: 0.08 });
     });
   }
 }

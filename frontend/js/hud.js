@@ -34,13 +34,6 @@ function hitTestRects(x, y, rects) {
   return -1;
 }
 
-// Bouton unique (aide, saisie du nom) : 0 si survolé/cliqué, -1
-// sinon — même contrat que hitTestRects, pour rester compatible avec
-// syncHoverWithSound() côté states/navHelpers.js.
-function hitTestSingle(x, y, r) {
-  return pointInRect(x, y, r) ? 0 : -1;
-}
-
 function text(ctx, str, x, y, { size = 8, color = PALETTE.hud, align = "left", alpha = 1, glow = null } = {}) {
   ctx.save();
   ctx.globalAlpha = alpha;
@@ -306,9 +299,10 @@ const COL = {
   kills: RES_W - 20,
 };
 
-export function drawLeaderboardScreen(ctx, scores, revealCount, gamesPlayed) {
+// scores : null pendant le chargement, ou si le backend est injoignable (failed).
+export function drawLeaderboardScreen(ctx, scores, failed, revealCount, gamesPlayed) {
   text(ctx, t("board.title"), RES_W / 2, 24, { size: 16, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
-  // Masqué plutôt qu'un faux "0" si le backend est injoignable (goToLeaderboard laisse gamesPlayed à null).
+  // Masqué plutôt qu'un faux "0" si le backend est injoignable.
   if (gamesPlayed != null) {
     text(ctx, t("board.games", { count: gamesPlayed }), RES_W / 2, 34, { size: 7, align: "center", alpha: 0.6 });
   }
@@ -318,13 +312,12 @@ export function drawLeaderboardScreen(ctx, scores, revealCount, gamesPlayed) {
   text(ctx, t("board.wave"), COL.wave, 42, { size: 7, align: "right", alpha: 0.7 });
   text(ctx, t("board.kills"), COL.kills, 42, { size: 7, align: "right", alpha: 0.7 });
 
-  if (!scores || scores.length === 0) {
-    text(ctx, t("board.empty"), RES_W / 2, RES_H / 2, { size: 9, align: "center" });
-  }
+  if (failed) text(ctx, t("board.error"), RES_W / 2, RES_H / 2, { size: 9, align: "center" });
+  else if (scores && scores.length === 0) text(ctx, t("board.empty"), RES_W / 2, RES_H / 2, { size: 9, align: "center" });
 
   const rowH = 16;
   const startY = 58;
-  scores.slice(0, revealCount).forEach((sc, i) => {
+  (scores || []).slice(0, revealCount).forEach((sc, i) => {
     const isMedal = i < 3;
     const color = isMedal ? MEDAL_COLORS[i] : PALETTE.hud;
     const size = isMedal ? 10 : 8;
@@ -451,7 +444,7 @@ function infoContinueRect() {
 }
 
 export function hitTestInfoContinue(x, y) {
-  return hitTestSingle(x, y, infoContinueRect());
+  return pointInRect(x, y, infoContinueRect());
 }
 
 // Pagination (voir states/help.js, HELP_PAGES) — juste au-dessus de
@@ -465,11 +458,11 @@ function infoNextRect() {
 }
 
 export function hitTestInfoPrev(x, y) {
-  return hitTestSingle(x, y, infoPrevRect());
+  return pointInRect(x, y, infoPrevRect());
 }
 
 export function hitTestInfoNext(x, y) {
-  return hitTestSingle(x, y, infoNextRect());
+  return pointInRect(x, y, infoNextRect());
 }
 
 // Découpe une chaîne en lignes qui tiennent dans maxWidth (measureText).
@@ -612,7 +605,7 @@ function nameEntryValidateRect() {
 }
 
 export function hitTestNameEntryValidate(x, y) {
-  return hitTestSingle(x, y, nameEntryValidateRect());
+  return pointInRect(x, y, nameEntryValidateRect());
 }
 
 export function drawNameEntry(ctx, name, cursorVisible) {

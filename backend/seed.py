@@ -1,6 +1,6 @@
 """
-Jeu de données de départ pour ArcadePipe.
-Lance ce script une fois pour peupler la table 'scores'.
+Jeu de données de départ pour ArcadePipe : peuple la table 'scores' si elle
+est vide (relancer le script ne crée pas de doublons).
 
 Usage: python seed.py
 """
@@ -21,6 +21,9 @@ SEED_SCORES = [
 
 if __name__ == "__main__":
     database.init_db()
-    for player_name, score in SEED_SCORES:
-        database.insert_score(player_name, score)
-    print(f"{len(SEED_SCORES)} scores insérés dans {database.DB_PATH}")
+    if database.get_top_scores(1):
+        print(f"{database.DB_PATH} contient déjà des scores : rien à faire")
+    else:
+        for player_name, score in SEED_SCORES:
+            database.insert_score(player_name, score)
+        print(f"{len(SEED_SCORES)} scores insérés dans {database.DB_PATH}")

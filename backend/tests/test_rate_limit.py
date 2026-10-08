@@ -1,4 +1,4 @@
-"""Test isolé du rate limiting (slowapi) sur POST /api/scores (5/minute).
+"""Test isolé du rate limiting (slowapi) : POST /api/scores (5/minute) et POST /api/games (10/minute).
 
 Séparé de test_api.py, dont la fixture désactive le limiter.
 """
@@ -43,3 +43,10 @@ def test_post_scores_ip_differente_a_son_propre_quota(client):
     assert _post_score(client, ip_a).status_code == 429
     # Le quota épuisé de ip_a ne doit jamais affecter une IP différente.
     assert _post_score(client, ip_b).status_code == 201
+
+
+def test_post_games_bloque_au_dela_de_10_par_minute(client):
+    headers = {"X-Forwarded-For": "203.0.113.60"}
+    for _ in range(10):
+        assert client.post("/api/games", headers=headers).status_code == 201
+    assert client.post("/api/games", headers=headers).status_code == 429

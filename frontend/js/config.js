@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.121";
+export const VERSION = "2.122";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -54,8 +54,8 @@ export const PLAYER = {
   // Très supérieur à la vitesse réelle de déplacement, pour un lissage
   // imperceptible qui absorbe quand même les sauts tactiles.
   speed: 2000,
-  w: 14,
-  h: 9,
+  restX: RES_W * 0.18, // position de repos, en début de partie et dans le niveau bonus
+  entryX: -20, // hors écran à gauche : départ des glissées d'entrée
   hitboxRadius: 2.2, // cockpit uniquement, style danmaku
   fireCooldown: 0.11,
   bulletSpeed: 260,

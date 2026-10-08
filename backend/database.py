@@ -9,16 +9,20 @@ import os
 import sqlite3
 from contextlib import contextmanager
 
-# Où vit le fichier de la base. En local: ./arcadepipe.db
-# En Docker: on pointera ça vers un volume monté (/data/arcadepipe.db)
+# Où vit le fichier de la base. En local : ./arcadepipe.db ; en Docker : sur
+# un volume monté (/data/arcadepipe.db, voir Dockerfile).
 DB_PATH = os.environ.get("DB_PATH", "./arcadepipe.db")
+
+# Nombre de scores gardés en base : les meilleurs seulement, autant que le
+# maximum lisible par GET /api/scores. Sans ça, la table grossirait sans fin.
+MAX_SCORES = 100
 
 
 def init_db():
-    """Crée la table 'scores' si elle n'existe pas déjà."""
+    """Crée les tables et l'index s'ils n'existent pas déjà."""
     with get_connection() as conn:
         # WAL plutôt que le mode par défaut : les lectures (leaderboard) ne
-        # bloquent plus derrière une écriture (nouveau score) en cours.
+        # bloquent pas derrière une écriture (nouveau score) en cours.
         conn.execute("PRAGMA journal_mode=WAL")
         conn.execute("""
             CREATE TABLE IF NOT EXISTS scores (
@@ -33,10 +37,8 @@ def init_db():
         conn.execute(
             "CREATE INDEX IF NOT EXISTS idx_scores_score ON scores(score DESC)"
         )
-        # Une ligne par partie terminée, peu importe si le score final
-        # qualifie pour le top (voir record_game_played) — sert uniquement
-        # au total affiché dans le classement ("N parties jouées"),
-        # séparé de 'scores' qui ne contient que les scores qualifiants.
+        # Une ligne par partie terminée, quel que soit son score : sert
+        # uniquement au total affiché dans le classement ("N parties jouées").
         conn.execute("""
             CREATE TABLE IF NOT EXISTS games (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -51,13 +53,9 @@ def get_connection():
     """Ouvre une connexion SQLite et la ferme proprement après usage."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row  # pour récupérer des résultats type dict
-    # Par défaut, SQLite renvoie IMMÉDIATEMENT une erreur "database is locked"
-    # (SQLITE_BUSY) si une autre connexion écrit au même moment — busy_timeout
-    # fait attendre jusqu'à 5s que le verrou se libère avant d'abandonner.
-    # WAL (voir init_db) réduit déjà beaucoup la contention (les lectures ne
-    # bloquent jamais derrière une écriture), mais deux ÉCRITURES simultanées
-    # (deux joueurs qui soumettent un score au même instant) restent possibles
-    # — sans ce PRAGMA, l'une des deux échouerait au lieu d'attendre son tour.
+    # Deux écritures simultanées (deux scores soumis au même instant) : la
+    # seconde attend jusqu'à 5 s que le verrou se libère, au lieu d'échouer
+    # aussitôt avec "database is locked".
     conn.execute("PRAGMA busy_timeout = 5000")
     try:
         yield conn
@@ -67,16 +65,18 @@ def get_connection():
 
 def insert_score(player_name: str, score: int, wave: int = 1, kills: int = 0) -> dict:
     with get_connection() as conn:
-        cursor = conn.execute(
-            "INSERT INTO scores (player_name, score, wave, kills) VALUES (?, ?, ?, ?)",
+        row = conn.execute(
+            "INSERT INTO scores (player_name, score, wave, kills) VALUES (?, ?, ?, ?) "
+            "RETURNING id, player_name, score, wave, kills, created_at",
             (player_name, score, wave, kills),
+        ).fetchone()
+        # Ne garde que les MAX_SCORES meilleurs (le nouveau score compris, s'il en fait partie).
+        conn.execute(
+            "DELETE FROM scores WHERE id NOT IN "
+            "(SELECT id FROM scores ORDER BY score DESC, id LIMIT ?)",
+            (MAX_SCORES,),
         )
         conn.commit()
-        new_id = cursor.lastrowid
-        row = conn.execute(
-            "SELECT id, player_name, score, wave, kills, created_at FROM scores WHERE id = ?",
-            (new_id,),
-        ).fetchone()
         return dict(row)
 
 
@@ -84,7 +84,7 @@ def get_top_scores(limit: int = 10) -> list[dict]:
     with get_connection() as conn:
         rows = conn.execute(
             "SELECT id, player_name, score, wave, kills, created_at FROM scores "
-            "ORDER BY score DESC LIMIT ?",
+            "ORDER BY score DESC, id LIMIT ?",  # à égalité : le premier arrivé reste devant
             (limit,),
         ).fetchall()
         return [dict(row) for row in rows]

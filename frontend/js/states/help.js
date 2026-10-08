@@ -71,11 +71,11 @@ export function draw(c2d, g) {
 }
 
 export function handleTap(g, x, y) {
-  if (hud.hitTestInfoContinue(x, y) === 0) {
+  if (hud.hitTestInfoContinue(x, y)) {
     close(g);
-  } else if (hud.hitTestInfoPrev(x, y) === 0) {
+  } else if (hud.hitTestInfoPrev(x, y)) {
     goToPage(g, g.helpPage - 1);
-  } else if (hud.hitTestInfoNext(x, y) === 0) {
+  } else if (hud.hitTestInfoNext(x, y)) {
     goToPage(g, g.helpPage + 1);
   }
 }

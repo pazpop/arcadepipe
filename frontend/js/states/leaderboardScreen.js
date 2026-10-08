@@ -1,30 +1,31 @@
 // État "classement" : révèle les scores un par un (effet de liste qui se déroule) une fois chargés,
-// retour à g.leaderboardReturnTo (menu, ou fin de partie via goToLeaderboard).
+// retour à g.leaderboardReturnTo.
 import { consumeJustPressed } from "../input.js";
-import { fetchTopScores, fetchGamesPlayedCount } from "../api.js";
+import { fetchTopScores, fetchGamesPlayedCount, TOP_SIZE } from "../api.js";
 import * as hud from "../hud.js";
 import { MODE } from "./mode.js";
 
-// Jeton de version : un double-tap sur "Classement" lance deux fetch en
-// parallèle ; sans garde, la réponse arrivée en second gagnerait même si
-// périmée. Même correctif que _loadToken dans audio/music.js.
+// Numéro de l'ouverture en cours : une réponse arrivée après une ouverture
+// plus récente (double tap) est ignorée.
 let token = 0;
 
 export async function open(g, returnTo) {
   const myToken = ++token;
   g.mode = MODE.LEADERBOARD;
   g.leaderboardReturnTo = returnTo;
-  g.scores = [];
+  g.scores = null;
+  g.scoresFailed = false;
   g.scoresRevealCount = 0;
   g.scoresRevealTimer = 0;
-  let scores;
+  let scores = null;
   try {
-    scores = await fetchTopScores(10);
+    scores = await fetchTopScores(TOP_SIZE);
   } catch {
-    scores = [];
+    /* scores reste null : "classement indisponible" */
   }
-  if (myToken !== token) return; // supplantée par un appel plus récent
+  if (myToken !== token) return;
   g.scores = scores;
+  g.scoresFailed = scores === null;
   let gamesPlayed;
   try {
     gamesPlayed = await fetchGamesPlayedCount();
@@ -37,7 +38,7 @@ export async function open(g, returnTo) {
 
 export function update(g, engine, dt) {
   g.scoresRevealTimer -= dt;
-  if (g.scoresRevealTimer <= 0 && g.scoresRevealCount < g.scores.length) {
+  if (g.scores && g.scoresRevealTimer <= 0 && g.scoresRevealCount < g.scores.length) {
     g.scoresRevealCount += 1;
     g.scoresRevealTimer = 0.15;
   }
@@ -47,7 +48,7 @@ export function update(g, engine, dt) {
 }
 
 export function draw(c2d, g) {
-  hud.drawLeaderboardScreen(c2d, g.scores, g.scoresRevealCount, g.gamesPlayed);
+  hud.drawLeaderboardScreen(c2d, g.scores, g.scoresFailed, g.scoresRevealCount, g.gamesPlayed);
 }
 
 export function handleTap(g) {

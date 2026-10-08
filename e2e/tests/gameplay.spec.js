@@ -93,6 +93,7 @@ test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + V
   // tactile (voir hitTestNameEntryValidate dans hud.js) — ce test vérifie
   // qu'on peut valider le score uniquement au tap, sans jamais toucher au
   // clavier.
+  test.setTimeout(120000); // deux parties jusqu'au premier boss
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);
@@ -166,24 +167,19 @@ test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + V
   expect(realErrors).toEqual([]);
 
   async function dieOnFirstBoss() {
-    // Tire en continu en balayant la hauteur pour enchaîner les vagues
-    // (1 kill chacune) le plus vite possible jusqu'au premier boss.
-    await page.mouse.move((await toPage(90, 135)).x, (await toPage(90, 135)).y);
+    // Tire en balayant la hauteur (1 kill par vague) jusqu'à l'arrivée du premier boss.
     await page.mouse.down();
-    for (let i = 0; i < 24; i++) {
-      const y = 30 + (i % 8) * 30;
-      const p = await toPage(90, y);
+    for (let i = 0; !(await gameState(page)).boss?.arrived; i++) {
+      const p = await toPage(90, 30 + (i % 8) * 30);
       await page.mouse.move(p.x, p.y);
-      await page.waitForTimeout(700);
+      await page.waitForTimeout(300);
     }
     await page.mouse.up();
 
-    // Fonce dans la coque du boss (arrivée vers x≈361 logique, voir
-    // RIGHT_ZONE_BOUND/BOSS_ZONE_MARGIN dans boss.js) -> contact garanti.
-    const ram = await toPage(360, 135);
+    // Fonce dans la coque du boss : contact garanti (voir hitsBossHull dans boss.js).
+    const { weakPoints } = (await gameState(page)).boss;
+    const ram = await toPage(weakPoints[0].x, 135);
     await page.mouse.move(ram.x, ram.y);
-    // Attend l'écran GAME OVER (après le ralenti de mort) plutôt qu'un délai
-    // fixe : un tap pendant le ralenti serait ignoré.
     await waitForMode(page, "game_over", 15000);
   }
 });

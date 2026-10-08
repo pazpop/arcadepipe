@@ -3,26 +3,22 @@
 :80 {
 	encode zstd gzip
 
-	# Route l'API vers le backend quand rien ne l'intercepte déjà avant —
-	# utile en déploiement autonome (voir docker-compose.yml à la
-	# racine), où il n'y a pas de Traefik pour router /api/* directement
-	# vers le service backend. Sans effet en prod derrière Traefik : son
-	# routeur backend (priority=10, PathPrefix `/api`) capte déjà la requête
-	# avant qu'elle n'atteigne ce service. `backend` est résolvable dans les
-	# deux cas (même réseau Docker que ce service).
+	# Route l'API vers le backend en déploiement autonome (docker-compose.yml
+	# à la racine). Sans effet sur l'instance publique, où Traefik capte /api
+	# avant ce service. Corps de requête plafonné : un score tient en quelques
+	# dizaines d'octets.
 	handle /api/* {
+		request_body {
+			max_size 10KB
+		}
 		reverse_proxy backend:8000
 	}
 
 	handle {
 		root * /usr/share/caddy
-		# Sans ça, un simple F5 peut resservir une version périmée du jeu
-		# directement depuis le cache disque du navigateur, sans même
-		# vérifier auprès du serveur (heuristique de fraîcheur). "no-cache" ne veut
-		# PAS dire "ne pas mettre en cache" : ça force une revalidation
-		# (ETag/Last-Modified, déjà fournis par file_server) à chaque
-		# chargement — un fichier inchangé revient en 304 sans
-		# retélécharger, un fichier modifié est récupéré immédiatement.
+		# "no-cache" ne veut pas dire "ne pas mettre en cache" : le navigateur
+		# revalide à chaque chargement (un fichier inchangé revient en 304).
+		# Sans ça, un F5 peut resservir une version périmée du jeu.
 		header Cache-Control "no-cache"
 		file_server
 	}

@@ -29,7 +29,8 @@ export class MusicPlayer {
     this._retries = 0;
     this._retryTimer = null;
     this.started = false;
-    this.paused = false;
+    this.paused = false; // arrêtée par le joueur (bouton stop)
+    this._pendingTrack = false; // piste changée pendant l'arrêt, à charger à la reprise
     this.muted = loadItem(STORAGE_KEYS.muted) === "1";
     this.volume = loadUnitFloat(STORAGE_KEYS.volume, AUDIO.masterVolume);
     const savedTrack = parseInt(loadItem(STORAGE_KEYS.track), 10);
@@ -53,7 +54,6 @@ export class MusicPlayer {
   _load() {
     clearTimeout(this._retryTimer);
     this._retryTimer = null;
-    this.paused = false;
     this._fadeTo(0);
     const file = AUDIO.tracks[this.trackIndex];
     setTimeout(() => {
@@ -79,33 +79,38 @@ export class MusicPlayer {
   }
 
   next() {
-    this.trackIndex = (this.trackIndex + 1) % AUDIO.tracks.length;
-    saveItem(STORAGE_KEYS.track, this.trackIndex);
-    if (this.started) this._load();
+    this._goToTrack((this.trackIndex + 1) % AUDIO.tracks.length);
+  }
+
+  // Musique arrêtée par le joueur : la piste change, mais ne démarre qu'à la reprise.
+  _goToTrack(index) {
+    this.trackIndex = index;
+    saveItem(STORAGE_KEYS.track, index);
+    this._pendingTrack = this.paused;
+    if (this.started && !this.paused) this._load();
   }
 
   // Tirée au début de chaque partie et en fin de piste — jamais deux fois la même d'affilée.
   playRandom() {
-    if (AUDIO.tracks.length > 1) {
-      let idx;
-      do {
-        idx = Math.floor(Math.random() * AUDIO.tracks.length);
-      } while (idx === this.trackIndex);
-      this.trackIndex = idx;
+    let idx = this.trackIndex;
+    while (AUDIO.tracks.length > 1 && idx === this.trackIndex) {
+      idx = Math.floor(Math.random() * AUDIO.tracks.length);
     }
-    saveItem(STORAGE_KEYS.track, this.trackIndex);
-    if (this.started) this._load();
+    this._goToTrack(idx);
   }
 
   // Bascule stop/lecture (vraie pause, pas juste le volume à zéro).
   toggleStop() {
     if (!this.started) return;
-    if (this.paused) {
-      this.audio.play().catch(() => {});
-    } else {
-      this.audio.pause();
-    }
     this.paused = !this.paused;
+    if (this.paused) {
+      this.audio.pause();
+    } else if (this._pendingTrack) {
+      this._pendingTrack = false;
+      this._load();
+    } else {
+      this.audio.play().catch(() => {});
+    }
   }
 
   setMuted(muted) {

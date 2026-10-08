@@ -128,6 +128,7 @@ export default {
   "board.wave": "VAGUE",
   "board.kills": "TUÉS",
   "board.empty": "Aucun score pour l'instant.",
+  "board.error": "Classement indisponible pour le moment.",
   "board.back": "ÉCHAP / TAP — RETOUR",
 
   // --- Crédits ---

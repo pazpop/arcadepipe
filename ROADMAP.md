@@ -41,6 +41,7 @@ Objectif : peaufiner l'existant (game feel, UX, boucle de rejouabilité) — **r
 
 ## À faire
 
+- [ ] **Jauge d'énergie « bullet time »** (idée, façon *Max Payne*) : une barre qui se remplit avec le score et se dépense pour ralentir le temps. À concevoir : touche et bouton tactile, vitesse de remplissage, durée, articulation avec la jauge NOVA (deux jauges à surveiller).
 - [ ] **Menu Options** (idée) : interrupteur du filtre rétro CRT, aujourd'hui accessible seulement par la touche C, donc absent sur téléphone ; éventuellement une qualité d'affichage. Le ratio d'écran relève de la Session 4.
 - [ ] **Traductions** : faire relire l'anglais (`frontend/js/i18n/en.js`) ; les balises `<meta>` de `index.html` (description, Open Graph) restent en français. Changer de langue recharge la page (voir `nextLang`, `i18n.js`).
 - [ ] **Helper unique pour les conditions « combat suspendu ».** Prédicats dupliqués : `updateGraze` (`graze.js`) contre `resolveCollisions` et `update` (`states/playing.js`). Proposer `isCombatSuspended(g, player)` après avoir listé les différences voulues ; `graze.test.js` couvre déjà le cas du niveau bonus.

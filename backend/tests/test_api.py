@@ -50,7 +50,7 @@ def test_soumettre_et_relire_un_score(client):
 
 
 def test_kills_par_defaut_a_0_si_absent(client):
-    r = client.post("/api/scores", json={"player_name": "SANSKILLS", "score": 100})
+    r = client.post("/api/scores", json={"player_name": "SANSKILL", "score": 100})
     assert r.json()["kills"] == 0
 
 
@@ -60,6 +60,30 @@ def test_scores_tries_par_score_decroissant(client):
     r = client.get("/api/scores")
     scores = [s["score"] for s in r.json()]
     assert scores == [900, 100]
+
+
+def test_scores_a_egalite_le_premier_arrive_reste_devant(client):
+    for name in ["PREMIER", "SECOND"]:
+        client.post("/api/scores", json={"player_name": name, "score": 500})
+    assert [s["player_name"] for s in client.get("/api/scores").json()] == ["PREMIER", "SECOND"]
+
+
+def test_seuls_les_meilleurs_scores_sont_gardes(client, monkeypatch):
+    monkeypatch.setattr(database, "MAX_SCORES", 3)
+    for score in [10, 50, 30, 40, 20]:
+        client.post("/api/scores", json={"player_name": "TEST", "score": score})
+    assert [s["score"] for s in client.get("/api/scores?limit=100").json()] == [50, 40, 30]
+
+
+@pytest.mark.parametrize("limit", [0, 101])
+def test_limit_hors_bornes_rejete(client, limit):
+    assert client.get(f"/api/scores?limit={limit}").status_code == 422
+
+
+def test_limit_tronque_la_liste(client):
+    for score in [1, 2, 3]:
+        client.post("/api/scores", json={"player_name": "TEST", "score": score})
+    assert len(client.get("/api/scores?limit=2").json()) == 2
 
 
 def test_score_avec_nom_vide_rejete(client):
@@ -86,9 +110,7 @@ def test_record_game_incremente_le_compteur(client):
 
 
 def test_games_et_scores_sont_independants(client):
-    # Un score qualifiant ne devrait jamais être la seule façon de
-    # comptabiliser une partie jouée (voir POST /api/games côté frontend,
-    # appelé à chaque game over peu importe la qualification).
+    # Une partie est comptée même si aucun score n'est soumis, et inversement.
     client.post("/api/games")
     client.post("/api/scores", json={"player_name": "TEST", "score": 1})
     assert client.get("/api/games/count").json() == {"count": 1}

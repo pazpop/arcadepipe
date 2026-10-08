@@ -1,6 +1,6 @@
 // Machine à états du jeu : menu, partie, pause, saisie du nom, classement,
-// crédits — chaque écran vit dans states/, ce fichier ne fait plus que les
-// relier (état partagé `g`, bundle `engine`, dispatch update/draw/handleTap).
+// crédits — chaque écran vit dans states/, ce fichier les relie (état partagé
+// `g`, bundle `engine`, dispatch update/draw/handleTap).
 import { RES_W, RES_H, PALETTE, DIFFICULTY } from "./config.js";
 import { createStarfield, updateStarfield, drawStarfield, createTwinkleStars } from "./stars.js";
 import { createPlayer } from "./player.js";
@@ -26,12 +26,8 @@ export function createGame({ input, audio, music, nameInputEl }) {
   const enemies = createEnemyPool();
   const powerups = createPowerupPool();
 
-  // Regroupe ce dont un module de states/ a besoin sans avoir à le recréer
-  // — voir le commentaire en tête de states/menu.js pour le détail de ce
-  // choix (engine.actions en particulier) et pourquoi "engine" plutôt que
-  // "ctx" (déjà pris par le contexte Canvas2D, notamment dans draw() plus
-  // bas). Rempli une fois ici ; ses champs ne changent jamais, seul leur
-  // CONTENU (les objets pointés) évolue.
+  // Ce dont les modules de states/ ont besoin (voir states/menu.js pour
+  // engine.actions). Rempli une fois ici.
   const engine = {
     input,
     audio,
@@ -58,7 +54,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     // createTwinkleStars dans stars.js) — un peu de vie derrière le titre.
     menuTwinkleStars: createTwinkleStars(10),
     pauseSelected: 0,
-    gameOverSelected: 0, // REJOUER par défaut — remis à 0 à chaque mort (playing.js)
+    gameOverSelected: 0, // REJOUER par défaut — remis à 0 à chaque mort (states/endOfRun.js)
     pauseStage: "menu", // "menu" | "confirmQuit"
     confirmQuitSelected: 1, // par défaut sur NON — un Entrée accidentel ne doit pas faire perdre la partie
     helpReturnTo: MODE.MENU, // où revenir en fermant l'aide (MODE.MENU, MODE.PAUSED ou MODE.PLAYING)
@@ -83,14 +79,12 @@ export function createGame({ input, audio, music, nameInputEl }) {
     waveBreak: 0,
     waveBreakDuration: DIFFICULTY.waveBreakDuration, // mémorisé au déclenchement (normal ou bossWaveBreakDuration) pour calculer la courbe de warp
     warp: 1,
-    warpSoundPlayed: false,
     shake: 0,
     flash: 0,
     hitStop: 0,
     banner: null,
     boss: null,
     bonusLevel: null, // niveau bonus en cours (voir bonusLevel.js) — null hors de ce niveau
-    bonusLevelLastWave: 0, // dernière vague pour laquelle le niveau bonus a été offert (évite un double déclenchement)
     clearingScreen: false,
     controlHint: 0,
     dying: false, // séquence cinématique (ralenti) entre la mort et l'écran GAME OVER
@@ -99,7 +93,8 @@ export function createGame({ input, audio, music, nameInputEl }) {
     shipIntroTimer: 0,
 
     // Classement
-    scores: [],
+    scores: null, // null = chargement en cours ou échec (voir scoresFailed)
+    scoresFailed: false,
     scoresRevealCount: 0,
     scoresRevealTimer: 0,
     leaderboardReturnTo: MODE.MENU,
@@ -121,6 +116,11 @@ export function createGame({ input, audio, music, nameInputEl }) {
     }
   }
 
+  // La scène de jeu est à l'écran : en partie, et figée derrière la pause ou GAME OVER.
+  function inScene() {
+    return g.mode === MODE.PLAYING || g.mode === MODE.PAUSED || g.mode === MODE.GAME_OVER;
+  }
+
   function update(dt) {
     if (g.mode === MODE.PLAYING) playingState.update(g, engine, dt);
     else if (g.mode === MODE.PAUSED) pausedState.update(g, engine);
@@ -131,14 +131,14 @@ export function createGame({ input, audio, music, nameInputEl }) {
     else if (g.mode === MODE.CREDITS) creditsState.update(g, engine, dt);
     // MODE.NAME_ENTRY : piloté par les événements DOM du champ caché (voir main.js)
 
-    // Défilement du champ d'étoiles pour tous les écrans-menus (même fond
-    // que le menu principal). PLAYING/PAUSED/GAME_OVER n'entrent pas ici :
-    // playingState.update() s'en charge lui-même (avec le facteur de warp),
-    // et PAUSED/GAME_OVER doivent au contraire rester figés sur la scène
-    // telle qu'elle était au moment de la pause/mort.
-    if (g.mode !== MODE.PLAYING && g.mode !== MODE.PAUSED && g.mode !== MODE.GAME_OVER) {
+    // Les étoiles défilent sur les écrans-menus. En partie, playingState.update()
+    // s'en charge (avec le warp) ; en pause et sur GAME OVER, la scène reste figée.
+    if (!inScene()) {
       // Jamais de trou noir au menu principal (voir allowBlackhole dans stars.js).
       updateStarfield(starfield, dt, 1, g.mode !== MODE.MENU);
+      // Le décor du boss ne suit pas le joueur hors de la partie (l'aide, elle,
+      // peut s'ouvrir en plein combat).
+      if (g.mode !== MODE.HELP) starfield.deathStar = null;
     }
 
     // Une touche non consommée par l'état courant ne doit pas fuiter vers
@@ -151,23 +151,18 @@ export function createGame({ input, audio, music, nameInputEl }) {
 
   function draw(ctx) {
     ctx.save();
-    if (g.mode === MODE.PLAYING || g.mode === MODE.PAUSED || g.mode === MODE.GAME_OVER) {
-      ctx.fillStyle = playingState.zonePalette(g);
-    } else {
-      ctx.fillStyle = PALETTE.bgDeep;
-    }
+    ctx.fillStyle = inScene() ? playingState.zonePalette(g) : PALETTE.bgDeep;
     ctx.fillRect(0, 0, RES_W, RES_H);
 
-    if (g.shake > 0 && (g.mode === MODE.PLAYING || g.mode === MODE.PAUSED || g.mode === MODE.GAME_OVER)) {
+    // Tremblement en partie seulement : g.shake ne décroît que là (playing.js).
+    if (g.shake > 0 && g.mode === MODE.PLAYING) {
       ctx.translate((Math.random() - 0.5) * g.shake, (Math.random() - 0.5) * g.shake);
     }
 
-    // Même champ d'étoiles pour tous les écrans (même fond que le menu
-    // principal) — seul PLAYING applique le facteur de warp (accélération
-    // visuelle pendant le saut spatial entre deux vagues).
-    drawStarfield(ctx, starfield, g.mode === MODE.PLAYING ? g.warp : 1);
+    // Même champ d'étoiles pour tous les écrans ; étiré par le warp dans la scène de jeu.
+    drawStarfield(ctx, starfield, inScene() ? g.warp : 1);
 
-    if (g.mode === MODE.PLAYING || g.mode === MODE.PAUSED || g.mode === MODE.GAME_OVER) {
+    if (inScene()) {
       playingState.drawScene(ctx, g, engine);
       if (g.mode === MODE.PAUSED) {
         pausedState.draw(ctx, g);
@@ -191,11 +186,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
 
   // Pause forcée depuis l'extérieur (onglet en arrière-plan, main.js) — no-op hors partie.
   function pause() {
-    if (g.mode === MODE.PLAYING) {
-      g.mode = MODE.PAUSED;
-      g.pauseSelected = 0;
-      g.pauseStage = "menu";
-    }
+    if (g.mode === MODE.PLAYING) playingState.pause(g);
   }
 
   function handleTap(x, y) {

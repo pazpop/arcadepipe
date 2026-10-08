@@ -15,16 +15,16 @@ const { fetchTopScores, submitScore, fetchGamesPlayedCount, recordGamePlayed } =
 
 test("deux lectures du classement : une seule requête", async () => {
   calls = [];
-  assert.deepEqual(await fetchTopScores(10), [{ score: 100 }]);
-  await fetchTopScores(10);
+  assert.deepEqual(await fetchTopScores(), [{ score: 100 }]);
+  await fetchTopScores();
   assert.deepEqual(calls, ["GET /api/scores?limit=10"]);
 });
 
 test("soumettre un score vide le cache du classement, pas celui du compteur", async () => {
   await fetchGamesPlayedCount();
   calls = [];
-  await submitScore("AAA", 500);
-  await fetchTopScores(10);
+  await submitScore("AAA", 500, 3, 12);
+  await fetchTopScores();
   assert.equal(await fetchGamesPlayedCount(), 7);
   assert.deepEqual(calls, ["POST /api/scores", "GET /api/scores?limit=10"]);
 });
@@ -37,11 +37,11 @@ test("compter une partie vide le cache du compteur", async () => {
 });
 
 test("une réponse en erreur n'est pas gardée", async () => {
-  await submitScore("AAA", 500); // vide le cache
+  await submitScore("AAA", 500, 3, 12); // vide le cache
   ok = false;
-  await assert.rejects(fetchTopScores(10));
+  await assert.rejects(fetchTopScores());
   ok = true;
   calls = [];
-  await fetchTopScores(10);
+  await fetchTopScores();
   assert.deepEqual(calls, ["GET /api/scores?limit=10"]);
 });

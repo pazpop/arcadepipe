@@ -46,9 +46,6 @@ html, body {
     radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.45) 100%);
   mix-blend-mode: multiply;
 }
-#crt-overlay.hidden {
-  display: none;
-}
 
 /* Champ caché servant uniquement à ouvrir le clavier virtuel mobile pour la
    saisie du nom (game over) — jamais visible, le rendu du texte tapé se
@@ -64,15 +61,11 @@ html, body {
   font-size: 16px; /* évite le zoom auto de Safari iOS au focus d'un input */
 }
 
-/* Contrôles musique : seul élément d'UI "réelle" du jeu (avec #name-input),
-   volontairement en HTML plutôt qu'en canvas — un <input type="range"> se
-   glisse nativement au doigt comme à la souris, pas besoin de réinventer le
-   drag-and-drop dans le rendu du jeu pour ça.
+/* Panneau de réglages, en HTML plutôt que dans le canvas : curseurs, cases et
+   boutons y fonctionnent nativement, au doigt comme à la souris.
 
-   Rétractable : #music-controls glisse hors champ via transform (pas
-   #mc-wrap, qui reste le point d'ancrage fixe) pendant que #mc-toggle,
-   frère et non enfant du panneau, reste toujours visible — un signet qui
-   dépasse même quand le panneau est caché. */
+   Rétractable : #music-controls se replie, #mc-toggle (son frère, pas son
+   enfant) reste visible comme un signet. */
 #mc-wrap {
   position: absolute;
   bottom: 8px;
@@ -93,9 +86,8 @@ html, body {
   border: 1px solid rgba(78, 225, 255, 0.35);
   border-radius: 4px;
   font-family: monospace;
-  /* max-width (pas transform) : le panneau doit vraiment perdre sa place
-     dans la ligne flex pour que #mc-toggle, son frère, glisse jusqu'au bord
-     gauche réel au lieu de rester figé là où le panneau se trouvait. */
+  /* Replié par max-width (pas transform) : le panneau perd sa place dans la
+     ligne, et #mc-toggle glisse jusqu'au bord gauche. */
   max-width: 200px;
   overflow: hidden;
   opacity: 1;
@@ -119,9 +111,7 @@ html, body {
   color: #cfe8ff;
   font-size: 11px;
   cursor: pointer;
-  align-self: flex-end;
   margin-bottom: 6px;
-  transition: border-radius 0.25s ease;
 }
 #mc-wrap:not(.collapsed) #mc-toggle {
   border-left: none;
@@ -132,9 +122,7 @@ html, body {
   border-color: #4ee1ff;
 }
 
-/* Deux sections ("tableau") séparées par un libellé + un filet, plutôt
-   qu'un tas de contrôles sans contexte — sinon rien n'indique à quoi sert
-   la case à cocher perdue à côté du volume. */
+/* Sections séparées par un filet, chacune avec son libellé. */
 .mc-section + .mc-section {
   border-top: 1px solid rgba(78, 225, 255, 0.2);
   padding-top: 5px;
@@ -164,8 +152,7 @@ html, body {
   cursor: pointer;
 }
 
-/* Bouton pause : plus visible qu'une simple icône dans une rangée — c'est
-   le seul moyen de mettre en pause sur mobile (pas de touche Échap). */
+/* Boutons avec un libellé (Pause, Aide, Plein écran...), sur toute la largeur. */
 #music-controls .mc-pause-btn {
   width: 100%;
   font-size: 11px;
@@ -179,11 +166,6 @@ html, body {
 #music-controls .mc-pause-btn:active {
   color: #4ee1ff;
   border-color: #4ee1ff;
-}
-/* Fullscreen API absente (ex: iOS Safari) : bouton masqué plutôt que
-   visible sans effet au clic (voir main.js, document.fullscreenEnabled). */
-#fullscreen-btn.hidden {
-  display: none;
 }
 #music-controls button:hover,
 #music-controls button:active {
@@ -199,9 +181,6 @@ html, body {
   cursor: pointer;
   user-select: none;
 }
-.mc-check:not(:last-child) {
-  margin-bottom: 3px;
-}
 .mc-check input[type="checkbox"] {
   accent-color: #4ee1ff;
   cursor: pointer;
@@ -216,8 +195,7 @@ html, body {
   accent-color: #4ee1ff;
 }
 
-/* Numéro de version, discret — en complément de celui déjà dans le canvas
-   (js/hud.js), qui reste seul visible quand ce panneau est replié. */
+/* Numéro de version, discret. */
 .mc-version {
   text-align: center;
   font-size: 8px;
@@ -225,12 +203,11 @@ html, body {
   opacity: 0.5;
 }
 
-/* Bouton NOVA : coin bas-droit (symétrique du panneau réglages à gauche),
-   pour rester proche de la zone où évoluent le plus souvent le vaisseau et
-   les ennemis (spawn côté droit) — moins de trajet visuel entre "je vois
-   l'occasion" et "je déclenche". Pulse discret pour signaler sa disponibilité
-   sans être aussi voyant qu'une alerte. */
-.nova-btn {
+/* Boutons NOVA (en partie) et Partager (fin de partie) : même coin bas-droit,
+   à l'opposé du panneau de réglages. Ils ne sont jamais visibles ensemble
+   (voir loop dans main.js), et rien du jeu n'est dessiné dessous. */
+.nova-btn,
+.share-btn {
   position: absolute;
   bottom: 8px;
   right: 8px;
@@ -243,42 +220,16 @@ html, body {
   font-size: 12px;
   padding: 8px 14px;
   cursor: pointer;
-  animation: nova-pulse 1.6s ease-in-out infinite;
 }
 .nova-btn:hover,
-.nova-btn:active {
-  background: rgba(255, 255, 255, 0.15);
-}
-.nova-btn.hidden {
-  display: none;
-}
-
-/* Centré, un peu au-dessus du bouton "OK"/"VALIDER" dessiné dans le canvas
-   (voir gameOverContinueRect/nameEntryValidateRect dans hud.js, ~62-68% de
-   la hauteur) — le coin haut-droit d'origine passait inaperçu, trop loin du
-   regard une fois la partie terminée. Pas de pulse, contrairement à NOVA,
-   cette action n'est jamais urgente. */
-.share-btn {
-  position: absolute;
-  top: 44%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 2;
-  background: rgba(5, 6, 15, 0.7);
-  border: 1px solid #ffffff;
-  border-radius: 4px;
-  color: #ffffff;
-  font-family: monospace;
-  font-size: 12px;
-  padding: 8px 14px;
-  cursor: pointer;
-}
+.nova-btn:active,
 .share-btn:hover,
 .share-btn:active {
   background: rgba(255, 255, 255, 0.15);
 }
-.share-btn.hidden {
-  display: none;
+/* Pulse discret : une charge NOVA est prête. */
+.nova-btn {
+  animation: nova-pulse 1.6s ease-in-out infinite;
 }
 /* Bandeau de consentement (voir consent.js) : collé en haut du conteneur, sur
    toute sa largeur, pour rester lisible sans recouvrir le centre de l'action
@@ -306,9 +257,6 @@ html, body {
 .cookie-banner a {
   color: #4ee1ff;
 }
-.cookie-banner.hidden {
-  display: none;
-}
 .cookie-actions {
   display: flex;
   gap: 8px;
@@ -334,10 +282,8 @@ html, body {
   50% { box-shadow: 0 0 12px rgba(255, 255, 255, 0.9); }
 }
 
-/* Konami code (voir main.js) : petit tilt de l'écran, synchronisé avec le
-   jingle audio (~0.53s, voir playKonami dans audio/sfx.js) — juste le canvas
-   du jeu, pas le panneau de réglages ni les boutons, pour qu'ils restent
-   cliquables pendant l'animation. */
+/* Konami code (voir main.js) : le canvas penche le temps du jingle (playKonami,
+   audio/sfx.js). Le panneau et les boutons ne bougent pas. */
 @keyframes konami-tilt {
   0% { transform: rotate(0deg); }
   15% { transform: rotate(-6deg); }
@@ -368,4 +314,10 @@ html, body {
   #music-controls input[type="range"] {
     width: 50px;
   }
+}
+
+/* Masquage par JavaScript (classList.toggle("hidden")). En dernier : l'emporte
+   sur les règles d'affichage au-dessus. */
+.hidden {
+  display: none;
 }

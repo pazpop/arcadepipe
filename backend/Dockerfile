@@ -11,13 +11,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Utilisateur dédié plutôt que root : si l'API est un jour compromise,
-# l'attaquant hérite des droits de cet utilisateur, pas de root dans le
-# conteneur. /data appartient à cet utilisateur pour que le volume monté
-# (backend_data) reste inscriptible une fois qu'on abandonne root.
+# Utilisateur dédié plutôt que root. Seul /data (le volume de la base) lui
+# appartient : il n'a pas à pouvoir modifier le code dans /app.
 RUN useradd --create-home --uid 1000 appuser \
     && mkdir -p /data \
-    && chown -R appuser:appuser /app /data
+    && chown appuser:appuser /data
 USER appuser
 
 # La DB vit sur un volume monté, pas dans l'image — un rebuild ne doit pas

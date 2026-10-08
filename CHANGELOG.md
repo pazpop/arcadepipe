@@ -2,6 +2,13 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.122] - 2026-10-08
+Corrections issues d'une relecture complète du dépôt.
+- **Fix : Tab puis Entrée envoyait un score au classement depuis n'importe quel écran** (le champ caché du pseudo prenait le focus au clavier).
+- Fix : M (son) et le Konami code sur un clavier AZERTY ; la musique arrêtée par le joueur le reste d'une partie à l'autre ; l'écran ne tremble plus pendant la pause ; le bonus « INTACT » est versé aussi avant un niveau bonus ; « NOUVEAU MEILLEUR SCORE » ne s'affiche qu'une fois le top vérifié ; le décor du boss ne reste plus dans les menus ; le flottement du boss suit le temps de jeu ; NOVA donne toujours son retour visuel et sonore ; la seconde note du son de bonus n'est plus tronquée.
+- Classement : « indisponible » si le backend ne répond pas, au lieu de « aucun score ». Bouton Partager en bas à droite (il recouvrait du texte sur téléphone).
+- Backend : pseudo limité aux caractères que le jeu saisit (8 lettres majuscules, chiffres ou espaces) ; seuls les 100 meilleurs scores sont gardés ; ex æquo départagés par ordre d'arrivée ; taille des requêtes API plafonnée dans le Caddyfile ; documentation interactive de l'API désactivée ; `seed.py` ne crée plus de doublons.
+
 ## [2.121] - 2026-10-08
 - **Jeu en français et en anglais.** La langue suit celle du navigateur au premier lancement (anglais si elle n'est pas traduite), puis le choix fait avec le bouton de langue du panneau de gauche est mémorisé. Un fichier par langue dans `frontend/js/i18n/` (`fr.js` est la référence) ; `i18n.test.js` vérifie que chaque langue a les mêmes clés. Changer de langue recharge la page.
 

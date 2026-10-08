@@ -5,7 +5,7 @@
 // écrans affichent la scène figée derrière leur overlay plutôt qu'un fond
 // vide, donc le rendu de la scène elle-même n'est pas propre à "playing" au
 // sens strict, mais vit ici avec le reste de l'état qui la nourrit.
-import { RES_W, RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE, HIT_STOP } from "../config.js";
+import { RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE, HIT_STOP } from "../config.js";
 import { loadItem, saveItem } from "../storage.js";
 import { updateStarfield, triggerDeathStarLeave } from "../stars.js";
 import { resetPlayer, updatePlayer, hitPlayer, drawPlayer, applyPowerup, applyShield } from "../player.js";
@@ -22,6 +22,7 @@ import * as hud from "../hud.js";
 import { MODE } from "./mode.js";
 import * as helpState from "./help.js";
 import { startWave, updateWaveTransition } from "./waves.js";
+import * as endOfRunState from "./endOfRun.js";
 import { t } from "../i18n.js";
 
 // Accessibilité : coupe le screen shake pour les joueurs sensibles au mouvement (réglage système).
@@ -81,6 +82,12 @@ export function zonePalette(g) {
   return PALETTE.bgZones[Math.floor((g.wave - 1) / DIFFICULTY.bossWaveEvery) % PALETTE.bgZones.length];
 }
 
+export function pause(g) {
+  g.mode = MODE.PAUSED;
+  g.pauseSelected = 0;
+  g.pauseStage = "menu";
+}
+
 export function startRun(g, engine) {
   const { music, player, projectiles, enemies, particles, powerups } = engine;
   music.playRandom();
@@ -104,7 +111,6 @@ export function startRun(g, engine) {
   g.novaStock = 0; // vide au début d'une partie — la première charge doit être gagnée (voir graze.js)
   g.novaProgress = 0;
   g.bonusLevel = null;
-  g.bonusLevelLastWave = 0;
   g.mode = MODE.PLAYING;
   g.controlHint = 4;
   startWave(g, engine, 1);
@@ -112,7 +118,7 @@ export function startRun(g, engine) {
   // Entrée en douceur (vague 1 uniquement) — voir SHIP_INTRO_DURATION.
   g.shipIntro = true;
   g.shipIntroTimer = SHIP_INTRO_DURATION;
-  player.x = -20;
+  player.x = PLAYER.entryX;
   player.y = RES_H / 2;
   g.spawnTimer = SHIP_INTRO_DURATION;
 
@@ -136,7 +142,7 @@ function resolveCollisions(g, engine) {
         if (!en.active) continue;
         if (!circlesOverlap(b.x, b.y, pool.radius, en.x, en.y, en.radius)) continue;
         b.active = false;
-        const destroyed = damageEnemy(en, particles, b.damage || 1);
+        const destroyed = damageEnemy(en, particles, b.damage);
         if (destroyed) {
           g.score += pointsFor(en);
           g.waveKills += 1;
@@ -165,11 +171,11 @@ function resolveCollisions(g, engine) {
     for (const pool of [projectiles.player, projectiles.pellet]) {
       for (const b of pool.items) {
         if (!b.active) continue;
-        const res = hitBossWeakPoint(g.boss, b.x, b.y, pool.radius, particles, b.damage || 1);
+        const res = hitBossWeakPoint(g.boss, b.x, b.y, pool.radius, particles, b.damage);
         if (res) {
           b.active = false;
           if (res === true) {
-            g.score += 300; // vaut un ennemi élite (TYPE_STATS.elite.points dans enemies.js)
+            g.score += 300; // autant qu'un ennemi élite
             triggerShake(g, 6);
             triggerHitStop(g, HIT_STOP.weakPoint);
             audio.playExplosion();
@@ -191,6 +197,9 @@ function resolveCollisions(g, engine) {
       }
     }
   }
+
+  // Vaisseau détruit (ralenti de mort) : plus rien ne le touche.
+  if (!player.alive) return;
 
   // Tirs ennemis vs joueur
   for (const eb of projectiles.enemy.items) {
@@ -237,13 +246,14 @@ function resolveCollisions(g, engine) {
 
 // Qui écrit g.novaStock/g.novaProgress (hud.js les lit seulement) :
 //   - graze.js, registerGraze() : +1 à chaque frôlement.
-//   - tryUseNova()/triggerNova() ci-dessous : consommation manuelle.
-//   - states/waves.js, applyNovaReward() : récompense du niveau bonus, une seule fois.
-// NOVA : effet instantané — détruit les ennemis actifs et leurs tirs en vol
-// (jamais le boss).
-function triggerNova(g, engine) {
+//   - useNova() ci-dessous : consommation manuelle.
+//   - states/waves.js, applyNovaReward() : récompense du niveau bonus.
+// NOVA (Espace ou bouton tactile) : dépense une charge et détruit les ennemis
+// actifs et leurs tirs en vol, jamais le boss.
+function useNova(g, engine) {
+  if (g.novaStock <= 0) return;
+  g.novaStock -= 1;
   const { audio, particles, enemies, projectiles } = engine;
-  let killed = 0;
   for (const en of enemies.items) {
     if (!en.active) continue;
     en.active = false;
@@ -251,28 +261,16 @@ function triggerNova(g, engine) {
     g.score += pointsFor(en);
     g.waveKills += 1;
     g.enemiesKilled += 1;
-    killed++;
   }
   for (const eb of projectiles.enemy.items) {
     if (!eb.active) continue;
     eb.active = false;
     spawnSpark(particles, eb.x, eb.y, 3);
   }
-  if (killed > 0) {
-    audio.playNovaBlast();
-    g.flash = Math.max(g.flash, 0.7);
-    triggerShake(g, 12);
-    g.banner = { text: t("banner.nova"), timer: 1.2 };
-  }
-}
-
-// Déclenchement manuel de la jauge NOVA (touche Espace ou bouton tactile
-// dédié, voir input.justPressed "NovaTrigger" dans main.js) — réutilise
-// triggerNova() tel quel, seule la façon de l'obtenir/déclencher change.
-function tryUseNova(g, engine) {
-  if (g.novaStock <= 0) return;
-  g.novaStock -= 1;
-  triggerNova(g, engine);
+  audio.playNovaBlast();
+  g.flash = Math.max(g.flash, 0.7);
+  triggerShake(g, 12);
+  g.banner = { text: t("banner.nova"), timer: 1.2 };
 }
 
 // Coup absorbé par le bouclier : pas de vie perdue, réaction plus légère qu'un vrai impact.
@@ -325,7 +323,7 @@ function easeInFromLeft(timer, duration, startX, targetX) {
 // input.x/y n'est pas touché, donc le contrôle reprend sans saut à la fin.
 function updateShipIntro(g, engine, dt) {
   g.shipIntroTimer -= dt;
-  engine.player.x = easeInFromLeft(g.shipIntroTimer, SHIP_INTRO_DURATION, -20, RES_W * 0.18);
+  engine.player.x = easeInFromLeft(g.shipIntroTimer, SHIP_INTRO_DURATION, PLAYER.entryX, PLAYER.restX);
   if (g.shipIntroTimer <= 0) {
     g.shipIntro = false;
   }
@@ -337,12 +335,12 @@ function updateShipIntro(g, engine, dt) {
 // doigt comme en jeu normal.
 function updateBonusLevelShip(g, engine, dt) {
   const { player, input } = engine;
-  const targetX = RES_W * 0.18;
+  const targetX = PLAYER.restX;
   const bl = g.bonusLevel;
   if (bl.introTimer > 0) {
     // y immobile pendant la glissée — le contrôle reprend sans saut une
     // fois l'intro terminée (voir easeInFromLeft ci-dessus).
-    player.x = easeInFromLeft(bl.introTimer, BONUS_LEVEL.introDuration, -20, targetX);
+    player.x = easeInFromLeft(bl.introTimer, BONUS_LEVEL.introDuration, PLAYER.entryX, targetX);
     player.y = RES_H / 2;
     return;
   }
@@ -376,11 +374,7 @@ export function update(g, engine, dt) {
     dt *= 0.16;
     if (g.deathTimer <= 0) {
       g.dying = false;
-      g.mode = MODE.GAME_OVER;
-      g.gameOverSelected = 0;
-      // Rien ne décrémente g.shake hors d'ici — sans ce reset, un reliquat
-      // de tremblement resterait figé sur GAME OVER.
-      g.shake = 0;
+      endOfRunState.open(g);
       return;
     }
   } else {
@@ -403,24 +397,18 @@ export function update(g, engine, dt) {
     }
 
     if (consumeJustPressed(input, "KeyP") || consumeJustPressed(input, "Escape")) {
-      g.mode = MODE.PAUSED;
-      g.pauseSelected = 0;
-      g.pauseStage = "menu";
+      pause(g);
       return;
     }
-    // "NovaTrigger" : jeton générique posé par le bouton tactile dédié
-    // (main.js), consommé exactement comme une touche clavier. Inutile
-    // pendant le niveau bonus (aucun ennemi normal à l'écran) — évite de
-    // gâcher une charge sans effet.
-    if (!g.clearingScreen && !g.bonusLevel && (consumeJustPressed(input, "Space") || consumeJustPressed(input, "NovaTrigger"))) {
-      tryUseNova(g, engine);
+    // "NovaTrigger" : jeton posé par le bouton tactile (main.js), lu comme une
+    // touche. Pas pendant un saut spatial ni le niveau bonus : rien à détruire.
+    if (!g.clearingScreen && (consumeJustPressed(input, "Space") || consumeJustPressed(input, "NovaTrigger"))) {
+      useNova(g, engine);
     }
   }
 
-  // Vagues / transition "saut spatial" / cycle du niveau bonus — voir
-  // states/waves.js. true = déclenchement d'un niveau bonus ce frame : le
-  // reste de cette frame (jusqu'à updateGraze inclus) est sauté.
-  if (updateWaveTransition(g, engine, dt)) return;
+  // Vagues, saut spatial entre deux vagues, niveau bonus : voir states/waves.js.
+  updateWaveTransition(g, engine, dt);
 
   updateStarfield(starfield, dt, g.warp);
 

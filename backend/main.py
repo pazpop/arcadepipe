@@ -10,10 +10,11 @@ Endpoints:
 """
 import os
 from contextlib import asynccontextmanager
+from typing import Annotated
 
 from fastapi import FastAPI, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, StringConstraints
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -27,7 +28,8 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="ArcadePipe API", version="0.1.0", lifespan=lifespan)
+# Pas de documentation interactive : seules les routes /api/* sont exposées.
+app = FastAPI(lifespan=lifespan, docs_url=None, redoc_url=None, openapi_url=None)
 
 # Origines autorisées à appeler l'API depuis un navigateur, configurables
 # sans reconstruire l'image (ALLOWED_ORIGINS="https://arcadepipe.example.com,https://autre.example.com").
@@ -45,8 +47,7 @@ def get_client_ip(request: Request) -> str:
     # On lit la DERNIÈRE IP de X-Forwarded-For : c'est celle que le reverse-proxy
     # de confiance (Traefik en prod, Caddy en autonome) a ajoutée ou imposée,
     # jamais une valeur envoyée par le client. Sans proxy devant (accès direct
-    # au port 8000), cette fonction n'est plus fiable — déploiement non supporté.
-    # Si Traefik reçoit un jour `trustedIPs`, revalider ce point.
+    # au port 8000), cette fonction n'est pas fiable — déploiement non supporté.
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
         return forwarded.split(",")[-1].strip()
@@ -59,24 +60,16 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
 class ScoreIn(BaseModel):
-    player_name: str = Field(min_length=1, max_length=20)
+    # Mêmes règles que la saisie du jeu (setNameEntryText, states/endOfRun.js) :
+    # 1 à 8 lettres majuscules, chiffres ou espaces, espaces autour retirés.
+    # Un appel direct à l'API ne peut pas afficher autre chose au classement.
+    player_name: Annotated[str, StringConstraints(strip_whitespace=True, pattern=r"^[A-Z0-9 ]{1,8}$")]
     # Borne haute large mais réaliste : filtre les valeurs absurdes envoyées
     # à la main sans prétendre empêcher la triche (le score vient du client,
     # rien ne le garantit authentique — voir docs/securite.md).
     score: int = Field(ge=0, le=999_999)
     wave: int = Field(default=1, ge=1, le=9_999)
     kills: int = Field(default=0, ge=0, le=999_999)
-
-    @field_validator("player_name")
-    @classmethod
-    def player_name_not_blank(cls, v: str) -> str:
-        # Field() ne vérifie que la longueur brute : "   " (3 espaces) passe
-        # sinon. Le .trim() côté client (states/endOfRun.js) ne protège pas un appel
-        # direct à l'API.
-        v = v.strip()
-        if not v:
-            raise ValueError("player_name ne peut pas être vide")
-        return v
 
 
 class ScoreOut(BaseModel):
@@ -99,7 +92,7 @@ def health():
 
 @app.get("/api/scores", response_model=list[ScoreOut])
 @limiter.limit("60/minute")
-def list_scores(request: Request, limit: int = Query(default=10, ge=1, le=100)):
+def list_scores(request: Request, limit: int = Query(default=10, ge=1, le=database.MAX_SCORES)):
     return database.get_top_scores(limit=limit)
 
 
@@ -115,8 +108,7 @@ def games_count(request: Request):
     return {"count": database.count_games_played()}
 
 
-# Toutes les parties terminées, qualifiées ou non (triggerGameOver côté
-# frontend) : 'scores' ne garde que celles du top. Pas de payload.
+# Une partie vient de se terminer, quel que soit son score. Pas de payload.
 @app.post("/api/games", status_code=201)
 @limiter.limit("10/minute")
 def create_game(request: Request):

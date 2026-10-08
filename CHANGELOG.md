@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.117] - 2026-10-08
+- Pseudo par défaut : « AAA », comme sur les bornes d'arcade, à la place de « PILOTE » suivi de deux chiffres (REJOUER et pré-remplissage de la saisie).
+
 ## [2.116] - 2026-10-08
 - **Rejouer en 1 clic.** L'écran GAME OVER propose REJOUER (par défaut) et CLASSEMENT à la place de « OK ». REJOUER relance aussitôt : avant, il fallait 3 ou 4 clics (OK, valider le pseudo, classement, JOUER). Le score n'est pas perdu : s'il entre dans le top 10, il est envoyé en arrière-plan sous le pseudo mémorisé, ou un nom de pilote aléatoire.
 

@@ -110,7 +110,7 @@ Comment les couleurs et les formes sont décidées et générées.
 
 ## Interface & menus
 
-- [x] **Rejouer en un clic** depuis l'écran de fin de partie (REJOUER ou CLASSEMENT, au clic, au tap ou au clavier). En rejouant, un score qui entre dans le top 10 est quand même enregistré, sous le dernier pseudo utilisé (ou un nom de pilote aléatoire).
+- [x] **Rejouer en un clic** depuis l'écran de fin de partie (REJOUER ou CLASSEMENT, au clic, au tap ou au clavier). En rejouant, un score qui entre dans le top 10 est quand même enregistré, sous le dernier pseudo utilisé (ou « AAA » si le joueur n'en a jamais saisi, comme sur les bornes d'arcade).
 - [x] Tous les écrans nécessaires : titre, pause, confirmation avant de quitter une partie, aide, crédits, fin de partie, saisie du pseudo, classement.
 - [x] Navigation possible au clavier (flèches + Entrée) et à la souris, avec un petit son quand la sélection change.
 - [x] Raccourcis clavier (pause, NOVA, couper le son, filtre rétro) listés dans l'écran Aide ; inactifs pendant la saisie du pseudo, où ces lettres sont du texte.

@@ -88,8 +88,8 @@ test("vague 1 : transition propre, aucune erreur sur une session de jeu prolong�
 test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + VALIDER tactile (sans clavier)", async ({ page }) => {
   // Sur mobile, focus() sur le champ caché arrive après un `await` (hors du
   // geste utilisateur d'origine) : la plupart des navigateurs mobiles
-  // refusent alors d'ouvrir le clavier virtuel. D'où le nom aléatoire déjà
-  // rempli (voir randomPilotName() dans states/endOfRun.js) et le bouton "VALIDER"
+  // refusent alors d'ouvrir le clavier virtuel. D'où le nom par défaut déjà
+  // rempli (voir DEFAULT_NAME dans states/endOfRun.js) et le bouton "VALIDER"
   // tactile (voir hitTestNameEntryValidate dans hud.js) — ce test vérifie
   // qu'on peut valider le score uniquement au tap, sans jamais toucher au
   // clavier.
@@ -115,8 +115,10 @@ test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + V
 
   // Requêtes vers l'API (aucun backend en e2e : elles échouent, mais partent).
   const apiCalls = [];
+  const postedNames = [];
   page.on("request", (r) => {
     if (r.url().includes("/api/")) apiCalls.push(`${r.method()} ${new URL(r.url()).pathname}`);
+    if (r.postData()) postedNames.push(JSON.parse(r.postData()).player_name);
   });
 
   const { canvas, startRun, toPage, clickLogical } = canvasHelpers(page);
@@ -131,6 +133,7 @@ test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + V
   await waitForMode(page, "playing");
   expect((await gameState(page)).wave).toBe(1);
   await expect.poll(() => apiCalls).toEqual(["POST /api/games", "GET /api/scores", "POST /api/scores"]);
+  expect(postedNames).toEqual(["AAA"]); // aucun pseudo jamais saisi : nom par défaut
 
   await dieOnFirstBoss();
 

@@ -19,12 +19,10 @@ function saveLastPlayerName(name) {
   saveItem(STORAGE_KEYS.lastPlayerName, name);
 }
 
-// Nom par défaut aléatoire — évite un "PILOTE" générique si le clavier
-// n'apparaît pas (mobile, voir triggerGameOver).
-function randomPilotName() {
-  const n = 10 + Math.floor(Math.random() * 90); // 2 chiffres pile : "PILOTE" (6) + "42" = 8 car. max
-  return `PILOTE${n}`;
-}
+// Nom par défaut, comme sur les bornes d'arcade : utilisé tant que le joueur
+// n'a jamais saisi de pseudo (REJOUER, ou clavier qui n'apparaît pas sur
+// mobile, voir triggerGameOver).
+const DEFAULT_NAME = "AAA";
 
 // Le score entre-t-il dans le top 10 ? Backend indisponible : oui, on tente quand même.
 async function qualifiesForTop(score) {
@@ -38,12 +36,12 @@ async function qualifiesForTop(score) {
 
 // REJOUER : nouvelle partie aussitôt, sans passer par la saisie du nom. Le
 // score n'est pas perdu pour autant : s'il entre dans le top, il est envoyé
-// en arrière-plan sous le pseudo mémorisé (ou un nom de pilote aléatoire,
-// comme celui que la saisie aurait proposé). Valeurs lues avant startRun,
+// en arrière-plan sous le pseudo mémorisé (ou DEFAULT_NAME, comme
+// celui que la saisie aurait proposé). Valeurs lues avant startRun,
 // qui les remet à zéro.
 function replay(g, engine) {
   const { score, wave, enemiesKilled } = g;
-  const name = readLastPlayerName() || randomPilotName();
+  const name = readLastPlayerName() || DEFAULT_NAME;
   recordGamePlayed().catch(() => {});
   qualifiesForTop(score)
     .then((qualifies) => qualifies && submitScore(name, score, wave, enemiesKilled))
@@ -60,7 +58,7 @@ function selectGameOverOption(g, engine, index) {
 // le score ne qualifie pas).
 async function triggerGameOver(g, engine) {
   g.mode = MODE.NAME_ENTRY;
-  g.nameEntry = readLastPlayerName() || randomPilotName();
+  g.nameEntry = readLastPlayerName() || DEFAULT_NAME;
   // Comptabilisée dès la fin de partie, qualifiée ou non (POST /api/games).
   // Fire-and-forget : un échec réseau ne doit pas bloquer la suite.
   recordGamePlayed().catch(() => {});
@@ -70,7 +68,7 @@ async function triggerGameOver(g, engine) {
   }
   // focus() ici est hors du geste utilisateur d'origine (après un await) —
   // la plupart des mobiles refusent d'ouvrir le clavier virtuel dans ce
-  // cas, sans erreur. D'où le nom aléatoire déjà rempli et le bouton
+  // cas, sans erreur. D'où le nom par défaut déjà rempli et le bouton
   // "VALIDER" tactile (hitTestNameEntryValidate) pour valider sans clavier.
   if (engine.nameInputEl) {
     engine.nameInputEl.value = g.nameEntry;
@@ -89,7 +87,7 @@ let submitting = false;
 export async function confirmNameEntry(g, engine) {
   if (submitting) return;
   submitting = true;
-  const name = (g.nameEntry || "PILOTE").trim() || "PILOTE";
+  const name = (g.nameEntry || DEFAULT_NAME).trim() || DEFAULT_NAME;
   saveLastPlayerName(name); // repris pré-rempli à la prochaine partie (voir triggerGameOver)
   try {
     await submitScore(name, g.score, g.wave, g.enemiesKilled);

@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.120";
+export const VERSION = "2.121";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -101,15 +101,16 @@ export const POWERUP = {
   fallSpeed: 26,
   radius: 5,
   lifetime: 9, // disparaît si non ramassé
+  // Noms et effets affichés : clés "powerup.<type>" des fichiers de langue (i18n/).
   types: {
-    power: { fireCooldownMul: 1.15, damage: 2, color: "#ff7043", label: "PUISSANCE", effect: "dégâts renforcés, tir plus lent" },
-    rapid: { fireCooldownMul: 0.4, damage: 0.6, color: "#7dfcff", label: "RAFALE", effect: "tir très rapide, dégâts réduits" },
+    power: { fireCooldownMul: 1.15, damage: 2, color: "#ff7043" },
+    rapid: { fireCooldownMul: 0.4, damage: 0.6, color: "#7dfcff" },
     // Cône de plombs à dégâts décroissants (voir firePlayerPellets et
     // PELLET_DAMAGE_DECAY dans projectiles.js) — `damage` ici est le dégât
     // initial par plomb, pas le total du tir. Cadence plus lente que
     // "power" : un tir plus engageant, pas un simple "tire plus fort partout".
-    shotgun: { fireCooldownMul: 1.35, damage: 2, color: "#d4a24c", label: "CHEVROTINE", effect: "cône de plombs, dégâts décroissants avec la distance" },
-    shield: { color: "#5ec8ff", label: "BOUCLIER", effect: "absorbe les prochains coups" },
+    shotgun: { fireCooldownMul: 1.35, damage: 2, color: "#d4a24c" },
+    shield: { color: "#5ec8ff" },
   },
   // Poids relatifs (pickPowerupType() dans states/playing.js).
   typeWeights: { power: 0.3, rapid: 0.3, shotgun: 0.2, shield: 0.2 },
@@ -148,6 +149,7 @@ export const STORAGE_KEYS = {
   lastPlayerName: "arcadepipe_last_player_name",
   gameSpeed: "arcadepipe_game_speed",
   analyticsConsent: "arcadepipe_analytics_consent",
+  lang: "arcadepipe_lang",
 };
 
 // Google Analytics n'est chargé qu'après consentement explicite (bannière,

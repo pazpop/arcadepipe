@@ -3,6 +3,7 @@
 // part, carré et en haute résolution : le canvas du jeu lui-même reste tout
 // petit (RES_W/RES_H) et agrandi sans flou, pas adapté à une image partageable.
 import { PALETTE, VERSION } from "./config.js";
+import { t } from "./i18n.js";
 import qrcodeFactory from "../lib/qrcode.js";
 
 const SIZE = 1080; // carré, la taille attendue par Discord/X pour un aperçu propre
@@ -79,19 +80,19 @@ function drawShareCard(ctx, stats) {
   text(ctx, "ARCADEPIPE", SIZE / 2, 130, { size: 54, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
   text(ctx, "STARFIGHTER", SIZE / 2, 185, { size: 22, align: "center", color: PALETTE.player, glow: PALETTE.player });
 
-  text(ctx, "SCORE", SIZE / 2, 340, { size: 22, align: "center", color: PALETTE.hud });
+  text(ctx, t("card.score"), SIZE / 2, 340, { size: 22, align: "center", color: PALETTE.hud });
   text(ctx, String(stats.score), SIZE / 2, 420, { size: 90, align: "center", color: PALETTE.gold, glow: PALETTE.gold });
 
   // Grille 2x2 : 4 stats ne tiennent pas proprement sur une ligne.
   const colGap = SIZE * 0.28;
   const rows = [
     [
-      { label: "VAGUE ATTEINTE", value: String(stats.wave) },
-      { label: "ENNEMIS ABATTUS", value: String(stats.kills) },
+      { label: t("card.wave"), value: String(stats.wave) },
+      { label: t("card.kills"), value: String(stats.kills) },
     ],
     [
-      { label: "MEILLEURE CHAÎNE\nDE FRÔLEMENTS", value: String(stats.maxGrazeChain) },
-      { label: "ANNÉES-LUMIÈRE\nPARCOURUES", value: String(Math.round(stats.distanceTraveled)) },
+      { label: t("card.graze"), value: String(stats.maxGrazeChain) },
+      { label: t("card.distance"), value: String(Math.round(stats.distanceTraveled)) },
     ],
   ];
   const rowYs = [540, 660];
@@ -107,7 +108,7 @@ function drawShareCard(ctx, stats) {
     });
   });
 
-  text(ctx, "Tente de battre ce score :", SIZE / 2, 760, { size: 22, align: "center", color: PALETTE.hud });
+  text(ctx, t("card.challenge"), SIZE / 2, 760, { size: 22, align: "center", color: PALETTE.hud });
   text(ctx, "arcadepipe.pazpop.net", SIZE / 2, 800, { size: 30, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
 
   const qrSize = 200;

@@ -8,6 +8,7 @@ import { createGame } from "./game.js";
 import { createShareCardCanvas } from "./shareCard.js";
 import { loadItem, saveItem } from "./storage.js";
 import { initConsent } from "./consent.js";
+import { t, nextLang, translateDom } from "./i18n.js";
 
 const canvas = document.getElementById("game-canvas");
 const ctx = canvas.getContext("2d");
@@ -46,6 +47,11 @@ const novaBtn = document.getElementById("nova-btn");
 const shareBtn = document.getElementById("share-btn");
 const versionLabel = document.getElementById("version-label");
 if (versionLabel) versionLabel.textContent = `v${VERSION}`;
+
+// Langue : textes du HTML traduits d'entrée ; le bouton affiche le nom de la
+// langue courante et passe à la suivante (voir i18n.js).
+translateDom();
+document.getElementById("lang-btn")?.addEventListener("click", nextLang);
 
 const input = createInput(canvas);
 const audio = new AudioEngine();
@@ -207,7 +213,7 @@ if (fullscreenBtn) {
       }
     });
     document.addEventListener("fullscreenchange", () => {
-      fullscreenBtn.textContent = document.fullscreenElement ? "⛶ Quitter le plein écran" : "⛶ Plein écran";
+      fullscreenBtn.textContent = t(document.fullscreenElement ? "panel.fullscreen.exit" : "panel.fullscreen");
     });
   }
 }
@@ -262,7 +268,7 @@ if (shareBtn) {
     try {
       await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
       const original = shareBtn.textContent;
-      shareBtn.textContent = "✅ Copiée + téléchargée";
+      shareBtn.textContent = t("share.done");
       setTimeout(() => (shareBtn.textContent = original), 2000);
     } catch {
       /* Clipboard API image indisponible sur ce navigateur — le

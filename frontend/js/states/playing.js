@@ -22,6 +22,7 @@ import * as hud from "../hud.js";
 import { MODE } from "./mode.js";
 import * as helpState from "./help.js";
 import { startWave, updateWaveTransition } from "./waves.js";
+import { t } from "../i18n.js";
 
 // Accessibilité : coupe le screen shake pour les joueurs sensibles au mouvement (réglage système).
 const REDUCED_MOTION =
@@ -261,7 +262,7 @@ function triggerNova(g, engine) {
     audio.playNovaBlast();
     g.flash = Math.max(g.flash, 0.7);
     triggerShake(g, 12);
-    g.banner = { text: "NOVA !", timer: 1.2 };
+    g.banner = { text: t("banner.nova"), timer: 1.2 };
   }
 }
 

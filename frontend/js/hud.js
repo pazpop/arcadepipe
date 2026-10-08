@@ -4,27 +4,18 @@
 import { RES_W, RES_H, PALETTE, POWERUP, NOVA, BONUS_LEVEL, DIFFICULTY, VERSION } from "./config.js";
 import { drawPowerupIcon } from "./powerups.js";
 import { bossHealthFraction } from "./boss.js";
+import { t } from "./i18n.js";
 import { buildSprites, drawWithGlow } from "./assets.js";
-
-// Version courte de POWERUP.types[type].effect pour la légende de l'écran
-// Aide — le texte complet (utilisé par drawBuffIndicator en jeu) est trop
-// long pour tenir sur une ligne à cette résolution.
-const BONUS_SHORT_EFFECT = {
-  power: "dégâts renforcés, tir plus lent",
-  rapid: "tir très rapide, dégâts réduits",
-  shotgun: "cône de plombs, portée courte",
-  shield: "absorbe des coups",
-};
 
 // Légende des ennemis (écran Aide) — boss exclu (il a sa propre section).
 // Sprite réel (assets.js) + même couleur que enemyGlowColor (enemies.js). PV
-// recopiés à la main depuis TYPE_STATS/GUNNER_HP_BONUS (enemies.js) : c'est la
-// seule indication de PV visible par le joueur.
+// recopiés à la main depuis TYPE_STATS/GUNNER_HP_BONUS (enemies.js), dans les
+// fichiers de langue (i18n/) : c'est la seule indication de PV visible par le joueur.
 const ENEMY_LEGEND = [
-  { spriteKey: "enemyNormal", color: PALETTE.enemyNormal, text: "FACILE — 1 PV, pas de tir, ligne droite" },
-  { spriteKey: "enemyGunner", color: PALETTE.enemyGunner, text: "MOYEN — 2 PV, tire visé (vague 5+)" },
-  { spriteKey: "enemyElite", color: PALETTE.enemyElite, text: "ÉLITE — 3 PV, tire visé, ondule" },
-  { spriteKey: "enemyKamikaze", color: PALETTE.danger, text: "KAMIKAZE — 1 PV, fonce sur toi (vague 4+)" },
+  { spriteKey: "enemyNormal", color: PALETTE.enemyNormal, text: t("enemy.normal") },
+  { spriteKey: "enemyGunner", color: PALETTE.enemyGunner, text: t("enemy.gunner") },
+  { spriteKey: "enemyElite", color: PALETTE.enemyElite, text: t("enemy.elite") },
+  { spriteKey: "enemyKamikaze", color: PALETTE.danger, text: t("enemy.kamikaze") },
 ];
 
 // Point dans un rectangle {x,y,w,h} centré sur (x,y) — même test répété par
@@ -88,22 +79,22 @@ function drawOptionList(ctx, rects, selected, size = 11) {
 // --- HUD en partie ---
 
 export function drawGameHud(ctx, s, lives) {
-  text(ctx, `SCORE ${s.score}`, 8, 10, { size: 8, align: "left" });
+  text(ctx, t("hud.score", { score: s.score }), 8, 10, { size: 8, align: "left" });
   // Compteur de kills/objectif à côté de la vague — masqué en vague de boss
   // (victoire = coque, pas un total de kills). Même ligne que "VAGUE" pour
   // ne pas empiéter sur l'indicateur de buff/bouclier.
   if (s.bonusLevel) {
-    text(ctx, `NIVEAU BONUS — ANNEAUX ${s.bonusLevel.passedCount}/${BONUS_LEVEL.ringCount}`, RES_W / 2, 10, {
+    text(ctx, t("hud.bonusLevel", { passed: s.bonusLevel.passedCount, total: BONUS_LEVEL.ringCount }), RES_W / 2, 10, {
       size: 8,
       align: "center",
       color: NOVA.color,
     });
   } else if (s.boss) {
-    text(ctx, `VAGUE ${s.wave}`, RES_W / 2, 10, { size: 8, align: "center" });
+    text(ctx, t("hud.wave", { wave: s.wave }), RES_W / 2, 10, { size: 8, align: "center" });
   } else {
     const kills = String(Math.min(s.waveKills, s.waveKillTarget)).padStart(2, "0");
     const target = String(s.waveKillTarget).padStart(2, "0");
-    text(ctx, `VAGUE ${s.wave}   ${kills}/${target}`, RES_W / 2, 10, { size: 8, align: "center" });
+    text(ctx, `${t("hud.wave", { wave: s.wave })}   ${kills}/${target}`, RES_W / 2, 10, { size: 8, align: "center" });
   }
   text(ctx, "♥".repeat(Math.max(0, lives)), RES_W - 8, 10, {
     size: 8,
@@ -116,7 +107,7 @@ export function drawGameHud(ctx, s, lives) {
   // premier coup encaissé (s.intactBlink) puis disparaît jusqu'à la vague suivante.
   const lost = s.tookDamageThisWave;
   if (!s.bonusLevel && (lost ? Math.floor(s.intactBlink * 8) % 2 === 1 : true)) {
-    text(ctx, `INTACT +${DIFFICULTY.noDamageWaveBonus}`, RES_W - 8, 20, {
+    text(ctx, t("hud.intact", { bonus: DIFFICULTY.noDamageWaveBonus }), RES_W - 8, 20, {
       size: 7,
       align: "right",
       color: lost ? PALETTE.danger : PALETTE.bulletPlayer,
@@ -179,7 +170,7 @@ export function drawBossHealthBar(ctx, boss) {
 export function drawBuffIndicator(ctx, buff) {
   if (!buff) return;
   const def = POWERUP.types[buff.type];
-  text(ctx, `${def.label} (${Math.ceil(buff.timer)}s) — ${def.effect}`, RES_W / 2, 20, {
+  text(ctx, `${t(`powerup.${buff.type}`)} (${Math.ceil(buff.timer)}s) — ${t(`powerup.${buff.type}.effect`)}`, RES_W / 2, 20, {
     size: 7,
     align: "center",
     color: def.color,
@@ -191,7 +182,7 @@ export function drawBuffIndicator(ctx, buff) {
 export function drawShieldIndicator(ctx, hits) {
   if (!hits) return;
   const def = POWERUP.types.shield;
-  text(ctx, `${def.label} x${hits}`, RES_W / 2, 30, {
+  text(ctx, `${t("powerup.shield")} x${hits}`, RES_W / 2, 30, {
     size: 7,
     align: "center",
     color: def.color,
@@ -216,19 +207,19 @@ export function drawBanner(ctx, banner) {
 // secondes plutôt qu'une coupure nette.
 export function drawBonusLevelIntro(ctx, timer) {
   const alpha = Math.min(1, timer / 0.6);
-  text(ctx, "NIVEAU BONUS DÉBLOQUÉ !", RES_W / 2, RES_H * 0.3, {
+  text(ctx, t("bonus.intro.title"), RES_W / 2, RES_H * 0.3, {
     size: 13,
     align: "center",
     color: PALETTE.gold,
     glow: PALETTE.gold,
     alpha,
   });
-  text(ctx, "Score suffisant atteint pour le découvrir", RES_W / 2, RES_H * 0.3 + 18, {
+  text(ctx, t("bonus.intro.line1"), RES_W / 2, RES_H * 0.3 + 18, {
     size: 8,
     align: "center",
     alpha: alpha * 0.85,
   });
-  text(ctx, "Traverse les anneaux pour charger ta jauge NOVA !", RES_W / 2, RES_H * 0.3 + 32, {
+  text(ctx, t("bonus.intro.line2"), RES_W / 2, RES_H * 0.3 + 32, {
     size: 8,
     align: "center",
     color: NOVA.color,
@@ -239,7 +230,7 @@ export function drawBonusLevelIntro(ctx, timer) {
 
 export function drawControlHint(ctx, timer) {
   if (timer <= 0) return;
-  text(ctx, "MAINTIENS CLIC / DOIGT POUR TIRER", RES_W / 2, RES_H - 16, {
+  text(ctx, t("hud.controlHint"), RES_W / 2, RES_H - 16, {
     size: 7,
     align: "center",
     color: PALETTE.hud,
@@ -258,7 +249,7 @@ export function drawFlash(ctx, amount) {
 
 // --- Écran titre ---
 
-const MENU_OPTIONS = ["JOUER", "CLASSEMENT", "AIDE", "CRÉDITS"];
+const MENU_OPTIONS = [t("menu.play"), t("menu.leaderboard"), t("menu.help"), t("menu.credits")];
 
 // Zones cliquables plus larges que le texte — sur mobile, mieux vaut une marge généreuse qu'un bouton manqué.
 function menuOptionRects() {
@@ -271,11 +262,7 @@ export function hitTestMenu(x, y) {
 
 // Résumé de l'histoire, entre le titre et les options — fixe (ne flotte pas
 // avec le titre) pour ne jamais empiéter dessous.
-const LORE_LINES = [
-  "La galaxie agonise sous les flottes ennemies —",
-  "seul aux commandes du dernier chasseur libre,",
-  "tu es son unique espoir de survie.",
-];
+const LORE_LINES = t("menu.lore").split("\n");
 
 export function drawTitleScreen(ctx, elapsed, selected) {
   ctx.save();
@@ -320,19 +307,19 @@ const COL = {
 };
 
 export function drawLeaderboardScreen(ctx, scores, revealCount, gamesPlayed) {
-  text(ctx, "CLASSEMENT", RES_W / 2, 24, { size: 16, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
+  text(ctx, t("board.title"), RES_W / 2, 24, { size: 16, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
   // Masqué plutôt qu'un faux "0" si le backend est injoignable (goToLeaderboard laisse gamesPlayed à null).
   if (gamesPlayed != null) {
-    text(ctx, `${gamesPlayed} PARTIES JOUÉES`, RES_W / 2, 34, { size: 7, align: "center", alpha: 0.6 });
+    text(ctx, t("board.games", { count: gamesPlayed }), RES_W / 2, 34, { size: 7, align: "center", alpha: 0.6 });
   }
-  text(ctx, "RANG", COL.rank, 42, { size: 7, align: "left", alpha: 0.7 });
-  text(ctx, "NOM", COL.name, 42, { size: 7, align: "left", alpha: 0.7 });
-  text(ctx, "SCORE", COL.score, 42, { size: 7, align: "right", alpha: 0.7 });
-  text(ctx, "VAGUE", COL.wave, 42, { size: 7, align: "right", alpha: 0.7 });
-  text(ctx, "TUÉS", COL.kills, 42, { size: 7, align: "right", alpha: 0.7 });
+  text(ctx, t("board.rank"), COL.rank, 42, { size: 7, align: "left", alpha: 0.7 });
+  text(ctx, t("board.name"), COL.name, 42, { size: 7, align: "left", alpha: 0.7 });
+  text(ctx, t("board.score"), COL.score, 42, { size: 7, align: "right", alpha: 0.7 });
+  text(ctx, t("board.wave"), COL.wave, 42, { size: 7, align: "right", alpha: 0.7 });
+  text(ctx, t("board.kills"), COL.kills, 42, { size: 7, align: "right", alpha: 0.7 });
 
   if (!scores || scores.length === 0) {
-    text(ctx, "Aucun score pour l'instant.", RES_W / 2, RES_H / 2, { size: 9, align: "center" });
+    text(ctx, t("board.empty"), RES_W / 2, RES_H / 2, { size: 9, align: "center" });
   }
 
   const rowH = 16;
@@ -354,7 +341,7 @@ export function drawLeaderboardScreen(ctx, scores, revealCount, gamesPlayed) {
     text(ctx, kills, COL.kills, y, { size, align: "right", color, glow });
   });
 
-  text(ctx, "ÉCHAP / TAP — RETOUR", RES_W / 2, RES_H - 12, { size: 7, align: "center", alpha: 0.7 });
+  text(ctx, t("board.back"), RES_W / 2, RES_H - 12, { size: 7, align: "center", alpha: 0.7 });
 }
 
 // --- Écran crédits ---
@@ -364,27 +351,26 @@ export const CREDITS_LINES = [
   "STARFIGHTER",
   `v${VERSION}`,
   "",
-  "UN JEU DÉVELOPPÉ PAR PAZPOP",
+  t("credits.by"),
   "",
-  "CODE SOURCE",
+  t("credits.source"),
   "github.com/pazpop/arcadepipe",
   "",
-  "MUSIQUE",
+  t("credits.music"),
   "MALL-E",
   "mall-e.bandcamp.com",
   "",
-  "REMERCIEMENTS",
-  "MALL-E, POUR SA MUSIQUE",
-  "CLAUDE (ANTHROPIC) ET LUMO (PROTON),",
-  "POUR L'ASSISTANCE AU DÉVELOPPEMENT",
+  t("credits.thanks"),
+  t("credits.thanks.music"),
+  ...t("credits.thanks.ai").split("\n"),
   "",
-  "TECHNOLOGIES",
+  t("credits.tech"),
   "JAVASCRIPT · CANVAS 2D",
   "WEB AUDIO API · SQLITE",
   "",
-  "QR CODE : KAZUHIKO ARASE",
+  t("credits.qr"),
   "",
-  "MERCI D'AVOIR JOUÉ !",
+  t("credits.end"),
 ];
 
 export function drawCreditsScreen(ctx, scrollY) {
@@ -408,7 +394,7 @@ export function drawCreditsScreen(ctx, scrollY) {
 
 // --- Pause ---
 
-const PAUSE_OPTIONS = ["REPRENDRE", "AIDE", "MENU PRINCIPAL"];
+const PAUSE_OPTIONS = [t("pause.resume"), t("pause.help"), t("pause.menu")];
 
 function pauseOptionRects() {
   return verticalOptionRects(PAUSE_OPTIONS, RES_H * 0.4 + 24, 20, 200, 18);
@@ -422,14 +408,14 @@ export function drawPauseScreen(ctx, selected) {
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.55)";
   ctx.fillRect(0, 0, RES_W, RES_H);
-  text(ctx, "PAUSE", RES_W / 2, RES_H * 0.4, { size: 18, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
+  text(ctx, t("pause.title"), RES_W / 2, RES_H * 0.4, { size: 18, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
   drawOptionList(ctx, pauseOptionRects(), selected);
   ctx.restore();
 }
 
 // --- Confirmation de sortie de partie (depuis la pause) ---
 
-const CONFIRM_QUIT_OPTIONS = ["OUI, QUITTER", "NON, CONTINUER"];
+const CONFIRM_QUIT_OPTIONS = [t("quit.yes"), t("quit.no")];
 
 function confirmQuitOptionRects() {
   return verticalOptionRects(CONFIRM_QUIT_OPTIONS, RES_H * 0.58, 20, 200, 18);
@@ -443,13 +429,13 @@ export function drawConfirmQuitScreen(ctx, selected) {
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.7)";
   ctx.fillRect(0, 0, RES_W, RES_H);
-  text(ctx, "QUITTER LA PARTIE ?", RES_W / 2, RES_H * 0.38, {
+  text(ctx, t("quit.title"), RES_W / 2, RES_H * 0.38, {
     size: 14,
     align: "center",
     color: PALETTE.danger,
     glow: PALETTE.danger,
   });
-  text(ctx, "TA PROGRESSION ACTUELLE SERA PERDUE.", RES_W / 2, RES_H * 0.38 + 18, {
+  text(ctx, t("quit.warning"), RES_W / 2, RES_H * 0.38 + 18, {
     size: 8,
     align: "center",
     alpha: 0.85,
@@ -555,7 +541,7 @@ export function drawInfoScreen(ctx, content, page = 0, pageCount = 1) {
       const rowY = y + i * rowH;
       const def = POWERUP.types[type];
       drawPowerupIcon(ctx, centerX - 120, rowY, type, 5);
-      text(ctx, `${def.label} — ${BONUS_SHORT_EFFECT[type]}`, centerX - 100, rowY, { size: 8, align: "left", color: def.color });
+      text(ctx, `${t(`powerup.${type}`)} — ${t(`powerup.${type}.short`)}`, centerX - 100, rowY, { size: 8, align: "left", color: def.color });
     });
   }
 
@@ -574,13 +560,13 @@ export function drawInfoScreen(ctx, content, page = 0, pageCount = 1) {
     const nextR = infoNextRect();
     // Grisée plutôt que masquée aux extrémités : la position du bouton reste
     // stable, seule son opacité indique qu'il n'y a rien de plus dans ce sens.
-    text(ctx, "◀ PRÉC.", prevR.x, prevR.y, { size: 9, align: "center", alpha: page > 0 ? 1 : 0.3 });
+    text(ctx, t("help.prev"), prevR.x, prevR.y, { size: 9, align: "center", alpha: page > 0 ? 1 : 0.3 });
     text(ctx, `${page + 1}/${pageCount}`, RES_W / 2, prevR.y, { size: 9, align: "center", color: PALETTE.hud });
-    text(ctx, "SUIV. ▶", nextR.x, nextR.y, { size: 9, align: "center", alpha: page < pageCount - 1 ? 1 : 0.3 });
+    text(ctx, t("help.next"), nextR.x, nextR.y, { size: 9, align: "center", alpha: page < pageCount - 1 ? 1 : 0.3 });
   }
 
   const r = infoContinueRect();
-  text(ctx, "▶ CONTINUER", r.x, r.y, {
+  text(ctx, t("help.continue"), r.x, r.y, {
     size: 11,
     align: "center",
     color: PALETTE.bulletPlayer,
@@ -592,15 +578,15 @@ export function drawInfoScreen(ctx, content, page = 0, pageCount = 1) {
 // --- Game over / saisie du nom ---
 
 export function drawGameOverScreen(ctx, score, wave, kills, distance) {
-  text(ctx, "GAME OVER", RES_W / 2, RES_H * 0.28, { size: 20, align: "center", color: PALETTE.danger, glow: PALETTE.danger });
-  text(ctx, `SCORE ${score}  ·  VAGUE ${wave}  ·  ${kills} ENNEMIS`, RES_W / 2, RES_H * 0.28 + 22, { size: 10, align: "center" });
-  text(ctx, `${Math.round(distance)} ANNÉES-LUMIÈRE PARCOURUES`, RES_W / 2, RES_H * 0.28 + 34, { size: 7, align: "center", alpha: 0.8 });
+  text(ctx, t("gameover.title"), RES_W / 2, RES_H * 0.28, { size: 20, align: "center", color: PALETTE.danger, glow: PALETTE.danger });
+  text(ctx, t("gameover.stats", { score, wave, kills }), RES_W / 2, RES_H * 0.28 + 22, { size: 10, align: "center" });
+  text(ctx, t("gameover.distance", { distance: Math.round(distance) }), RES_W / 2, RES_H * 0.28 + 34, { size: 7, align: "center", alpha: 0.8 });
 }
 
 // --- Écran "GAME OVER" (après le ralenti de mort) : rejouer aussitôt, ou
 // passer par la saisie du nom/le classement ---
 
-const GAME_OVER_OPTIONS = ["REJOUER", "CLASSEMENT"];
+const GAME_OVER_OPTIONS = [t("gameover.replay"), t("gameover.leaderboard")];
 
 function gameOverOptionRects() {
   return verticalOptionRects(GAME_OVER_OPTIONS, RES_H * 0.62, 20, 200, 18);
@@ -630,10 +616,10 @@ export function hitTestNameEntryValidate(x, y) {
 }
 
 export function drawNameEntry(ctx, name, cursorVisible) {
-  text(ctx, "NOUVEAU MEILLEUR SCORE !", RES_W / 2, RES_H * 0.48, { size: 10, align: "center", color: PALETTE.bulletPlayer });
-  text(ctx, "ENTRE TON NOM (8 CAR. MAX)", RES_W / 2, RES_H * 0.48 + 16, { size: 7, align: "center", alpha: 0.8 });
+  text(ctx, t("name.title"), RES_W / 2, RES_H * 0.48, { size: 10, align: "center", color: PALETTE.bulletPlayer });
+  text(ctx, t("name.prompt"), RES_W / 2, RES_H * 0.48 + 16, { size: 7, align: "center", alpha: 0.8 });
   const shown = name + (cursorVisible ? "_" : " ");
   text(ctx, shown.padEnd(8, "·"), RES_W / 2, RES_H * 0.48 + 34, { size: 14, align: "center", color: PALETTE.hud, glow: PALETTE.hud });
   const r = nameEntryValidateRect();
-  text(ctx, "▶ VALIDER", r.x, r.y, { size: 11, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
+  text(ctx, t("name.validate"), r.x, r.y, { size: 11, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
 }

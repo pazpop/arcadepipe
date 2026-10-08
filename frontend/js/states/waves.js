@@ -8,6 +8,7 @@ import { spawnBoss } from "../boss.js";
 import { novaMaxForWave } from "../graze.js";
 import { createBonusLevel, updateBonusLevel, bonusLevelRewardFraction } from "../bonusLevel.js";
 import { setEnemiesLeaving } from "../enemies.js";
+import { t } from "../i18n.js";
 
 function isBossWave(wave) {
   return wave % DIFFICULTY.bossWaveEvery === 0;
@@ -29,11 +30,11 @@ export function startWave(g, engine, wave) {
   g.waveBreak = 0;
   g.boss = null;
   if (isBossWave(wave)) {
-    g.banner = { text: `VAGUE ${wave} — ARME MASSIVE EN APPROCHE`, timer: 2.5 };
+    g.banner = { text: t("banner.bossWave", { wave }), timer: 2.5 };
     g.boss = spawnBoss(wave);
     spawnDeathStarBackdrop(engine.starfield);
   } else {
-    g.banner = { text: `VAGUE ${wave}`, timer: 1.8 };
+    g.banner = { text: t("banner.wave", { wave }), timer: 1.8 };
     // Filet de sécurité : évite qu'un décor de boss traîne au début d'une
     // vague normale (chemin normal = triggerDeathStarLeave à la victoire).
     engine.starfield.deathStar = null;
@@ -92,7 +93,7 @@ export function updateWaveTransition(g, engine, dt) {
       g.waveBreakDuration = DIFFICULTY.waveBreakDuration;
       g.waveBreak = g.waveBreakDuration;
       g.banner = {
-        text: `NIVEAU BONUS TERMINÉ : ${passed}/${BONUS_LEVEL.ringCount} ANNEAUX — NOVA +${Math.round(frac * 100)}%`,
+        text: t("banner.bonusDone", { passed, total: BONUS_LEVEL.ringCount, percent: Math.round(frac * 100) }),
         timer: g.waveBreakDuration,
       };
       if (!g.warpSoundPlayed) {
@@ -133,12 +134,12 @@ export function updateWaveTransition(g, engine, dt) {
   if (!g.tookDamageThisWave) {
     g.score += DIFFICULTY.noDamageWaveBonus;
     g.banner = {
-      text: `VAGUE ${g.wave} TERMINÉE — SANS DÉGÂTS ! +${DIFFICULTY.noDamageWaveBonus}`,
+      text: t("banner.waveDoneIntact", { wave: g.wave, bonus: DIFFICULTY.noDamageWaveBonus }),
       timer: g.waveBreakDuration,
     };
     audio.playPowerup();
   } else {
-    g.banner = { text: `VAGUE ${g.wave} TERMINÉE`, timer: g.waveBreakDuration };
+    g.banner = { text: t("banner.waveDone", { wave: g.wave }), timer: g.waveBreakDuration };
   }
   // Tirs/bonus disparaissent immédiatement, mais les ennemis défilent
   // vers la gauche comme le fond (enemies.js) plutôt que de disparaître

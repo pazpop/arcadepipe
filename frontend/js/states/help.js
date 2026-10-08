@@ -9,34 +9,31 @@
 import { consumeJustPressed } from "../input.js";
 import * as hud from "../hud.js";
 import { MODE } from "./mode.js";
+import { t } from "../i18n.js";
 
 const HELP_PAGES = [
   {
-    title: "AIDE",
+    title: t("help.title"),
     sections: [
-      { heading: "DÉPLACEMENT", detail: "Souris ou doigt : dirige le vaisseau" },
-      { heading: "TIR", detail: 'Maintiens le clic, ou coche "TIR AUTO" (bas à gauche)' },
-      {
-        heading: "NOVA",
-        detail:
-          "Frôle (sans le toucher) un tir ennemi ou un vaisseau ennemi — pas le boss — pour charger la jauge NOVA en haut à gauche, prends des risques ! Une fois pleine, ESPACE (ou le bouton tactile en bas à droite) détruit tous les ennemis normaux à l'écran, jamais le boss. Jusqu'à 2 charges en réserve après le 2e combat de boss (1 seule avant), à déclencher quand tu veux.",
-      },
+      { heading: t("help.move"), detail: t("help.move.detail") },
+      { heading: t("help.fire"), detail: t("help.fire.detail") },
+      { heading: t("help.nova"), detail: t("help.nova.detail") },
     ],
   },
   {
-    title: "AIDE",
+    title: t("help.title"),
     sections: [
-      { heading: "BOSS", detail: "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie" },
-      { heading: "MUSIQUE", detail: "Playlist aléatoire, réglable en bas à gauche" },
-      { heading: "RACCOURCIS CLAVIER", detail: "Échap/P : pause · Espace : NOVA · M : son · C : filtre rétro" },
+      { heading: t("help.boss"), detail: t("help.boss.detail") },
+      { heading: t("help.music"), detail: t("help.music.detail") },
+      { heading: t("help.keys"), detail: t("help.keys.detail") },
     ],
   },
   {
-    title: "AIDE — BONUS",
+    title: t("help.title.bonus"),
     showBonusLegend: true,
   },
   {
-    title: "AIDE — ENNEMIS",
+    title: t("help.title.enemies"),
     showEnemyLegend: true,
   },
 ];

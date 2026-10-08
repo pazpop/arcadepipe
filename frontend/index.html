@@ -34,65 +34,70 @@
           <!-- Échap/P mettent en pause au clavier, mais rien d'équivalent au
                tactile — ce bouton est le seul moyen d'ouvrir le menu pause
                sur mobile. -->
-          <button id="pause-btn" type="button" class="mc-pause-btn" title="Menu pause">⏸ Pause</button>
+          <button id="pause-btn" type="button" class="mc-pause-btn" title="Menu pause" data-i18n="panel.pause" data-i18n-title="panel.pause.title">⏸ Pause</button>
         </div>
         <div class="mc-section">
-          <div class="mc-label">MUSIQUE (by Mall-E)</div>
+          <div class="mc-label" data-i18n="panel.music">MUSIQUE (by Mall-E)</div>
           <div class="mc-row">
-            <button id="music-stop-btn" type="button" title="Stop / lecture">⏹</button>
-            <button id="music-next-btn" type="button" title="Piste suivante">⏭</button>
-            <input id="music-volume" type="range" min="0" max="100" step="1" title="Volume musique" />
+            <button id="music-stop-btn" type="button" title="Stop / lecture" data-i18n-title="panel.music.stop">⏹</button>
+            <button id="music-next-btn" type="button" title="Piste suivante" data-i18n-title="panel.music.next">⏭</button>
+            <input id="music-volume" type="range" min="0" max="100" step="1" title="Volume musique" data-i18n-title="panel.music.volume" />
           </div>
         </div>
         <div class="mc-section">
-          <div class="mc-label">BRUITAGES</div>
+          <div class="mc-label" data-i18n="panel.sfx">BRUITAGES</div>
           <div class="mc-row">
-            <input id="sfx-volume" type="range" min="0" max="100" step="1" title="Volume bruitages" />
+            <input id="sfx-volume" type="range" min="0" max="100" step="1" title="Volume bruitages" data-i18n-title="panel.sfx.volume" />
           </div>
         </div>
         <div class="mc-section">
-          <div class="mc-label">VITESSE DU JEU</div>
-          <button id="speed-btn" type="button" class="mc-pause-btn" title="Vitesse du jeu (n'affecte pas la musique/les bruitages)">x1</button>
+          <div class="mc-label" data-i18n="panel.speed">VITESSE DU JEU</div>
+          <button id="speed-btn" type="button" class="mc-pause-btn" title="Vitesse du jeu (n'affecte pas la musique/les bruitages)" data-i18n-title="panel.speed.title">x1</button>
         </div>
         <div class="mc-section">
           <label class="mc-check">
             <input id="autofire-toggle" type="checkbox" />
-            <span>Tir automatique</span>
+            <span data-i18n="panel.autofire">Tir automatique</span>
           </label>
         </div>
         <div class="mc-section">
-          <button id="help-btn" type="button" class="mc-pause-btn" title="Aide">Aide</button>
+          <button id="help-btn" type="button" class="mc-pause-btn" title="Aide" data-i18n="panel.help" data-i18n-title="panel.help">Aide</button>
         </div>
         <div class="mc-section">
-          <button id="fullscreen-btn" type="button" class="mc-pause-btn" title="Plein écran">⛶ Plein écran</button>
+          <button id="fullscreen-btn" type="button" class="mc-pause-btn" title="Plein écran" data-i18n="panel.fullscreen">⛶ Plein écran</button>
         </div>
-        <div class="mc-section">
-          <button id="cookie-btn" type="button" class="mc-pause-btn" title="Changer mon choix de cookies">Cookies</button>
+        <!-- Même rangée : une section de plus et le panneau ne tient plus sous le
+             bandeau de consentement sur un téléphone en paysage. Le bouton de
+             langue affiche la langue courante ; un clic passe à la suivante
+             (voir js/i18n.js). -->
+        <div class="mc-section mc-row">
+          <button id="cookie-btn" type="button" class="mc-pause-btn" title="Changer mon choix de cookies" data-i18n="panel.cookies" data-i18n-title="panel.cookies.title">Cookies</button>
+          <button id="lang-btn" type="button" class="mc-pause-btn" title="Changer de langue" data-i18n="lang.name" data-i18n-title="panel.lang.title">Français</button>
         </div>
         <div class="mc-section mc-version" id="version-label"></div>
       </div>
       <!-- Hors du panneau qui glisse : reste toujours visible, replié ou non. -->
-      <button id="mc-toggle" type="button" title="Afficher/masquer le menu">◀</button>
+      <button id="mc-toggle" type="button" title="Afficher/masquer le menu" data-i18n-title="panel.toggle.title">◀</button>
     </div>
 
     <!-- Déclenchement tactile du NOVA stocké (voir graze.js/game.js) — Espace
          au clavier. Masqué tant que la jauge est vide (main.js) : un bouton
          mort en permanence serait juste du bruit visuel. -->
-    <button id="nova-btn" type="button" class="nova-btn hidden" title="Déclencher NOVA (Espace)">✦ NOVA</button>
+    <button id="nova-btn" type="button" class="nova-btn hidden" title="Déclencher NOVA (Espace)" data-i18n-title="nova.title">✦ NOVA</button>
 
     <!-- Carte de partage (score/vague/kills/meilleure chaîne, voir
          shareCard.js) — visible seulement juste après la fin d'une partie
          (main.js), pas en permanence. -->
-    <button id="share-btn" type="button" class="share-btn hidden" title="Générer une image à partager">📤 Partager</button>
+    <button id="share-btn" type="button" class="share-btn hidden" title="Générer une image à partager" data-i18n="share.button" data-i18n-title="share.title">📤 Partager</button>
 
     <!-- Consentement RGPD : Google Analytics n'est chargé qu'après "Accepter"
          (voir js/consent.js et js/analytics.js). Masqué par défaut, affiché
          tant qu'aucun choix n'est mémorisé, ou rouvert par le bouton Cookies. -->
-    <div id="cookie-banner" class="cookie-banner hidden" role="dialog" aria-label="Consentement aux cookies">
-      <span>Ce site utilise Google Analytics (cookies de mesure d'audience) pour comprendre comment le jeu est utilisé. <a href="https://github.com/pazpop/arcadepipe/blob/main/docs/donnees-collectees.md" target="_blank" rel="noopener">En savoir plus</a></span>
+    <div id="cookie-banner" class="cookie-banner hidden" role="dialog" aria-label="Consentement aux cookies" data-i18n-aria="cookie.aria">
+      <span><span data-i18n="cookie.text">Ce site utilise Google Analytics (cookies de mesure d'audience) pour comprendre comment le jeu est utilisé.</span> <a data-i18n="cookie.more" href="https://github.com/pazpop/arcadepipe/blob/main/docs/donnees-collectees.md" target="_blank" rel="noopener">En savoir plus</a></span>
       <div class="cookie-actions">
-        <button id="cookie-accept" type="button">Accepter</button>
-        <button id="cookie-decline" type="button">Refuser</button>
+        <button id="cookie-accept" type="button" data-i18n="cookie.accept">Accepter</button>
+        <button id="cookie-decline" type="button" data-i18n="cookie.decline">Refuser</button>
       </div>
     </div>
   </div>

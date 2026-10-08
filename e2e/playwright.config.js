@@ -15,6 +15,9 @@ export default defineConfig({
   use: {
     baseURL: "http://localhost:5500",
     screenshot: "only-on-failure",
+    // Français (langue de référence) : le jeu suit la langue du navigateur,
+    // anglaise par défaut sous Playwright (voir i18n.spec.js pour l'anglais).
+    locale: "fr-FR",
   },
   // Démarre/arrête automatiquement le serveur statique du frontend (même
   // commande que la section "Lancer en local" du README) — pas besoin de le

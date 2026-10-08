@@ -25,6 +25,21 @@ C'est le seul fichier de déploiement Docker de ce repo. Celui qui ajoute Traefi
 
 ## CI/CD
 
+```mermaid
+flowchart TD
+    PR["Pull request"] --> checks
+    push["Push sur main"] --> checks
+    checks["Lint (ruff, eslint), audit (pip-audit),<br/>tests (pytest, node --test)"]
+    checks -->|échec| stop["Arrêt : rien n'est construit ni déployé"]
+    checks -->|"succès, push sur main seulement"| build["Construction des images<br/>backend et frontend"]
+    vars["Variable du dépôt<br/>GA_MEASUREMENT_ID"] -.-> build
+    build --> ghcr["Images publiées sur GHCR<br/>(:latest et :sha du commit)"]
+    ghcr -->|repository_dispatch| infra["Dépôt terraform-infra-pazpop-hetzner"]
+    infra --> prod["arcadepipe.pazpop.net"]
+```
+
+Une pull request s'arrête après les vérifications : seul un push sur `main` construit et déploie.
+
 `.github/workflows/deploy.yml` : sur chaque PR et chaque push vers `main`, lint backend (`ruff`), audit des dépendances (`pip-audit`), lint frontend (`eslint`), tests backend (`pytest`) et frontend (`node --test`), puis, sur `main` seulement, build et push des images vers GHCR (`:latest` et `:<sha>`, public). Les PR de Dependabot sont donc testées avant fusion.
 
 - Actions GitHub épinglées par SHA de commit, images de base épinglées par digest : un tag peut être redéplacé, un SHA ou un digest non.

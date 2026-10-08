@@ -24,10 +24,7 @@ function weakPointColor(p) {
   return WEAK_POINT_COLORS[idx];
 }
 
-// Le tout premier combat de boss (voir BOSS.firstBoss* dans config.js) —
-// générique plutôt qu'un "wave === 4" en dur, pour rester correct si
-// DIFFICULTY.bossWaveEvery change un jour. Prend un numéro de vague brut
-// (pas l'objet boss) : réutilisable dans spawnBoss, avant que l'objet existe.
+// Le tout premier combat de boss, adouci (voir BOSS.firstBoss* dans config.js).
 function isFirstBoss(wave) {
   return wave === DIFFICULTY.bossWaveEvery;
 }
@@ -87,7 +84,6 @@ function phaseSpeed(boss) {
 const VICTORY_FADE_DURATION = 0.4;
 
 export function updateBoss(boss, dt, projectiles, target) {
-  if (!boss) return;
   if (boss.victory) {
     boss.victoryTimer += dt;
     return;
@@ -166,7 +162,7 @@ function hullHalfHeightAt(dx) {
 
 export function hitsBossHull(boss, px, py, radius) {
   const hull = buildSprites().bossHull;
-  const scale = boss.sizeScale || 1;
+  const scale = boss.sizeScale;
   const halfW = (hull.width / 2) * scale;
   const dx = px - boss.x;
   if (dx < -halfW - radius || dx > halfW + radius) return false;
@@ -178,7 +174,7 @@ export function hitsBossHull(boss, px, py, radius) {
 export function bossHealthFraction(boss) {
   const total = boss.weakPoints.reduce((s, p) => s + p.maxHp, 0);
   const remaining = boss.weakPoints.reduce((s, p) => s + Math.max(0, p.hp), 0);
-  return total === 0 ? 0 : remaining / total;
+  return remaining / total;
 }
 
 // Dessine la coque à sa taille/teinte propres à ce combat (sizeScale/hueShift)
@@ -187,7 +183,7 @@ function drawHullSprite(ctx, boss, hull, alpha = 1) {
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.translate(boss.x, boss.y);
-  ctx.scale(boss.sizeScale || 1, boss.sizeScale || 1);
+  ctx.scale(boss.sizeScale, boss.sizeScale);
   ctx.drawImage(hull, -hull.width / 2, -hull.height / 2);
   ctx.globalCompositeOperation = "hue";
   ctx.fillStyle = `hsl(${boss.hueShift}, 60%, 50%)`;
@@ -196,7 +192,6 @@ function drawHullSprite(ctx, boss, hull, alpha = 1) {
 }
 
 export function drawBoss(ctx, boss) {
-  if (!boss) return;
   const hull = buildSprites().bossHull;
 
   if (boss.victory) {

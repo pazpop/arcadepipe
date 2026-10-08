@@ -1,12 +1,10 @@
-// État "menu" (écran titre) : navigation clavier/souris entre les 4 options
-// (JOUER, CLASSEMENT, AIDE, CRÉDITS — voir MENU_OPTIONS dans hud.js).
+// État "menu" (écran titre) : JOUER, CLASSEMENT, AIDE, CRÉDITS (MENU_OPTIONS, hud.js).
 //
-// Interface commune aux modules de states/ : update(g, engine, dt) fait
-// avancer l'écran d'une frame, draw(c2d, g) le dessine. `g` est l'état partagé
-// (un seul objet plat, pas un sous-objet par écran). `engine` regroupe le
-// moteur (input, audio, pools...) plus `engine.actions` : des rappels pour
-// passer à un autre écran sans import circulaire. "engine" et pas "ctx", qui
-// désigne le contexte Canvas2D.
+// Comme les autres modules de states/ : update() fait avancer l'écran d'une
+// frame, draw() le dessine, handleTap() traite un clic ou un tap. `g` est
+// l'état partagé du jeu (un seul objet, voir game.js). `engine` regroupe le
+// reste (input, audio, pools...) et `engine.actions`, des fonctions pour passer
+// à un autre écran sans import circulaire.
 import { consumeJustPressed } from "../input.js";
 import { drawTwinkleStars } from "../stars.js";
 import { syncHoverWithSound } from "./navHelpers.js";
@@ -26,12 +24,11 @@ function selectMenuOption(g, engine, index) {
 
 export function update(g, engine, dt) {
   g.elapsed += dt;
-  // Le défilement du champ d'étoiles est centralisé dans game.js (même fond
-  // pour tous les écrans-menus) — voir son update().
   syncHoverWithSound(engine.input, engine.audio, hud.hitTestMenu, () => g.menuSelected, (idx) => (g.menuSelected = idx));
-  // +3 (pas -1) : JS calcule le modulo du résultat, pas de "index négatif" à gérer.
-  if (consumeJustPressed(engine.input, "ArrowUp")) g.menuSelected = (g.menuSelected + 3) % 4;
-  if (consumeJustPressed(engine.input, "ArrowDown")) g.menuSelected = (g.menuSelected + 1) % 4;
+  const count = hud.MENU_OPTIONS.length;
+  // + count - 1 plutôt que - 1 : le modulo d'un nombre négatif resterait négatif.
+  if (consumeJustPressed(engine.input, "ArrowUp")) g.menuSelected = (g.menuSelected + count - 1) % count;
+  if (consumeJustPressed(engine.input, "ArrowDown")) g.menuSelected = (g.menuSelected + 1) % count;
   if (consumeJustPressed(engine.input, "Enter")) selectMenuOption(g, engine, g.menuSelected);
 }
 

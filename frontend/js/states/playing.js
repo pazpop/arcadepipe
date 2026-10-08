@@ -1,17 +1,13 @@
-// État "playing" : boucle de jeu (mouvement, tirs, ennemis, collisions,
-// vagues, boss, niveau bonus, NOVA) — le plus gros morceau de la machine à
-// états, seul à gérer autant de sous-systèmes à la fois. drawScene() est
-// aussi appelée pour PAUSED et GAME_OVER (voir game.js, draw()) : ces deux
-// écrans affichent la scène figée derrière leur overlay plutôt qu'un fond
-// vide, donc le rendu de la scène elle-même n'est pas propre à "playing" au
-// sens strict, mais vit ici avec le reste de l'état qui la nourrit.
+// État "playing" : la partie elle-même (mouvement, tirs, ennemis, collisions,
+// vagues, boss, niveau bonus, NOVA). drawScene() sert aussi à la pause et à
+// GAME OVER, qui affichent la scène figée derrière leur écran (voir game.js).
 import { RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE, HIT_STOP } from "../config.js";
 import { loadItem, saveItem } from "../storage.js";
 import { updateStarfield, triggerDeathStarLeave } from "../stars.js";
 import { resetPlayer, updatePlayer, hitPlayer, drawPlayer, applyPowerup, applyShield } from "../player.js";
 import { updateProjectiles, drawProjectiles } from "../projectiles.js";
 import { updateParticles, drawParticles, spawnExplosion, spawnFlashBurst, spawnSpark } from "../particles.js";
-import { spawnEnemyWave, updateEnemies, damageEnemy, pointsFor, drawEnemies, enemyGlowColor } from "../enemies.js";
+import { spawnEnemy, updateEnemies, damageEnemy, pointsFor, drawEnemies, enemyGlowColor } from "../enemies.js";
 import { updateBoss, hitBossWeakPoint, hitsBossHull, drawBoss } from "../boss.js";
 import { spawnPowerup, updatePowerups, drawPowerups } from "../powerups.js";
 import { updateGraze } from "../graze.js";
@@ -58,12 +54,6 @@ function triggerHitStop(g, amount) {
   g.hitStop = Math.max(g.hitStop, REDUCED_MOTION ? 0 : amount);
 }
 
-// Probabilité qu'un ennemi normal soit une élite à la place — monte avec
-// la vague, plafonnée à 25% pour ne jamais dominer le flux d'ennemis normaux.
-function eliteChance(g) {
-  return Math.min(0.25, 0.06 + g.wave * 0.015);
-}
-
 // Tire un type de bonus selon POWERUP.typeWeights.
 function pickPowerupType() {
   const weights = POWERUP.typeWeights;
@@ -76,8 +66,7 @@ function pickPowerupType() {
   return "power"; // filet de sécurité (erreurs d'arrondi flottant)
 }
 
-// Utilisée aussi par game.js (couleur de fond hors de "playing" à proprement
-// parler, ex. pendant PAUSED/GAME_OVER qui affichent la même scène figée).
+// Couleur de fond de la zone en cours : elle change à chaque boss vaincu.
 export function zonePalette(g) {
   return PALETTE.bgZones[Math.floor((g.wave - 1) / DIFFICULTY.bossWaveEvery) % PALETTE.bgZones.length];
 }
@@ -299,8 +288,7 @@ function onPlayerHit(g, engine) {
   }
 }
 
-// Dispatch commun d'un coup reçu par le joueur — bouclier ou vie perdue
-// selon hitPlayer(), centralisé plutôt que répété par source de dégât.
+// Un coup reçu par le joueur, d'où qu'il vienne : absorbé par le bouclier, ou une vie perdue.
 function applyHitToPlayer(g, engine) {
   const res = hitPlayer(engine.player);
   if (res === "shield") onShieldHit(g, engine);
@@ -433,7 +421,7 @@ export function update(g, engine, dt) {
   } else if (g.waveBreak <= 0 && !g.bonusLevel) {
     g.spawnTimer -= dt;
     if (g.spawnTimer <= 0) {
-      spawnEnemyWave(enemies, g.wave, eliteChance(g));
+      spawnEnemy(enemies, g.wave);
       g.spawnTimer = Math.max(0.12, g.spawnInterval + (Math.random() - 0.5) * 0.15);
     }
   }

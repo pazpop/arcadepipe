@@ -197,13 +197,8 @@ function drawCelestial(ctx, c) {
     ctx.fill();
   } else {
     // Trou noir façon Gargantua (Interstellar) : un vide entouré d'un disque
-    // de gaz chauffé par friction (blanc-chaud → orangé, teinte fixe : un
-    // disque d'accrétion n'a rien d'aléatoire, contrairement au hue de
-    // planète/galaxie ci-dessus). Le disque à plat est le motif dominant
-    // (trait large, cœur blanc + halo orangé pour simuler un dégradé,
-    // impossible nativement sur un tracé 2D) ; l'anneau autour du vide,
-    // volontairement plus fin et discret, approxime juste la lentille
-    // gravitationnelle sans dupliquer le disque en second anneau de même poids.
+    // de gaz chaud, à plat (trait large orangé, cœur blanc par-dessus), et d'un
+    // anneau plus fin autour du vide pour la lentille gravitationnelle.
     ctx.translate(c.x, c.y);
     ctx.rotate(c.rotation);
 
@@ -222,11 +217,7 @@ function drawCelestial(ctx, c) {
     ctx.stroke();
 
     ctx.shadowBlur = 0;
-    // Toujours pleinement opaque (pas `alpha`, contrairement au disque
-    // d'accrétion ci-dessus/ci-dessous) : un vide qui fondrait en transparence
-    // pendant l'entrée/sortie d'écran laisserait voir le fond au travers —
-    // "pas totalement noir" — alors qu'un trou noir n'a par définition rien
-    // à laisser transparaître, entier ou non encore.
+    // Le vide reste opaque, même pendant le fondu d'entrée et de sortie du disque.
     ctx.globalAlpha = 1;
     ctx.fillStyle = "#000000";
     ctx.beginPath();

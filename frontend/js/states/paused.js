@@ -44,8 +44,9 @@ export function update(g, engine) {
     return;
   }
   syncHoverWithSound(input, audio, hud.hitTestPause, () => g.pauseSelected, (idx) => (g.pauseSelected = idx));
-  if (consumeJustPressed(input, "ArrowUp")) g.pauseSelected = (g.pauseSelected + 2) % 3;
-  if (consumeJustPressed(input, "ArrowDown")) g.pauseSelected = (g.pauseSelected + 1) % 3;
+  const count = hud.PAUSE_OPTIONS.length;
+  if (consumeJustPressed(input, "ArrowUp")) g.pauseSelected = (g.pauseSelected + count - 1) % count;
+  if (consumeJustPressed(input, "ArrowDown")) g.pauseSelected = (g.pauseSelected + 1) % count;
   if (consumeJustPressed(input, "Enter")) selectPauseOption(g, g.pauseSelected);
   if (consumeJustPressed(input, "KeyP") || consumeJustPressed(input, "Escape")) {
     g.mode = MODE.PLAYING;

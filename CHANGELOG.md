@@ -2,6 +2,10 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.123] - 2026-10-08
+- Ménage sans changement de comportement : code mort retiré (champs, paramètres et garde-fous jamais utilisés), doublons supprimés (textes français du HTML, clés de traduction en double, règles CSS répétées), commentaires faux ou historiques corrigés.
+- Tests e2e : les tests de tir, de fin de vague et de musique vérifient l'état du jeu au lieu d'attendre un délai ; nouveaux tests « Tab puis Entrée » et « scène figée en pause ».
+
 ## [2.122] - 2026-10-08
 Corrections issues d'une relecture complète du dépôt.
 - **Fix : Tab puis Entrée envoyait un score au classement depuis n'importe quel écran** (le champ caché du pseudo prenait le focus au clavier).

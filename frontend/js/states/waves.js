@@ -33,7 +33,7 @@ export function startWave(g, engine, wave) {
     g.boss = spawnBoss(wave);
     spawnDeathStarBackdrop(engine.starfield);
   } else {
-    g.banner = { text: t("banner.wave", { wave }), timer: 1.8 };
+    g.banner = { text: t("hud.wave", { wave }), timer: 1.8 };
     engine.starfield.deathStar = null; // rejouer après une mort en plein combat de boss
   }
 }

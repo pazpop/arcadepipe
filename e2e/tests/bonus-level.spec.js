@@ -5,7 +5,7 @@
 import { test, expect } from "@playwright/test";
 import { canvasHelpers, collectErrors, gameState, skipHints } from "./helpers.js";
 
-test("niveau bonus : se déclenche, les anneaux défilent, la jauge NOVA se remplit", async ({ page }) => {
+test("niveau bonus : se déclenche avant la vague 10, se termine, puis la partie reprend", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);

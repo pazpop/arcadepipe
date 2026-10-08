@@ -1,11 +1,7 @@
-// État "aide" : écran par catégories, ouvert depuis le menu, la pause, ou
-// automatiquement à la 1re partie (voir states/playing.js, startRun).
-// g.helpReturnTo mémorise où revenir en le fermant (open() le pose).
-//
-// Réparti sur 4 pages (g.helpPage, voir open() ci-dessous) en une seule
-// colonne chacune — plus lisible qu'un découpage en deux colonnes sur moins
-// de pages, au prix de devoir tourner un peu plus souvent. Chaque page ne
-// mélange jamais texte et légende (voir drawInfoScreen dans hud.js).
+// État "aide" : ouvert depuis le menu, la pause, le bouton du panneau, ou
+// automatiquement à la première partie (startRun, states/playing.js).
+// g.helpReturnTo mémorise où revenir en le fermant. Quatre pages (g.helpPage),
+// chacune du texte ou une légende, jamais les deux (drawInfoScreen, hud.js).
 import { consumeJustPressed } from "../input.js";
 import * as hud from "../hud.js";
 import { MODE } from "./mode.js";
@@ -40,11 +36,10 @@ const HELP_PAGES = [
 
 export function open(g, from) {
   g.helpReturnTo = from;
-  g.helpPage = 0; // toujours rouverte depuis le début, quelle que soit la page quittée la dernière fois
+  g.helpPage = 0;
   g.mode = MODE.HELP;
 }
 
-// Pas exportée : utilisée uniquement en interne (update/handleTap ci-dessous).
 function close(g) {
   g.mode = g.helpReturnTo;
   if (g.helpReturnTo === MODE.PAUSED) g.pauseStage = "menu";

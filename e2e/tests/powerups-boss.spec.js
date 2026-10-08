@@ -63,7 +63,7 @@ test("un seul bonus à la fois : ramassé, puis aucun autre drop tant qu'il est 
   expect(errors).toEqual([]);
 });
 
-test("bouclier : ramassé, charges affichées, pas d'erreur", async ({ page }) => {
+test("bouclier : ramassé, sans bonus d'arme en même temps", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);
@@ -74,7 +74,7 @@ test("bouclier : ramassé, charges affichées, pas d'erreur", async ({ page }) =
 
   const s = await fireUntilPicked(page, (st) => st.shield > 0);
   expect(s.shield).toBeGreaterThan(0);
-  expect(s.buff).toBeNull(); // indépendant des bonus d'arme
+  expect(s.buff).toBeNull(); // un seul bonus à la fois
   await canvas.screenshot({ path: "test-results/shield-active.png" });
 
   await page.mouse.up();

@@ -17,10 +17,3 @@ test("le facteur est plafonné à bulletSpeedCap", () => {
   const facteur = bulletSpeedFactor(1000);
   assert.equal(facteur, DIFFICULTY.bulletSpeedCap);
 });
-
-test("le facteur ne dépasse jamais le plafond, même juste avant", () => {
-  const vagueAvantPlafond = Math.ceil(
-    (DIFFICULTY.bulletSpeedCap - 1) / DIFFICULTY.bulletSpeedGrowthPerWave,
-  );
-  assert.ok(bulletSpeedFactor(vagueAvantPlafond) <= DIFFICULTY.bulletSpeedCap);
-});

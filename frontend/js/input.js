@@ -1,6 +1,6 @@
-// Entrées clavier + tactile unifiées : le reste du jeu ne lit que
-// `input.x/y` (position cible du vaisseau en coordonnées internes) et
-// `input.keys` (Set des touches actives) sans se soucier de la source.
+// Entrées clavier, souris et tactile unifiées : le reste du jeu lit `input.x/y`
+// (position visée, en coordonnées logiques), `input.fireHeld` et
+// `input.justPressed` (touches qui viennent d'être enfoncées).
 import { RES_W, RES_H, INPUT, PLAYER } from "./config.js";
 
 // Client (souris/tactile) -> coordonnées logiques internes (RES_W x RES_H),
@@ -20,19 +20,16 @@ export function createInput(canvas) {
   const input = {
     x: PLAYER.restX,
     y: RES_H / 2,
-    keys: new Set(),
-    pointerActive: false,
     isTouch: false,
     fireHeld: false,
     autoFire: false, // bascule UI (case à cocher) — tir permanent sans avoir à maintenir
-    justPressed: new Set(), // touches "front montant" (pause, bombe...), vidé chaque frame par game.js
+    justPressed: new Set(), // vidé à chaque frame par game.js
   };
 
+  // e.repeat : une touche maintenue ne compte qu'une fois.
   window.addEventListener("keydown", (e) => {
-    if (!input.keys.has(e.code)) input.justPressed.add(e.code);
-    input.keys.add(e.code);
+    if (!e.repeat) input.justPressed.add(e.code);
   });
-  window.addEventListener("keyup", (e) => input.keys.delete(e.code));
 
   canvas.addEventListener("mousemove", (e) => {
     if (input.isTouch) return;

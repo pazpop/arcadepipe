@@ -1,13 +1,11 @@
-// Carte de partage (image PNG) générée à la fin d'une partie — même palette/
-// style que le jeu (voir Charte graphique, GAMEPLAY.md), mais sur un canvas à
-// part, carré et en haute résolution : le canvas du jeu lui-même reste tout
-// petit (RES_W/RES_H) et agrandi sans flou, pas adapté à une image partageable.
+// Carte de partage (image PNG) générée à la fin d'une partie : même palette
+// que le jeu, sur un canvas à part, carré et en haute résolution.
 import { PALETTE, VERSION } from "./config.js";
 import { t } from "./i18n.js";
 import qrcodeFactory from "../lib/qrcode.js";
 
 const SIZE = 1080; // carré, la taille attendue par Discord/X pour un aperçu propre
-const SHARE_URL = "https://arcadepipe.pazpop.net";
+const SHARE_HOST = "arcadepipe.pazpop.net";
 
 function text(ctx, str, x, y, { size = 24, color = PALETTE.hud, align = "left", glow = null } = {}) {
   ctx.font = `${size}px monospace`;
@@ -19,10 +17,7 @@ function text(ctx, str, x, y, { size = 24, color = PALETTE.hud, align = "left", 
   ctx.fillText(str, x, y);
 }
 
-// Décor discret, cohérent avec le fond du jeu (voir stars.js) mais statique
-// (une image, pas une animation) — un semis de points fixe, positions
-// tirées une fois par carte plutôt qu'un vrai champ d'étoiles réutilisé
-// (inutile ici, pas de défilement à faire).
+// Fond sombre semé de points, comme le champ d'étoiles du jeu.
 function drawBackdrop(ctx) {
   ctx.fillStyle = PALETTE.bgDeep;
   ctx.fillRect(0, 0, SIZE, SIZE);
@@ -34,29 +29,20 @@ function drawBackdrop(ctx) {
   ctx.globalAlpha = 1;
 }
 
-// QR code pointant directement vers le jeu — noir sur blanc et marge
-// ("quiet zone") volontairement conservés tels quels (pas de couleurs
-// stylisées façon jeu) : la scannabilité prime sur l'esthétique ici,
-// un contraste réduit ferait échouer la lecture par un vrai téléphone.
-// typeNumber=0 = taille auto (la plus petite qui contient l'URL), niveau de
-// correction 'M' = compromis standard entre taille et tolérance aux dégâts.
+// QR code vers le jeu. Noir sur blanc avec sa marge : stylisé aux couleurs du
+// jeu, un téléphone ne le lirait plus. typeNumber 0 = taille automatique,
+// correction "M" = compromis standard entre taille et tolérance aux dégâts.
 function drawQrCode(ctx, x, y, size) {
-  // Isolé de l'état du canvas : le text() précédent (l'URL, avec lueur) laisse
-  // shadowBlur/shadowColor actifs, qui teinteraient les modules du QR et
-  // réduiraient son contraste.
+  // Sans ombre : la lueur du texte précédent teinterait les modules du QR.
   ctx.save();
   ctx.shadowBlur = 0;
   ctx.shadowColor = "transparent";
   const qr = qrcodeFactory(0, "M");
-  qr.addData(SHARE_URL);
+  qr.addData(`https://${SHARE_HOST}`);
   qr.make();
   const count = qr.getModuleCount();
   const margin = size * 0.08;
-  // Math.ceil (pas la taille de cellule flottante brute) : évite les fines
-  // lignes claires entre modules adjacents dues à l'anti-aliasing du canvas
-  // — mais du coup le fond blanc est redimensionné sur cette même taille
-  // arrondie (pas `size` telle quelle), sinon les derniers modules
-  // déborderaient légèrement du fond blanc sur le décor sombre.
+  // Cellules de taille entière (pas de fines lignes claires entre modules) ; le fond blanc suit.
   const cell = Math.ceil((size - margin * 2) / count);
   const actualSize = cell * count + margin * 2;
   ctx.fillStyle = "#ffffff";
@@ -68,12 +54,9 @@ function drawQrCode(ctx, x, y, size) {
     }
   }
   ctx.restore();
-  return actualSize;
 }
 
-// stats : { score, wave, kills, maxGrazeChain, distanceTraveled } — voir
-// getRunSummary() dans game.js, seule source de vérité pour ces champs (pas
-// dupliqué ici).
+// stats : le résumé de partie renvoyé par getRunSummary() (game.js).
 function drawShareCard(ctx, stats) {
   drawBackdrop(ctx);
 
@@ -109,7 +92,7 @@ function drawShareCard(ctx, stats) {
   });
 
   text(ctx, t("card.challenge"), SIZE / 2, 760, { size: 22, align: "center", color: PALETTE.hud });
-  text(ctx, "arcadepipe.pazpop.net", SIZE / 2, 800, { size: 30, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
+  text(ctx, SHARE_HOST, SIZE / 2, 800, { size: 30, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
 
   const qrSize = 200;
   drawQrCode(ctx, (SIZE - qrSize) / 2, 840, qrSize);
@@ -117,9 +100,7 @@ function drawShareCard(ctx, stats) {
   text(ctx, `v${VERSION}`, SIZE - 20, SIZE - 18, { size: 14, align: "right", color: PALETTE.hud });
 }
 
-// Rendu direct dans un <canvas> hors-DOM — SIZE fixe, pas de paramètre :
-// pensé pour être appelé juste avant un export (toBlob/toDataURL), pas
-// affiché tel quel dans la page.
+// Canvas hors de la page, destiné à l'export (toBlob).
 export function createShareCardCanvas(stats) {
   const canvas = document.createElement("canvas");
   canvas.width = SIZE;

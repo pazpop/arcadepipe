@@ -8,17 +8,9 @@ import { STORAGE_KEYS } from "./config.js";
 import { loadItem, saveItem } from "./storage.js";
 import { loadAnalytics, disableAnalytics } from "./analytics.js";
 
-// Stockage indisponible : le choix n'est pas mémorisé, on redemande à chaque visite.
-function readConsent() {
-  return loadItem(STORAGE_KEYS.analyticsConsent);
-}
-
-function writeConsent(value) {
-  saveItem(STORAGE_KEYS.analyticsConsent, value);
-}
-
 export function initConsent() {
-  const consent = readConsent();
+  // Stockage indisponible : le choix n'est pas mémorisé, le bandeau revient à chaque visite.
+  const consent = loadItem(STORAGE_KEYS.analyticsConsent);
   if (consent === "granted") loadAnalytics();
 
   const banner = document.getElementById("cookie-banner");
@@ -28,12 +20,12 @@ export function initConsent() {
 
   if (consent !== "granted" && consent !== "denied") banner.classList.remove("hidden");
   acceptBtn.addEventListener("click", () => {
-    writeConsent("granted");
+    saveItem(STORAGE_KEYS.analyticsConsent, "granted");
     banner.classList.add("hidden");
     loadAnalytics();
   });
   declineBtn.addEventListener("click", () => {
-    writeConsent("denied");
+    saveItem(STORAGE_KEYS.analyticsConsent, "denied");
     banner.classList.add("hidden");
     disableAnalytics();
   });

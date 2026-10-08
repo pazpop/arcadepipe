@@ -1,6 +1,5 @@
-// Niveau bonus : traverser une série d'anneaux plutôt que combattre. Offert
-// une fois par cycle (voir g.bonusLevelLastWave dans game.js) si le score
-// atteint le seuil du cycle en cours avant BONUS_LEVEL.everyNWaves.
+// Niveau bonus : traverser une série d'anneaux plutôt que combattre.
+// Déclenché par states/waves.js (voir BONUS_LEVEL dans config.js).
 import { RES_W, RES_H, PALETTE, BONUS_LEVEL } from "./config.js";
 import { spawnFlashBurst } from "./particles.js";
 import { createTwinkleStars, drawTwinkleStars } from "./stars.js";
@@ -47,13 +46,10 @@ function spawnRing(bl) {
 // Fraction d'anneaux réussis sur le total — c'est elle qui détermine combien
 // la jauge NOVA se remplit (voir applyNovaReward dans states/waves.js).
 export function bonusLevelRewardFraction(bl) {
-  if (!bl || BONUS_LEVEL.ringCount <= 0) return 0;
   return bl.passedCount / BONUS_LEVEL.ringCount;
 }
 
 export function updateBonusLevel(bl, dt, player, particles, audio) {
-  if (bl.finished) return;
-
   bl.elapsed += dt;
   if (bl.introTimer > 0) bl.introTimer -= dt;
 
@@ -87,9 +83,7 @@ export function updateBonusLevel(bl, dt, player, particles, audio) {
     }
   }
 
-  if (bl.spawnedCount >= BONUS_LEVEL.ringCount && bl.resolvedCount >= BONUS_LEVEL.ringCount) {
-    bl.finished = true;
-  }
+  if (bl.resolvedCount >= BONUS_LEVEL.ringCount) bl.finished = true;
 }
 
 function drawRing(ctx, ring) {

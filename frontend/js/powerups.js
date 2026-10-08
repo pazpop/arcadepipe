@@ -19,14 +19,13 @@ export function createPowerupPool() {
 }
 
 export function spawnPowerup(pool, x, y, type) {
-  const p = acquireSlot(pool); // pool saturé (rare avec 8 emplacements) : ignoré silencieusement
-  if (!p) return null;
+  const p = acquireSlot(pool);
+  if (!p) return;
   p.active = true;
   p.type = type;
   p.x = x;
   p.y = y;
   p.elapsed = 0;
-  return p;
 }
 
 export function updatePowerups(pool, dt) {

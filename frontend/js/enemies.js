@@ -8,7 +8,7 @@ import { spawnExplosion, spawnSpark, spawnFlashBurst } from "./particles.js";
 
 const POOL_SIZE = 40;
 
-// Ennemis n'APPARAISSENT que dans le tiers droit (spawnEnemyWave) — plus
+// Ennemis n'APPARAISSENT que dans le tiers droit (spawnEnemy) — plus
 // lisible sur mobile. Une fois en vol, trajectoire libre sur tout l'écran,
 // disparaît en sortant (jamais de rebond).
 const LEFT_BOUND = (RES_W * 2) / 3;
@@ -20,12 +20,11 @@ const LEFT_BOUND = (RES_W * 2) / 3;
 const FIRE_MIN_X = RES_W / 3;
 
 const TYPE_STATS = {
-  normal: { hp: 1, radius: 4.5, points: 100, speed: 55, fireChance: 0 },
-  elite: { hp: 3, radius: 5, points: 300, speed: 45, fireChance: 1 }, // tire toujours (aimed périodique)
-  // Ne tire jamais (fireChance 0) — sa menace, c'est sa trajectoire, pas ses
-  // tirs (voir la poursuite dans updateEnemies). 1 PV : facile à abattre si
-  // on réagit vite, dangereux si on l'ignore.
-  kamikaze: { hp: 1, radius: 4, points: 150, speed: 70, fireChance: 0 },
+  normal: { hp: 1, radius: 4.5, points: 100, speed: 55 },
+  elite: { hp: 3, radius: 5, points: 300, speed: 45 }, // tire (tir visé périodique)
+  // Ne tire pas : sa menace, c'est sa trajectoire (voir la poursuite dans
+  // updateEnemies). 1 PV : facile à abattre si on réagit vite.
+  kamikaze: { hp: 1, radius: 4, points: 150, speed: 70 },
 };
 
 export function createEnemyPool() {
@@ -57,7 +56,7 @@ function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
   // plus pour justifier qu'il tire (voir GUNNER_HP_BONUS plus bas).
   const hp = gunner ? stats.hp + GUNNER_HP_BONUS : stats.hp;
   const en = acquireSlot(pool);
-  if (!en) return null;
+  if (!en) return;
   en.active = true;
   en.type = type;
   en.x = x;
@@ -73,7 +72,6 @@ function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
   en.gunner = gunner;
   en.leaving = false;
   en.grazeCooldown = 0;
-  return en;
 }
 
 // Dès la vague 5, une partie des ennemis normaux devient "gunner" et tire
@@ -84,8 +82,15 @@ const GUNNER_CHANCE = 0.22;
 // justifier qu'il tire, sans être aussi résistant qu'une élite (3 PV).
 const GUNNER_HP_BONUS = 1;
 
+// Probabilité qu'un ennemi soit une élite, à partir de ELITE_MIN_WAVE : monte
+// avec la vague, plafonnée à 25 % pour ne pas dominer le flux d'ennemis normaux.
+const ELITE_MIN_WAVE = 3;
+function eliteChance(wave) {
+  return Math.min(0.25, 0.06 + wave * 0.015);
+}
+
 // Dès la vague 4, une petite chance de tomber sur un kamikaze plutôt qu'un
-// ennemi normal — exclusif avec élite/gunner (voir spawnEnemyWave).
+// ennemi normal — exclusif avec élite/gunner (voir spawnEnemy).
 const KAMIKAZE_MIN_WAVE = 4;
 const KAMIKAZE_CHANCE = 0.12;
 // Plafond de kamikazes actifs simultanément : ils poursuivent le joueur, trop
@@ -115,10 +120,11 @@ function countActiveKamikaze(pool) {
   return count;
 }
 
-// Entrée par la droite par défaut, ou par le haut/bas (dans le tiers droit
-// de l'écran) pour varier les angles d'approche.
-export function spawnEnemyWave(pool, waveNumber, eliteChance) {
-  const isElite = waveNumber >= 3 && Math.random() < eliteChance;
+// Fait apparaître un ennemi, dont le type dépend de la vague. Entrée par la
+// droite, ou par le haut/bas (dans le tiers droit de l'écran) pour varier les
+// angles d'approche.
+export function spawnEnemy(pool, waveNumber) {
+  const isElite = waveNumber >= ELITE_MIN_WAVE && Math.random() < eliteChance(waveNumber);
   const isKamikaze =
     !isElite &&
     waveNumber >= KAMIKAZE_MIN_WAVE &&
@@ -145,7 +151,7 @@ export function spawnEnemyWave(pool, waveNumber, eliteChance) {
     }
     if (!tooCloseToActive(pool, x, y, SPAWN_MIN_GAP)) break;
   }
-  return spawnOne(pool, type, x, y, vx, vy, isGunner);
+  spawnOne(pool, type, x, y, vx, vy, isGunner);
 }
 
 // Vitesse de base des ennemis en fuite (avant le warp, x10 max — voir
@@ -153,9 +159,8 @@ export function spawnEnemyWave(pool, waveNumber, eliteChance) {
 // avant la fin du saut spatial.
 const LEAVE_SPEED = 90;
 
-// Fin de vague : les ennemis actifs défilent vers la gauche comme le fond
-// (plus naturel qu'une disparition instantanée) — voir aussi le filet de
-// sécurité dans startWave (states/waves.js).
+// Fin de vague : les ennemis actifs défilent vers la gauche comme le fond,
+// plutôt que de disparaître d'un coup.
 export function setEnemiesLeaving(pool) {
   for (const en of pool.items) {
     if (!en.active) continue;
@@ -194,11 +199,9 @@ export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
     if (en.type === "elite" && !en.leaving) {
       en.y += Math.sin(en.elapsed * 3 + en.wobbleSeed) * 14 * dt;
     }
-    // Sortie d'écran (tout bord) -> disparaît, jamais de rebond. Le
-    // confinement ne s'applique qu'à l'apparition (spawnEnemyWave).
+    // Sortie d'écran (tout bord) : disparaît, jamais de rebond.
     if (en.x < -20 || en.x > RES_W + 20 || en.y < -30 || en.y > RES_H + 30) {
       en.active = false;
-      en.leaving = false;
       continue;
     }
     // En fuite : ne tire plus. Dans le tiers gauche non plus (FIRE_MIN_X) : le
@@ -209,9 +212,7 @@ export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
       en.fireTimer -= dt;
       if (en.fireTimer <= 0) {
         const speed = en.gunner ? bulletSpeed * 0.75 : bulletSpeed;
-        // Même couleur (PALETTE.bulletEnemy, défaut de patternAimed) pour
-        // élite et gunner — les deux sont un tir visé classique, distinguer
-        // leur couleur n'aidait pas à savoir comment l'esquiver.
+        // Même couleur pour élite et gunner : même tir visé, même façon de l'esquiver.
         patternAimed(projectiles, en.x, en.y, target, speed);
         en.fireTimer = en.gunner ? 2.2 + Math.random() * 1.2 : 1.4 + Math.random() * 0.8;
       }
@@ -228,7 +229,7 @@ export function enemyGlowColor(en) {
   return en.gunner ? PALETTE.enemyGunner : PALETTE.enemyNormal;
 }
 
-export function damageEnemy(en, particlePool, amount = 1) {
+export function damageEnemy(en, particlePool, amount) {
   en.hp -= amount;
   const color = enemyGlowColor(en);
   if (en.hp <= 0) {
@@ -245,31 +246,31 @@ export function pointsFor(en) {
   return TYPE_STATS[en.type].points;
 }
 
+// Gunner et élite encaissent plus d'un coup : dès le premier, leur sprite
+// passe à sa variante ternie (fadedPalette, assets.js), seul repère de dégâts.
+function spriteFor(en, sprites) {
+  const damaged = en.hp < en.maxHp;
+  if (en.type === "elite") return damaged ? sprites.enemyEliteDamaged : sprites.enemyElite;
+  if (en.type === "kamikaze") return sprites.enemyKamikaze;
+  if (en.gunner) return damaged ? sprites.enemyGunnerDamaged : sprites.enemyGunner;
+  return sprites.enemyNormal;
+}
+
 export function drawEnemies(ctx, pool) {
   const sprites = buildSprites();
   for (const en of pool.items) {
     if (!en.active) continue;
-    // gunner/élite encaissent plus d'un coup — dès qu'ils en ont pris un,
-    // leur sprite passe à sa variante ternie (voir fadedPalette dans
-    // assets.js), un repère visuel de dégâts sans jauge de PV à l'écran.
-    const damaged = en.hp < en.maxHp;
-    const sprite =
-      en.type === "elite" ? (damaged ? sprites.enemyEliteDamaged : sprites.enemyElite)
-      : en.type === "kamikaze" ? sprites.enemyKamikaze
-      : en.gunner ? (damaged ? sprites.enemyGunnerDamaged : sprites.enemyGunner)
-      : sprites.enemyNormal;
-    const glow = enemyGlowColor(en);
+    const sprite = spriteFor(en, sprites);
     if (en.type === "kamikaze") {
-      // Orienté selon sa vitesse réelle (pas fixe comme les autres) — se voit
-      // pivoter à mesure qu'il rectifie sa trajectoire vers le joueur (voir
-      // updateEnemies). Le sprite pointe vers +X au repos (ENEMY_KAMIKAZE_ROWS).
+      // Orienté selon sa vitesse : on le voit pivoter vers le joueur. Le sprite
+      // pointe vers +X au repos (ENEMY_KAMIKAZE_ROWS).
       ctx.save();
       ctx.translate(en.x, en.y);
       ctx.rotate(Math.atan2(en.vy, en.vx));
-      drawWithGlow(ctx, sprite, 0, 0, glow, 0.3);
+      drawWithGlow(ctx, sprite, 0, 0);
       ctx.restore();
     } else {
-      drawWithGlow(ctx, sprite, en.x, en.y, glow, 0.3);
+      drawWithGlow(ctx, sprite, en.x, en.y);
     }
   }
 }

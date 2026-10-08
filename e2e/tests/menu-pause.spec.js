@@ -44,8 +44,7 @@ test("quitter depuis la pause demande confirmation avant de perdre la partie", a
   await clickLogical(240, 172); // MENU PRINCIPAL depuis la pause -> doit ouvrir la confirmation
   await canvas.screenshot({ path: "test-results/confirm-quit.png" });
 
-  // "NON, CONTINUER" doit être la sélection par défaut (sécurité contre une
-  // sortie accidentelle) — on l'active et on doit retrouver la pause normale.
+  // "NON, CONTINUER" ramène à la pause.
   await clickLogical(240, 178);
   await waitForMode(page, "paused");
   await canvas.screenshot({ path: "test-results/confirm-quit-cancelled.png" });
@@ -129,4 +128,31 @@ test("le bouton Aide du panneau (bas gauche) ouvre l'aide directement, au menu e
   await canvas.screenshot({ path: "test-results/help-btn-closed-to-playing.png" });
 
   expect(errors).toEqual([]);
+});
+
+test("Tab puis Entrée au menu lance une partie, sans envoyer de score", async ({ page }) => {
+  const posts = [];
+  page.on("request", (r) => {
+    if (r.method() === "POST") posts.push(new URL(r.url()).pathname);
+  });
+  await page.goto("/");
+  await skipHints(page);
+  await page.keyboard.press("Tab");
+  expect(await page.evaluate(() => document.activeElement.id)).not.toBe("name-input");
+  await page.keyboard.press("Enter");
+  await waitForMode(page, "playing");
+  expect(posts).toEqual([]);
+});
+
+test("en pause, la scène est figée : deux captures identiques", async ({ page }) => {
+  await page.goto("/");
+  await skipHints(page);
+  const { canvas, startRun } = canvasHelpers(page);
+  await startRun();
+  await page.waitForTimeout(2500); // le temps que des ennemis soient à l'écran
+  await page.keyboard.press("KeyP");
+  await waitForMode(page, "paused");
+  const first = await canvas.screenshot();
+  await page.waitForTimeout(300);
+  expect((await canvas.screenshot()).equals(first)).toBe(true);
 });

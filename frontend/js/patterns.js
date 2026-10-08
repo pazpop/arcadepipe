@@ -3,11 +3,11 @@
 import { fireEnemyBullet } from "./projectiles.js";
 import { PALETTE } from "./config.js";
 
-export function patternAimed(projectiles, x, y, target, speed, color = null) {
+export function patternAimed(projectiles, x, y, target, speed) {
   const dx = target.x - x;
   const dy = target.y - y;
   const dist = Math.hypot(dx, dy) || 1;
-  fireEnemyBullet(projectiles, x, y, (dx / dist) * speed, (dy / dist) * speed, color);
+  fireEnemyBullet(projectiles, x, y, (dx / dist) * speed, (dy / dist) * speed);
 }
 
 // curve (rad/s, optionnel) : les tirs aux extrémités s'incurvent vers

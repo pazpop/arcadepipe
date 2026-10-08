@@ -1,9 +1,8 @@
 // Frôlement des tirs ennemis ET du corps des ennemis eux-mêmes (voler près
 // d'un vaisseau compte, pas seulement esquiver ce qu'il tire) : récompense
 // l'esquive serrée plutôt que large. Le boss fait exception — seuls ses tirs
-// grazent, jamais sa coque (voir updateGraze plus bas). Alimente la jauge
-// NOVA (game.js) plutôt que le score seul, pour donner un objectif tactile à
-// chaque frôlement plutôt qu'un simple nombre qui monte.
+// grazent, jamais sa coque (voir updateGraze plus bas). Chaque frôlement
+// rapporte des points et charge la jauge NOVA.
 import { GRAZE, NOVA, DIFFICULTY } from "./config.js";
 import { circlesOverlap } from "./collisions.js";
 import { spawnSpark } from "./particles.js";
@@ -37,14 +36,11 @@ function registerGraze(g, particles, audio, x, y) {
   else audio.playGraze(Math.min(g.grazeChain, 8));
 }
 
-// Suspendu pendant : l'invulnérabilité post-hit (sinon trivial à spammer en
-// restant dans un tir), la transition de vague et le ralenti de mort
-// (g.dying) — leur dt n'est que réduit, jamais nul (voir update() dans
-// states/playing.js), donc sans cette garde la jauge continuerait de se remplir
-// un peu pendant ces phases où le joueur ne "joue" pas vraiment. Idem pendant
-// g.clearingScreen (saut spatial et niveau bonus), comme resolveCollisions().
+// Suspendu quand le joueur ne joue pas vraiment : invulnérabilité après un
+// coup (sinon il suffirait de rester dans un tir), glissée d'entrée, vaisseau
+// détruit, saut spatial et niveau bonus (g.clearingScreen).
 export function updateGraze(g, dt, player, projectiles, enemies, particles, audio) {
-  if (!player.alive || player.invuln > 0 || g.waveBreak > 0 || g.dying || g.shipIntro || g.clearingScreen) return;
+  if (!player.alive || player.invuln > 0 || g.shipIntro || g.clearingScreen) return;
 
   for (const b of projectiles.enemy.items) {
     if (!b.active || b.grazed) continue;

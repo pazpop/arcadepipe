@@ -26,9 +26,7 @@ export function disableAnalytics() {
   }
 }
 
-// Idempotent (comme music.start()/audio.ensure()) : consent.js peut
-// rappeler cette fonction sans risque (ex: rechargement d'un onglet déjà
-// consentant) sans jamais injecter le script deux fois.
+// Peut être rappelée (accepter, refuser, accepter à nouveau) : le script n'est injecté qu'une fois.
 export function loadAnalytics() {
   window[DISABLE_FLAG] = false; // ré-accepté après un retrait (voir disableAnalytics)
   if (loaded) return;

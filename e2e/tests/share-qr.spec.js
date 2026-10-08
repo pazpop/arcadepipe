@@ -1,9 +1,8 @@
 // Carte de partage : le QR code doit rester lisible (contraste préservé) même
 // après le redimensionnement + la recompression JPEG qu'un réseau social
 // fait subir à l'image. Décodé avec jsQR dans la page (pas de vrai téléphone).
-// Régression : un shadowBlur laissé actif par le texte précédent teintait
-// le QR (crème/olive) sans que jsQR, tolérant, ne le signale — d'où aussi la
-// vérification directe des pixels noir/blanc au centre d'un module.
+// jsQR est tolérant : les pixels noir/blanc au centre d'un module sont aussi
+// vérifiés directement (une ombre laissée active teinterait le QR).
 import { test, expect } from "@playwright/test";
 import fs from "fs";
 import { createRequire } from "module";

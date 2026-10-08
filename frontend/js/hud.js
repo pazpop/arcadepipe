@@ -18,9 +18,7 @@ const ENEMY_LEGEND = [
   { spriteKey: "enemyKamikaze", color: PALETTE.danger, text: t("enemy.kamikaze") },
 ];
 
-// Point dans un rectangle {x,y,w,h} centré sur (x,y) — même test répété par
-// toutes les fonctions hitTest* ci-dessous (menu, pause, confirmation,
-// boutons uniques), factorisé ici plutôt que copié à chaque écran.
+// Point dans un rectangle {x,y,w,h} centré sur (x,y).
 function pointInRect(x, y, r) {
   return x > r.x - r.w / 2 && x < r.x + r.w / 2 && y > r.y - r.h / 2 && y < r.y + r.h / 2;
 }
@@ -49,9 +47,7 @@ function text(ctx, str, x, y, { size = 8, color = PALETTE.hud, align = "left", a
   ctx.restore();
 }
 
-// Rectangles cliquables d'une liste verticale d'options centrée (menu
-// principal, pause, confirmation de sortie) — même géométrie répétée à
-// chaque écran, seuls startY/gap/w/h changent d'un écran à l'autre.
+// Rectangles cliquables d'une liste verticale d'options centrée (menu, pause, game over...).
 function verticalOptionRects(options, startY, gap, w, h) {
   return options.map((label, i) => ({ label, x: RES_W / 2, y: startY + i * gap, w, h }));
 }
@@ -95,11 +91,10 @@ export function drawGameHud(ctx, s, lives) {
     color: PALETTE.danger,
     glow: PALETTE.danger,
   });
-  // Rappel du bonus "sans dégâts" (DIFFICULTY.noDamageWaveBonus), sous les
-  // vies : affiché tant que la vague est intacte, clignote en rouge 1 s au
-  // premier coup encaissé (s.intactBlink) puis disparaît jusqu'à la vague suivante.
+  // Rappel du bonus "sans dégâts", sous les vies : affiché tant que la vague
+  // est intacte, clignote en rouge 1 s au premier coup encaissé (s.intactBlink).
   const lost = s.tookDamageThisWave;
-  if (!s.bonusLevel && (lost ? Math.floor(s.intactBlink * 8) % 2 === 1 : true)) {
+  if (!s.bonusLevel && (!lost || Math.floor(s.intactBlink * 8) % 2 === 1)) {
     text(ctx, t("hud.intact", { bonus: DIFFICULTY.noDamageWaveBonus }), RES_W - 8, 20, {
       size: 7,
       align: "right",
@@ -242,7 +237,7 @@ export function drawFlash(ctx, amount) {
 
 // --- Écran titre ---
 
-const MENU_OPTIONS = [t("menu.play"), t("menu.leaderboard"), t("menu.help"), t("menu.credits")];
+export const MENU_OPTIONS = [t("menu.play"), t("menu.leaderboard"), t("menu.help"), t("menu.credits")];
 
 // Zones cliquables plus larges que le texte — sur mobile, mieux vaut une marge généreuse qu'un bouton manqué.
 function menuOptionRects() {
@@ -301,7 +296,7 @@ const COL = {
 
 // scores : null pendant le chargement, ou si le backend est injoignable (failed).
 export function drawLeaderboardScreen(ctx, scores, failed, revealCount, gamesPlayed) {
-  text(ctx, t("board.title"), RES_W / 2, 24, { size: 16, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
+  text(ctx, t("menu.leaderboard"), RES_W / 2, 24, { size: 16, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
   // Masqué plutôt qu'un faux "0" si le backend est injoignable.
   if (gamesPlayed != null) {
     text(ctx, t("board.games", { count: gamesPlayed }), RES_W / 2, 34, { size: 7, align: "center", alpha: 0.6 });
@@ -338,6 +333,8 @@ export function drawLeaderboardScreen(ctx, scores, failed, revealCount, gamesPla
 }
 
 // --- Écran crédits ---
+
+export const CREDITS_LINE_HEIGHT = 16;
 
 export const CREDITS_LINES = [
   "ARCADEPIPE",
@@ -387,7 +384,7 @@ export function drawCreditsScreen(ctx, scrollY) {
 
 // --- Pause ---
 
-const PAUSE_OPTIONS = [t("pause.resume"), t("pause.help"), t("pause.menu")];
+export const PAUSE_OPTIONS = [t("pause.resume"), t("menu.help"), t("pause.menu")];
 
 function pauseOptionRects() {
   return verticalOptionRects(PAUSE_OPTIONS, RES_H * 0.4 + 24, 20, 200, 18);
@@ -437,7 +434,7 @@ export function drawConfirmQuitScreen(ctx, selected) {
   ctx.restore();
 }
 
-// --- Aides de jeu (première partie, premier boss) ---
+// --- Écran d'aide ---
 
 function infoContinueRect() {
   return { x: RES_W / 2, y: RES_H * 0.86, w: 200, h: 18 };
@@ -487,7 +484,7 @@ function wrapLines(ctx, str, maxWidth) {
 // (page/pageCount, voir states/help.js). Chaque page ne contient qu'un seul
 // type de contenu : des sections de texte (content.sections) ou une légende
 // (content.showBonusLegend OU content.showEnemyLegend), jamais combinés.
-export function drawInfoScreen(ctx, content, page = 0, pageCount = 1) {
+export function drawInfoScreen(ctx, content, page, pageCount) {
   ctx.save();
   // Pas de fond opaque ici : le champ d'étoiles (dessiné par game.js avant
   // cet appel) doit rester visible, comme sur les autres écrans-menus.
@@ -534,7 +531,7 @@ export function drawInfoScreen(ctx, content, page = 0, pageCount = 1) {
       const rowY = y + i * rowH;
       const def = POWERUP.types[type];
       drawPowerupIcon(ctx, centerX - 120, rowY, type, 5);
-      text(ctx, `${t(`powerup.${type}`)} — ${t(`powerup.${type}.short`)}`, centerX - 100, rowY, { size: 8, align: "left", color: def.color });
+      text(ctx, `${t(`powerup.${type}`)} — ${t(`powerup.${type}.effect`)}`, centerX - 100, rowY, { size: 8, align: "left", color: def.color });
     });
   }
 
@@ -543,12 +540,12 @@ export function drawInfoScreen(ctx, content, page = 0, pageCount = 1) {
     const enemySprites = buildSprites();
     ENEMY_LEGEND.forEach((en, i) => {
       const rowY = y + i * rowH;
-      drawWithGlow(ctx, enemySprites[en.spriteKey], centerX - 120, rowY, en.color, 0.3);
+      drawWithGlow(ctx, enemySprites[en.spriteKey], centerX - 120, rowY);
       text(ctx, en.text, centerX - 100, rowY, { size: 8, align: "left", color: en.color });
     });
   }
 
-  if (pageCount > 1) {
+  {
     const prevR = infoPrevRect();
     const nextR = infoNextRect();
     // Grisée plutôt que masquée aux extrémités : la position du bouton reste
@@ -579,7 +576,7 @@ export function drawGameOverScreen(ctx, score, wave, kills, distance) {
 // --- Écran "GAME OVER" (après le ralenti de mort) : rejouer aussitôt, ou
 // passer par la saisie du nom/le classement ---
 
-const GAME_OVER_OPTIONS = [t("gameover.replay"), t("gameover.leaderboard")];
+const GAME_OVER_OPTIONS = [t("gameover.replay"), t("menu.leaderboard")];
 
 function gameOverOptionRects() {
   return verticalOptionRects(GAME_OVER_OPTIONS, RES_H * 0.62, 20, 200, 18);
@@ -599,7 +596,7 @@ export function drawDeathScreen(ctx, score, wave, kills, distance, selected) {
 }
 
 // Bouton tactile pour valider le nom — indispensable sur mobile où le
-// clavier virtuel n'apparaît pas toujours (triggerGameOver dans states/endOfRun.js).
+// clavier virtuel n'apparaît pas toujours (goToLeaderboard dans states/endOfRun.js).
 function nameEntryValidateRect() {
   return { x: RES_W / 2, y: RES_H * 0.48 + 54, w: 200, h: 18 };
 }

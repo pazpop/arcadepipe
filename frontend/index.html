@@ -7,11 +7,7 @@
 <meta name="description" content="ArcadePipe Starfighter — jeu d'arcade spatial rétro gratuit, jouable directement dans le navigateur, sans installation. Vagues d'ennemis, boss, bonus et classement en ligne." />
 <meta name="robots" content="index, follow" />
 <link rel="canonical" href="https://arcadepipe.pazpop.net/" />
-<!-- Repris du sprite du vaisseau joueur (voir PLAYER_ROWS/PLAYER_PALETTE
-     dans js/assets.js) plutôt qu'un fichier image à part — même logique que
-     le reste du jeu ("aucun fichier image", voir GAMEPLAY.md, Charte
-     graphique). SVG uniquement (pas de .ico) : supporté par tous les
-     navigateurs modernes, pas besoin d'un second format pour ça. -->
+<!-- Dessiné d'après le sprite du vaisseau (PLAYER_ROWS, js/assets.js). -->
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <meta property="og:type" content="website" />
 <meta property="og:title" content="ArcadePipe — Starfighter" />
@@ -32,73 +28,66 @@
     <div id="mc-wrap">
       <div id="music-controls">
         <div class="mc-section">
-          <!-- Échap/P mettent en pause au clavier, mais rien d'équivalent au
-               tactile — ce bouton est le seul moyen d'ouvrir le menu pause
-               sur mobile. -->
-          <button id="pause-btn" type="button" class="mc-pause-btn" title="Menu pause" data-i18n="panel.pause" data-i18n-title="panel.pause.title">⏸ Pause</button>
+          <button id="pause-btn" type="button" class="mc-pause-btn" data-i18n="panel.pause" data-i18n-title="panel.pause.title"></button>
         </div>
         <div class="mc-section">
-          <div class="mc-label" data-i18n="panel.music">MUSIQUE (by Mall-E)</div>
+          <div class="mc-label" data-i18n="panel.music"></div>
           <div class="mc-row">
-            <button id="music-stop-btn" type="button" title="Stop / lecture" data-i18n-title="panel.music.stop">⏹</button>
-            <button id="music-next-btn" type="button" title="Piste suivante" data-i18n-title="panel.music.next">⏭</button>
-            <input id="music-volume" type="range" min="0" max="100" step="1" title="Volume musique" data-i18n-title="panel.music.volume" />
+            <button id="music-stop-btn" type="button" data-i18n-title="panel.music.stop">⏹</button>
+            <button id="music-next-btn" type="button" data-i18n-title="panel.music.next">⏭</button>
+            <input id="music-volume" type="range" min="0" max="100" step="1" data-i18n-title="panel.music.volume" />
           </div>
         </div>
         <div class="mc-section">
-          <div class="mc-label" data-i18n="panel.sfx">BRUITAGES</div>
+          <div class="mc-label" data-i18n="panel.sfx"></div>
           <div class="mc-row">
-            <input id="sfx-volume" type="range" min="0" max="100" step="1" title="Volume bruitages" data-i18n-title="panel.sfx.volume" />
+            <input id="sfx-volume" type="range" min="0" max="100" step="1" data-i18n-title="panel.sfx.volume" />
           </div>
         </div>
         <div class="mc-section">
-          <div class="mc-label" data-i18n="panel.speed">VITESSE DU JEU</div>
-          <button id="speed-btn" type="button" class="mc-pause-btn" title="Vitesse du jeu (n'affecte pas la musique/les bruitages)" data-i18n-title="panel.speed.title">x1</button>
+          <div class="mc-label" data-i18n="panel.speed"></div>
+          <button id="speed-btn" type="button" class="mc-pause-btn" data-i18n-title="panel.speed.title">x1</button>
         </div>
         <div class="mc-section">
           <label class="mc-check">
             <input id="autofire-toggle" type="checkbox" />
-            <span data-i18n="panel.autofire">Tir automatique</span>
+            <span data-i18n="panel.autofire"></span>
           </label>
         </div>
         <div class="mc-section">
-          <button id="help-btn" type="button" class="mc-pause-btn" title="Aide" data-i18n="panel.help" data-i18n-title="panel.help">Aide</button>
+          <button id="help-btn" type="button" class="mc-pause-btn" data-i18n="panel.help"></button>
         </div>
         <div class="mc-section">
-          <button id="fullscreen-btn" type="button" class="mc-pause-btn" title="Plein écran" data-i18n="panel.fullscreen">⛶ Plein écran</button>
+          <button id="fullscreen-btn" type="button" class="mc-pause-btn" data-i18n="panel.fullscreen"></button>
         </div>
         <!-- Même rangée : une section de plus et le panneau ne tient plus sous le
              bandeau de consentement sur un téléphone en paysage. Le bouton de
              langue affiche la langue courante ; un clic passe à la suivante
              (voir js/i18n.js). -->
         <div class="mc-section mc-row">
-          <button id="cookie-btn" type="button" class="mc-pause-btn" title="Changer mon choix de cookies" data-i18n="panel.cookies" data-i18n-title="panel.cookies.title">Cookies</button>
-          <button id="lang-btn" type="button" class="mc-pause-btn" title="Changer de langue" data-i18n="lang.name" data-i18n-title="panel.lang.title">Français</button>
+          <button id="cookie-btn" type="button" class="mc-pause-btn" data-i18n="panel.cookies" data-i18n-title="panel.cookies.title"></button>
+          <button id="lang-btn" type="button" class="mc-pause-btn" data-i18n="lang.name" data-i18n-title="panel.lang.title"></button>
         </div>
         <div class="mc-section mc-version" id="version-label"></div>
       </div>
       <!-- Hors du panneau qui glisse : reste toujours visible, replié ou non. -->
-      <button id="mc-toggle" type="button" title="Afficher/masquer le menu" data-i18n-title="panel.toggle.title">◀</button>
+      <button id="mc-toggle" type="button" data-i18n-title="panel.toggle.title">◀</button>
     </div>
 
-    <!-- Déclenchement tactile du NOVA stocké (voir graze.js/game.js) — Espace
-         au clavier. Masqué tant que la jauge est vide (main.js) : un bouton
-         mort en permanence serait juste du bruit visuel. -->
-    <button id="nova-btn" type="button" class="nova-btn hidden" title="Déclencher NOVA (Espace)" data-i18n-title="nova.title">✦ NOVA</button>
+    <!-- NOVA au tactile (Espace au clavier), masqué tant qu'aucune charge n'est prête (main.js). -->
+    <button id="nova-btn" type="button" class="nova-btn hidden" data-i18n-title="nova.title">✦ NOVA</button>
 
-    <!-- Carte de partage (score/vague/kills/meilleure chaîne, voir
-         shareCard.js) — visible seulement juste après la fin d'une partie
-         (main.js), pas en permanence. -->
-    <button id="share-btn" type="button" class="share-btn hidden" title="Générer une image à partager" data-i18n="share.button" data-i18n-title="share.title">📤 Partager</button>
+    <!-- Image du résultat à partager (shareCard.js), visible en fin de partie (main.js). -->
+    <button id="share-btn" type="button" class="share-btn hidden" data-i18n="share.button" data-i18n-title="share.title"></button>
 
     <!-- Consentement RGPD : Google Analytics n'est chargé qu'après "Accepter"
-         (voir js/consent.js et js/analytics.js). Masqué par défaut, affiché
-         tant qu'aucun choix n'est mémorisé, ou rouvert par le bouton Cookies. -->
-    <div id="cookie-banner" class="cookie-banner hidden" role="dialog" aria-label="Consentement aux cookies" data-i18n-aria="cookie.aria">
-      <span><span data-i18n="cookie.text">Ce site utilise Google Analytics (cookies de mesure d'audience) pour comprendre comment le jeu est utilisé.</span> <a data-i18n="cookie.more" href="https://github.com/pazpop/arcadepipe/blob/main/docs/donnees-collectees.md" target="_blank" rel="noopener">En savoir plus</a></span>
+         (js/consent.js). Affiché tant qu'aucun choix n'est mémorisé, ou rouvert
+         par le bouton Cookies. Les textes viennent de js/i18n/ (data-i18n). -->
+    <div id="cookie-banner" class="cookie-banner hidden" role="dialog" data-i18n-aria="cookie.aria">
+      <span><span data-i18n="cookie.text"></span> <a data-i18n="cookie.more" href="https://github.com/pazpop/arcadepipe/blob/main/docs/donnees-collectees.md" target="_blank" rel="noopener"></a></span>
       <div class="cookie-actions">
-        <button id="cookie-accept" type="button" data-i18n="cookie.accept">Accepter</button>
-        <button id="cookie-decline" type="button" data-i18n="cookie.decline">Refuser</button>
+        <button id="cookie-accept" type="button" data-i18n="cookie.accept"></button>
+        <button id="cookie-decline" type="button" data-i18n="cookie.decline"></button>
       </div>
     </div>
   </div>

@@ -69,7 +69,7 @@ const ENEMY_NORMAL_PALETTE = {
 };
 
 // Même silhouette que l'ennemi normal (ENEMY_NORMAL_ROWS) — seule la palette
-// change (bleu-indigo au lieu de vert, assorti à ses propres tirs), pour
+// change (bleu-indigo au lieu de vert), pour
 // signaler le palier "moyen" (variante qui tire aussi, voir GUNNER_MIN_WAVE
 // dans enemies.js) sans redessiner une forme.
 const ENEMY_GUNNER_PALETTE = {
@@ -186,11 +186,11 @@ export function buildSprites() {
 }
 
 // Halo simulé par un double tracé translucide (pas de vrai flou) : sprite agrandi et transparent en dessous.
-export function drawWithGlow(ctx, sprite, x, y, glowColor, glowAlpha = 0.35) {
+export function drawWithGlow(ctx, sprite, x, y) {
   const w = sprite.width;
   const h = sprite.height;
   ctx.save();
-  ctx.globalAlpha = glowAlpha;
+  ctx.globalAlpha = 0.3;
   ctx.globalCompositeOperation = "lighter";
   ctx.drawImage(sprite, x - w / 2 - 1, y - h / 2 - 1, w + 2, h + 2);
   ctx.restore();

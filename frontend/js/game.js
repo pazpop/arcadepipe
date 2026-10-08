@@ -71,7 +71,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     grazeChain: 0, // reset dans startWave (pas startRun) — voir graze.js
     maxGrazeChain: 0, // meilleure chaîne de la partie entière — reset dans startRun (pas startWave), voir graze.js
     distanceTraveled: 0, // années-lumière, accumulé pendant PLAYING — reset dans startRun, voir DISTANCE dans config.js
-    novaStock: 0, // rechargé par le graze, consommé par tryUseNova() — vide au début d'une partie (récompense à gagner)
+    novaStock: 0, // rechargé par le graze, dépensé par useNova() (states/playing.js)
     novaProgress: 0, // 0..1, progression vers la prochaine charge
     novaMax: 1, // recalculé dans startWave (novaMaxForWave)
     spawnTimer: 0,
@@ -218,7 +218,10 @@ export function createGame({ input, audio, music, nameInputEl }) {
     get inBonusLevel() {
       return g.bonusLevel !== null;
     },
-    // Bonus actif, bouclier, bonus au sol, boss et ses tirs : lus par la suite e2e (e2e/tests/helpers.js).
+    // Tirs du joueur, bonus actif, bouclier, bonus au sol, boss et ses tirs : lus par la suite e2e (e2e/tests/helpers.js).
+    get playerBulletsOnScreen() {
+      return projectiles.player.items.filter((b) => b.active).length;
+    },
     get buffType() {
       return player.buff ? player.buff.type : null;
     },

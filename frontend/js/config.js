@@ -5,18 +5,15 @@
 export const RES_W = 480;
 export const RES_H = 270;
 
-// Majeure figée à 2, sous-version = nombre de commits git (`git rev-list
-// --count HEAD`) au moment du commit — jamais choisie à la main, donc
-// toujours à jour sans y penser. Affichée au menu principal et aux crédits
-// (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.122";
+// 2.<nombre de commits git> (`git rev-list --count HEAD`), mis à jour à chaque
+// commit qui touche au jeu. Affichée dans le panneau et aux crédits.
+export const VERSION = "2.123";
 
 export const PALETTE = {
   bgDeep: "#05060f",
   bgZones: ["#05060f", "#0a0614", "#060f0a", "#0f0605"],
   star: "#cfe8ff",
   player: "#4ee1ff",
-  playerGlow: "#8ef4ff",
   bulletPlayer: "#ffe66d",
   // Rose, partagé par tous les tirs d'ennemis normaux (élite + gunner) : même
   // tir visé, donc même façon de l'esquiver. Les tirs du boss ont leurs
@@ -69,8 +66,8 @@ export const DIFFICULTY = {
   bossWaveEvery: 5, // une vague sur N est une vague de boss — le "biodôme" (zonePalette) change au même rythme
   baseWaveKills: 10,
   waveKillsStep: 3,
-  // Ennemis confinés au tiers droit (enemies.js) : le même rythme y paraît
-  // plus dense, donc on démarre plus doucement (spawnIntervalStep inchangé).
+  // Les ennemis apparaissent dans le tiers droit (enemies.js), où le même
+  // rythme paraît plus dense : on démarre doucement.
   baseSpawnInterval: 0.9,
   spawnIntervalStep: 0.05,
   minSpawnInterval: 0.18,
@@ -78,7 +75,7 @@ export const DIFFICULTY = {
   // Plus long après un boss : le temps que le décor et les derniers ennemis
   // en fuite quittent l'écran.
   bossWaveBreakDuration: 3.6,
-  // Tirs ennemis (élites + boss) accélèrent avec la vague, plafonnés pour
+  // Tirs ennemis (gunners, élites, boss) accélèrent avec la vague, plafonnés pour
   // rester esquivables.
   bulletSpeedGrowthPerWave: 0.045,
   bulletSpeedCap: 1.7,
@@ -163,7 +160,7 @@ export const GAME_SPEEDS = [1, 1.5, 2];
 
 export const INPUT = {
   // Décalage horizontal (pas vertical) : le vaisseau "précède" le doigt, qui
-  // ne masque plus la zone d'où viennent les tirs ennemis.
+  // ne masque pas la zone d'où viennent les tirs ennemis.
   touchXOffset: 45,
 };
 
@@ -181,10 +178,9 @@ export const HIT_STOP = {
 export const GRAZE = {
   // Tailles de chaîne saluées par un son à part (playGrazeMilestone) — à ajuster au ressenti.
   milestones: [5, 10, 15],
-  // Rayon total depuis le centre du vaisseau — nettement plus grand que
-  // PLAYER.hitboxRadius (2.2, volontairement minuscule façon danmaku), proche
-  // de la moitié de la largeur du sprite (PLAYER.w=14) pour que le frôlement
-  // se déclenche au ras de la silhouette visible, pas seulement au ras du hitbox.
+  // Rayon depuis le centre du vaisseau : bien plus grand que
+  // PLAYER.hitboxRadius, proche de la moitié de la largeur du sprite, pour que
+  // le frôlement se déclenche au ras de la silhouette visible.
   radius: 7,
   // Le corps d'un ennemi (tous types, voir updateGraze dans graze.js — le
   // boss fait exception, seuls ses tirs comptent) peut regrazer après ce
@@ -196,19 +192,13 @@ export const GRAZE = {
   grazePerCharge: 12, // nombre de grazes pour remplir une charge NOVA
 };
 
-// Distance parcourue durant la run, affichée en fin de partie/carte de
-// partage (voir GAMEPLAY.md) — purement cosmétique,
-// pas une vraie mesure physique : juste un taux choisi pour donner un ordre
-// de grandeur satisfaisant sur une run typique (quelques centaines
-// d'années-lumière), accumulé proportionnellement au warp (states/playing.js)
-// pour que les sauts spatiaux/le niveau bonus comptent visiblement plus
-// qu'une seconde de vol normal.
+// Distance parcourue, affichée en fin de partie et sur la carte de partage :
+// purement cosmétique, multipliée par le warp (states/playing.js).
 export const DISTANCE = {
   lightYearsPerSecond: 1,
 };
 
-// NOVA : ressource stockable rechargée par le graze — voir triggerNova/
-// tryUseNova dans states/playing.js.
+// NOVA : charge stockable gagnée par le graze, dépensée par useNova (states/playing.js).
 export const NOVA = {
   color: PALETTE.gold,
   baseMaxStock: 1,
@@ -218,14 +208,10 @@ export const NOVA = {
   extraStockFromBossCount: 2,
 };
 
-// Niveau bonus (bonusLevel.js) : offert tous les `everyNWaves` (avant la
-// vague 10, 20, 30...) si le score atteint le seuil du cycle en cours à la
-// fin de la vague précédente — traverser des anneaux au lieu de combattre,
-// récompense proportionnelle au nombre d'anneaux réussis (voir
-// bonusLevelRewardFraction), jamais de vie en jeu. Le seuil grimpe à chaque
-// cycle (scoreThreshold * numéro du cycle, sauf le 1er — voir
-// firstScoreThreshold) : sans ça, une fois dépassé une première fois il
-// resterait trivial à re-déclencher pour le reste de la partie.
+// Niveau bonus (bonusLevel.js) : traverser des anneaux au lieu de combattre.
+// Offert avant les vagues 10, 20, 30... si le score atteint le seuil du cycle,
+// qui grimpe à chaque fois (scoreThreshold * numéro du cycle, sauf le premier).
+// Récompense : jauge NOVA, en proportion des anneaux réussis.
 export const BONUS_LEVEL = {
   everyNWaves: 10,
   // Seuil du tout premier niveau bonus (vague 10), volontairement bas et

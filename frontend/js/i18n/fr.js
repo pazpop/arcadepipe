@@ -53,7 +53,6 @@ export default {
   "bonus.intro.line2": "Traverse les anneaux pour charger ta jauge NOVA !",
 
   // --- Bannières ---
-  "banner.wave": "VAGUE {wave}",
   "banner.bossWave": "VAGUE {wave} — ARME MASSIVE EN APPROCHE",
   "banner.waveDone": "VAGUE {wave} TERMINÉE",
   "banner.waveDoneIntact": "VAGUE {wave} TERMINÉE — SANS DÉGÂTS ! +{bonus}",
@@ -63,21 +62,16 @@ export default {
   // --- Bonus ---
   "powerup.power": "PUISSANCE",
   "powerup.power.effect": "dégâts renforcés, tir plus lent",
-  "powerup.power.short": "dégâts renforcés, tir plus lent",
   "powerup.rapid": "RAFALE",
   "powerup.rapid.effect": "tir très rapide, dégâts réduits",
-  "powerup.rapid.short": "tir très rapide, dégâts réduits",
   "powerup.shotgun": "CHEVROTINE",
   "powerup.shotgun.effect": "cône de plombs, dégâts décroissants avec la distance",
-  "powerup.shotgun.short": "cône de plombs, portée courte",
   "powerup.shield": "BOUCLIER",
   "powerup.shield.effect": "absorbe les prochains coups",
-  "powerup.shield.short": "absorbe des coups",
 
   // --- Pause ---
   "pause.title": "PAUSE",
   "pause.resume": "REPRENDRE",
-  "pause.help": "AIDE",
   "pause.menu": "MENU PRINCIPAL",
   "quit.title": "QUITTER LA PARTIE ?",
   "quit.warning": "TA PROGRESSION ACTUELLE SERA PERDUE.",
@@ -114,13 +108,11 @@ export default {
   "gameover.stats": "SCORE {score}  ·  VAGUE {wave}  ·  {kills} ENNEMIS",
   "gameover.distance": "{distance} ANNÉES-LUMIÈRE PARCOURUES",
   "gameover.replay": "REJOUER",
-  "gameover.leaderboard": "CLASSEMENT",
   "name.title": "NOUVEAU MEILLEUR SCORE !",
   "name.prompt": "ENTRE TON NOM (8 CAR. MAX)",
   "name.validate": "▶ VALIDER",
 
   // --- Classement ---
-  "board.title": "CLASSEMENT",
   "board.games": "{count} PARTIES JOUÉES",
   "board.rank": "RANG",
   "board.name": "NOM",

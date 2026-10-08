@@ -52,7 +52,6 @@ export default {
   "bonus.intro.line2": "Fly through the rings to charge your NOVA gauge!",
 
   // --- Banners ---
-  "banner.wave": "WAVE {wave}",
   "banner.bossWave": "WAVE {wave} — MASSIVE WEAPON INCOMING",
   "banner.waveDone": "WAVE {wave} CLEARED",
   "banner.waveDoneIntact": "WAVE {wave} CLEARED — NO DAMAGE! +{bonus}",
@@ -62,21 +61,16 @@ export default {
   // --- Power-ups ---
   "powerup.power": "POWER",
   "powerup.power.effect": "more damage, slower fire",
-  "powerup.power.short": "more damage, slower fire",
   "powerup.rapid": "RAPID FIRE",
   "powerup.rapid.effect": "very fast fire, less damage",
-  "powerup.rapid.short": "very fast fire, less damage",
   "powerup.shotgun": "SHOTGUN",
   "powerup.shotgun.effect": "cone of pellets, damage falls off with distance",
-  "powerup.shotgun.short": "cone of pellets, short range",
   "powerup.shield": "SHIELD",
   "powerup.shield.effect": "absorbs the next hits",
-  "powerup.shield.short": "absorbs hits",
 
   // --- Pause ---
   "pause.title": "PAUSED",
   "pause.resume": "RESUME",
-  "pause.help": "HELP",
   "pause.menu": "MAIN MENU",
   "quit.title": "QUIT THE GAME?",
   "quit.warning": "YOUR CURRENT PROGRESS WILL BE LOST.",
@@ -113,13 +107,11 @@ export default {
   "gameover.stats": "SCORE {score}  ·  WAVE {wave}  ·  {kills} ENEMIES",
   "gameover.distance": "{distance} LIGHT-YEARS TRAVELED",
   "gameover.replay": "PLAY AGAIN",
-  "gameover.leaderboard": "LEADERBOARD",
   "name.title": "NEW HIGH SCORE!",
   "name.prompt": "ENTER YOUR NAME (8 CHARS MAX)",
   "name.validate": "▶ CONFIRM",
 
   // --- Leaderboard ---
-  "board.title": "LEADERBOARD",
   "board.games": "{count} GAMES PLAYED",
   "board.rank": "RANK",
   "board.name": "NAME",

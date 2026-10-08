@@ -1,5 +1,4 @@
-// Particules (explosions, étincelles, fragments) via un pool d'objets fixe
-// — aucune allocation pendant la boucle de jeu, donc pas de pause GC.
+// Particules (explosions, étincelles) dans un pool d'objets fixe, réutilisés.
 import { PALETTE } from "./config.js";
 import { acquireSlot } from "./pool.js";
 import { desaturate } from "./color.js";
@@ -21,11 +20,6 @@ export function createParticlePool() {
   return { items };
 }
 
-// Toutes les couleurs de gameplay de ce jeu sont pleinement saturées (voir la
-// Charte graphique dans GAMEPLAY.md) — désaturer systématiquement les
-// particules (spawnOne ci-dessous) garantit qu'elles ne rivalisent jamais
-// visuellement avec un tir à esquiver, tout en gardant la couleur par type
-// (juste plus terne) plutôt que de tout aplatir sur une seule teinte.
 function spawnOne(pool, x, y, vx, vy, life, size, color) {
   const p = acquireSlot(pool);
   if (!p) return;
@@ -37,10 +31,13 @@ function spawnOne(pool, x, y, vx, vy, life, size, color) {
   p.life = life;
   p.maxLife = life;
   p.size = size;
-  p.color = desaturate(color);
+  p.color = color;
 }
 
-export function spawnExplosion(pool, x, y, count = 10, color = PALETTE.particle) {
+// Couleur ternie : les couleurs de gameplay sont saturées, une particule ne
+// doit jamais se confondre avec un tir à esquiver.
+export function spawnExplosion(pool, x, y, count, color) {
+  color = desaturate(color);
   for (let i = 0; i < count; i++) {
     const angle = Math.random() * Math.PI * 2;
     const speed = 30 + Math.random() * 110;
@@ -57,14 +54,12 @@ export function spawnExplosion(pool, x, y, count = 10, color = PALETTE.particle)
   }
 }
 
-// Éclat bref et intense (cœur blanc d'une explosion) — mélangé à
-// spawnExplosion() pour donner plus de "punch" aux impacts marquants sans
-// devoir dessiner un système de particules séparé.
-export function spawnFlashBurst(pool, x, y, count = 6) {
+// Cœur blanc d'une explosion, pour les impacts marquants.
+export function spawnFlashBurst(pool, x, y, count) {
   spawnExplosion(pool, x, y, count, "#ffffff");
 }
 
-export function spawnSpark(pool, x, y, count = 3) {
+export function spawnSpark(pool, x, y, count) {
   spawnExplosion(pool, x, y, count, PALETTE.hud);
 }
 

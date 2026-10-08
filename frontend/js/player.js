@@ -21,8 +21,8 @@ export function resetPlayer(player) {
   player.shield = 0; // coups restants absorbés par le bouclier (indépendant de `buff`, pas de minuteur)
 }
 
-// Ramasser un bonus d'arme remplace l'effet en cours (pas de cumul). Le
-// bouclier est indépendant (applyShield) : les deux peuvent être actifs ensemble.
+// Un seul bonus à la fois : aucun autre n'apparaît tant qu'une arme ou un
+// bouclier est actif (voir resolveCollisions, states/playing.js).
 export function applyPowerup(player, type) {
   player.buff = { type, timer: POWERUP.duration };
 }
@@ -31,13 +31,13 @@ export function applyShield(player, hits) {
   player.shield = hits;
 }
 
-export function updatePlayer(player, input, projectiles, dt, onShotFired, canFire = true) {
+export function updatePlayer(player, input, projectiles, dt, onShotFired, canFire) {
   // Suivi progressif de la cible (pas un snap brutal) — lisible même à haute fréquence de mouvement.
   const dx = input.x - player.x;
   const dy = input.y - player.y;
   const maxStep = PLAYER.speed * dt;
   const dist = Math.hypot(dx, dy);
-  if (dist <= maxStep || dist === 0) {
+  if (dist <= maxStep) {
     player.x = input.x;
     player.y = input.y;
   } else {
@@ -60,9 +60,9 @@ export function updatePlayer(player, input, projectiles, dt, onShotFired, canFir
 
   // Tir manuel : clic/doigt maintenu (input.fireHeld), ou tir automatique
   // (input.autoFire, case à cocher du panneau). Cadence plafonnée par fireCooldown,
-  // modulée par le bonus actif. canFire=false (saut spatial, g.clearingScreen
-  // dans game.js) gèle le minuteur — sinon RAFALE (cooldown ~44ms) accumule
-  // des dizaines de tirs pendant l'attente, saturant l'audio à la reprise.
+  // modulée par le bonus actif. canFire=false (saut spatial ou niveau bonus,
+  // g.clearingScreen dans states/waves.js) gèle le minuteur — sinon RAFALE
+  // (cooldown ~44ms) accumule des dizaines de tirs pendant l'attente.
   if (canFire) {
     player.fireTimer -= dt;
     if (player.alive && (input.fireHeld || input.autoFire) && player.fireTimer <= 0) {
@@ -74,7 +74,7 @@ export function updatePlayer(player, input, projectiles, dt, onShotFired, canFir
         firePlayerBullet(projectiles, player.x + 8, player.y, PLAYER.bulletSpeed, damage, color);
       }
       player.fireTimer = PLAYER.fireCooldown * (buffDef ? buffDef.fireCooldownMul : 1);
-      if (onShotFired) onShotFired(player.buff ? player.buff.type : "normal");
+      onShotFired(player.buff ? player.buff.type : "normal");
     }
   }
 }
@@ -111,5 +111,5 @@ export function drawPlayer(ctx, player) {
     ctx.stroke();
     ctx.restore();
   }
-  drawWithGlow(ctx, sprites.player, player.x, player.y, PALETTE.playerGlow, 0.3);
+  drawWithGlow(ctx, sprites.player, player.x, player.y);
 }

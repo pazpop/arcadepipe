@@ -35,7 +35,7 @@ export function nextLang() {
 }
 
 // Textes du HTML : data-i18n (contenu), data-i18n-title (infobulle),
-// data-i18n-aria (aria-label). Le HTML contient le français par défaut.
+// data-i18n-aria (aria-label). Le HTML ne contient aucun texte traduisible.
 export function translateDom() {
   document.documentElement.lang = lang;
   for (const el of document.querySelectorAll("[data-i18n]")) el.textContent = t(el.dataset.i18n);

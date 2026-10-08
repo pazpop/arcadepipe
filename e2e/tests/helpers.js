@@ -1,13 +1,10 @@
-// Utilitaires partagés : le canvas interne fait RES_W x RES_H (480x270,
-// voir frontend/js/config.js) quelle que soit sa taille affichée — toutes
-// les interactions doivent passer par ces conversions plutôt que des
-// coordonnées écran en dur.
+// Utilitaires partagés. Le jeu raisonne en coordonnées logiques RES_W x RES_H
+// (480x270, voir frontend/js/config.js) quelle que soit la taille du canvas :
+// les clics passent par ces conversions, jamais par des coordonnées écran.
 //
-// Forcer temporairement une constante (taux de drop, difficulté...) pour un
-// test : aucun point d'accès de debug n'est exposé côté app (rien à
-// trouver/exploiter en prod). Les modules ES sont mis en cache par URL —
-// un import dynamique déclenché depuis page.evaluate() récupère le même
-// module déjà évalué par la page, pas une copie :
+// Forcer une constante (taux de drop, difficulté...) pour un test : un import
+// dynamique depuis page.evaluate() renvoie le module déjà chargé par la page,
+// pas une copie. Aucun point d'accès de debug n'est exposé côté jeu.
 //
 //   await page.evaluate(async () => {
 //     const { DIFFICULTY } = await import("/js/config.js");
@@ -15,8 +12,8 @@
 //   });
 import { expect } from "@playwright/test";
 
-export const RES_W = 480;
-export const RES_H = 270;
+const RES_W = 480;
+const RES_H = 270;
 
 export function canvasHelpers(page) {
   const canvas = page.locator("#game-canvas");
@@ -49,16 +46,13 @@ export function canvasHelpers(page) {
   return { canvas, toPage, clickLogical, moveLogical, startRun };
 }
 
-// La plupart des tests veulent aller droit au gameplay — sans ça, l'aide de
-// bienvenue (première partie) ou l'alerte boss (premier combat de boss)
-// mettrait le jeu en pause automatiquement et fausserait silencieusement le
-// test (pas d'erreur, mais rien de ce qui suit ne se produit vraiment).
-// Un seul test dédié (menu-pause.spec.js) vérifie ces aides sans appeler ceci.
+// La plupart des tests vont droit au jeu. Sans ça, l'aide de bienvenue de la
+// première partie s'ouvrirait et le test continuerait sans rien jouer. Un test
+// dédié (menu-pause.spec.js) vérifie cette aide sans appeler ceci.
 export async function skipHints(page) {
   await page.evaluate(() => {
     localStorage.setItem("arcadepipe_seen_intro", "1");
-    // Le bandeau de consentement (consent.js) recouvre le bas de l'écran et
-    // intercepterait les clics sur les boutons tactiles — le refuser d'avance.
+    // Le bandeau de consentement recouvre le haut du jeu : refusé d'avance.
     localStorage.setItem("arcadepipe_analytics_consent", "denied");
   });
   await page.evaluate(() => document.getElementById("cookie-banner")?.classList.add("hidden"));
@@ -73,6 +67,8 @@ export function gameState(page) {
     const { game } = await import("/js/main.js");
     return {
       mode: game.mode,
+      playerBullets: game.playerBulletsOnScreen,
+      novaStock: game.novaStock,
       wave: game.getRunSummary().wave,
       inBonusLevel: game.inBonusLevel,
       buff: game.buffType,

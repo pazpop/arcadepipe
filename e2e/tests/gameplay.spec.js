@@ -5,108 +5,79 @@ test("le tir est manuel : aucune balle sans clic maintenu, tir dès qu'on mainti
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);
-  const { canvas, startRun, moveLogical, toPage } = canvasHelpers(page);
+  const { startRun, moveLogical } = canvasHelpers(page);
   await startRun();
   await moveLogical(90, 135);
 
-  await page.waitForTimeout(1000);
-  await canvas.screenshot({ path: "test-results/fire-manual-idle.png" });
+  await page.waitForTimeout(1000); // rien ne doit se passer : pas d'état à attendre
+  expect((await gameState(page)).playerBullets).toBe(0);
 
-  const ship = await toPage(90, 135);
-  await page.mouse.move(ship.x, ship.y);
   await page.mouse.down();
-  await page.waitForTimeout(400);
-  await canvas.screenshot({ path: "test-results/fire-manual-held.png" });
+  await expect.poll(async () => (await gameState(page)).playerBullets).toBeGreaterThan(0);
   await page.mouse.up();
-
   expect(errors).toEqual([]);
 });
 
-test("la case 'Tir auto' active le tir sans avoir à cliquer, et persiste (localStorage)", async ({ page }) => {
-  const errors = collectErrors(page);
+test("la case 'Tir automatique' tire sans clic, et reste cochée après rechargement", async ({ page }) => {
   await page.goto("/");
   await skipHints(page);
-  const { startRun, moveLogical, canvas } = canvasHelpers(page);
+  const { startRun, moveLogical } = canvasHelpers(page);
 
   await page.locator("#autofire-toggle").check();
   await startRun();
   await moveLogical(90, 135);
-  await page.waitForTimeout(600); // tir auto : pas besoin de maintenir le clic
-  await canvas.screenshot({ path: "test-results/fire-auto.png" });
+  await expect.poll(async () => (await gameState(page)).playerBullets).toBeGreaterThan(0);
 
-  const stored = await page.evaluate(() => localStorage.getItem("arcadepipe_autofire"));
-  expect(stored).toBe("1");
-  expect(errors).toEqual([]);
+  await page.reload();
+  await expect(page.locator("#autofire-toggle")).toBeChecked();
 });
 
-test("une nouvelle partie choisit une piste musicale différente de la précédente", async ({ page }) => {
-  // Teste directement music.playRandom() (voir onEnded dans audio/music.js
-  // et son appel dans startRun() de states/playing.js) plutôt que de naviguer tout un
-  // cycle menu -> pause -> confirmation -> menu : ça isole la logique de
-  // sélection elle-même, sans dépendre du chemin UI pour y arriver.
-  const errors = collectErrors(page);
+test("playRandom ne rejoue jamais la même piste deux fois de suite", async ({ page }) => {
   await page.goto("/");
-
-  const [t1, t2, t3] = await page.evaluate(async () => {
+  const picks = await page.evaluate(async () => {
     const { music } = await import("/js/main.js");
-    const picks = [];
-    for (let i = 0; i < 3; i++) {
+    return Array.from({ length: 12 }, () => {
       music.playRandom();
-      picks.push(music.trackIndex);
-    }
-    return picks;
+      return music.trackIndex;
+    });
   });
-
-  expect(t2).not.toBe(t1);
-  expect(t3).not.toBe(t2);
-  expect(errors).toEqual([]);
+  for (let i = 1; i < picks.length; i++) expect(picks[i]).not.toBe(picks[i - 1]);
 });
 
-test("vague 1 : transition propre, aucune erreur sur une session de jeu prolongée", async ({ page }) => {
+test("fin de vague : la vague 2 démarre après le saut spatial, sans erreur", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);
+  await page.evaluate(async () => {
+    const { DIFFICULTY } = await import("/js/config.js");
+    DIFFICULTY.baseWaveKills = 1; // un seul ennemi à abattre
+  });
   const { canvas, startRun, toPage } = canvasHelpers(page);
   await startRun();
 
-  const ship = await toPage(90, 135);
-  await page.mouse.move(ship.x, ship.y);
+  // Tire en balayant la hauteur jusqu'à la vague 2.
   await page.mouse.down();
-
-  // Assez long pour couvrir la fin de la vague 1 (~14s en difficulté par
-  // défaut) et vérifier qu'aucune erreur ne survient pendant la transition
-  // (ennemis + projectiles ennemis effacés, saut spatial, planètes/galaxies).
-  for (let i = 0; i < 8; i++) {
-    await page.waitForTimeout(2000);
+  for (let i = 0; (await gameState(page)).wave < 2; i++) {
+    const p = await toPage(90, 30 + (i % 8) * 30);
+    await page.mouse.move(p.x, p.y);
+    await page.waitForTimeout(300);
   }
-  await canvas.screenshot({ path: "test-results/wave-session.png" });
   await page.mouse.up();
-
+  await canvas.screenshot({ path: "test-results/wave-2.png" });
   expect(errors).toEqual([]);
 });
 
 test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + VALIDER tactile (sans clavier)", async ({ page }) => {
-  // Sur mobile, focus() sur le champ caché arrive après un `await` (hors du
-  // geste utilisateur d'origine) : la plupart des navigateurs mobiles
-  // refusent alors d'ouvrir le clavier virtuel. D'où le nom par défaut déjà
-  // rempli (voir DEFAULT_NAME dans states/endOfRun.js) et le bouton "VALIDER"
-  // tactile (voir hitTestNameEntryValidate dans hud.js) — ce test vérifie
-  // qu'on peut valider le score uniquement au tap, sans jamais toucher au
-  // clavier.
+  // Sur mobile, le clavier virtuel ne s'ouvre pas toujours : le pseudo est
+  // pré-rempli (DEFAULT_NAME, states/endOfRun.js) et le bouton VALIDER permet
+  // de valider au tap seul, ce que ce test vérifie.
   test.setTimeout(120000); // deux parties jusqu'au premier boss
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);
 
-  // 1 vie -> le premier coup encaissé termine la partie. Ni le corps des
-  // ennemis ni les tirs du joueur (purement horizontaux, voir
-  // projectiles.js) ne sont fiables pour déclencher ça vite (hitbox
-  // minuscule, "style danmaku", voir PLAYER.hitboxRadius) : on force plutôt
-  // une progression ultra rapide (1 kill/vague) jusqu'au premier boss
-  // (vague DIFFICULTY.bossWaveEvery), puis on fonce directement dans sa
-  // coque — collision déterministe (position connue), pas de RNG d'élite à
-  // espérer (voir hitsBossHull dans boss.js, ajouté pour que foncer dans le
-  // boss fasse mal au joueur, pas seulement l'inverse).
+  // Mourir vite et à coup sûr : 1 vie, 1 kill par vague jusqu'au premier boss,
+  // puis foncer dans sa coque (position connue, voir dieOnFirstBoss).
   await page.evaluate(async () => {
     const { PLAYER, DIFFICULTY } = await import("/js/config.js");
     PLAYER.startingLives = 1;
@@ -138,8 +109,7 @@ test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + V
 
   await dieOnFirstBoss();
 
-  // CLASSEMENT (2e option) -> triggerGameOver() (states/endOfRun.js) et
-  // l'entrée en saisie du nom.
+  // CLASSEMENT (2e option) : saisie du nom, le backend injoignable étant traité comme un score qui entre dans le top.
   await clickLogical(240, 187.4);
   await waitForMode(page, "name_entry");
   await canvas.screenshot({ path: "test-results/name-entry-prefilled.png" });
@@ -154,15 +124,11 @@ test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + V
   // Valide au tap uniquement (bouton VALIDER), jamais via le clavier caché.
   await clickLogical(240, 183.6);
   await waitForMode(page, "leaderboard");
+  expect(postedNames).toEqual(["AAA", "AAAMC"]); // pseudo pré-rempli, plus les deux lettres tapées
   await canvas.screenshot({ path: "test-results/name-entry-validated.png" });
 
-  // ERR_CONNECTION_REFUSED attendu : ce test est le premier à atteindre le
-  // classement, qui appelle l'API (fetchTopScores/submitScore) — mais la
-  // suite e2e ne lance jamais de backend (voir webServer dans
-  // playwright.config.js, uniquement le serveur statique du frontend), par
-  // choix. Le code gère déjà ça proprement (try/catch, voir
-  // triggerGameOver/confirmNameEntry dans states/endOfRun.js) : c'est un message
-  // console de ressource réseau, pas une vraie erreur JS.
+  // ERR_CONNECTION_REFUSED attendu : la suite e2e ne lance pas de backend
+  // (playwright.config.js). C'est un message réseau de la console, pas une erreur JS.
   const realErrors = errors.filter((e) => !e.includes("ERR_CONNECTION_REFUSED"));
   expect(realErrors).toEqual([]);
 

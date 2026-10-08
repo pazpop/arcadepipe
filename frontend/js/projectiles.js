@@ -33,8 +33,7 @@ export function createProjectiles() {
     // Tirs du joueur toujours à l'horizontale (vy=0) — un tiret allongé se
     // distingue mieux des tirs ronds ennemis.
     player: makePool(PLAYER_POOL_SIZE, 1.5, PALETTE.bulletPlayer, "dash"),
-    // "streak" : tiret orienté selon la vitesse du tir (patterns ennemis
-    // multi-directionnels) — un point rond donnait l'impression de "flotter".
+    // "streak" : tiret orienté selon la vitesse du tir, qui montre sa direction.
     enemy: makePool(ENEMY_POOL_SIZE, 1.6, PALETTE.bulletEnemy, "streak"),
     // Plombs du bonus CHEVROTINE (config.js) : forme "dot" (pas de rotation
     // nécessaire, contrairement à "dash"/"streak") puisqu'ils partent en
@@ -58,8 +57,8 @@ function spawnInto(pool, x, y, vx, vy, colorOverride = null, damage = 1, turnRat
   return b;
 }
 
-export function firePlayerBullet(projectiles, x, y, speed, damage = 1, color = null) {
-  return spawnInto(projectiles.player, x, y, speed, 0, color, damage);
+export function firePlayerBullet(projectiles, x, y, speed, damage, color) {
+  spawnInto(projectiles.player, x, y, speed, 0, color, damage);
 }
 
 // Dégâts perdus par seconde de vol — avec `damage` initial (POWERUP.types.shotgun),
@@ -75,23 +74,14 @@ export function firePlayerPellets(projectiles, x, y, speed, damage, color, count
   const start = -spreadRad / 2;
   for (let i = 0; i < count; i++) {
     const a = count === 1 ? 0 : start + (spreadRad * i) / (count - 1);
-    const p = acquireSlot(projectiles.pellet);
-    if (!p) continue;
-    p.active = true;
-    p.x = x;
-    p.y = y;
-    p.vx = Math.cos(a) * speed;
-    p.vy = Math.sin(a) * speed;
-    p.colorOverride = color;
-    p.damage = damage;
-    p.maxDamage = damage;
-    p.turnRate = 0;
+    const p = spawnInto(projectiles.pellet, x, y, Math.cos(a) * speed, Math.sin(a) * speed, color, damage);
+    if (p) p.maxDamage = damage;
   }
 }
 
 // turnRate (rad/s, optionnel) : courbe la trajectoire (patternFan/patternRing). 0 par défaut.
 export function fireEnemyBullet(projectiles, x, y, vx, vy, color = null, turnRate = 0) {
-  return spawnInto(projectiles.enemy, x, y, vx, vy, color, 1, turnRate);
+  spawnInto(projectiles.enemy, x, y, vx, vy, color, 1, turnRate);
 }
 
 export function updateProjectiles(projectiles, dt) {

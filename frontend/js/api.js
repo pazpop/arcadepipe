@@ -5,10 +5,8 @@ const API_BASE = window.location.port === "5500" ? "http://localhost:8000" : "";
 const FETCH_TIMEOUT_MS = 5000;
 
 // Cache court des lectures (classement, compteur de parties) : rouvrir le
-// classement, ou enchaîner fin de partie puis classement, ne refait pas les
-// mêmes requêtes. Seules les réponses réussies sont gardées. Vidé par les
-// écritures ci-dessous (invalidate) ; la durée de vie borne le retard sur les
-// scores des autres joueurs.
+// classement ne refait pas les mêmes requêtes. Seules les réponses réussies
+// sont gardées ; les écritures ci-dessous le vident (invalidate).
 const CACHE_TTL_MS = 60_000;
 const cache = new Map(); // chemin -> { at, data }
 

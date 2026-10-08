@@ -2,6 +2,18 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.113] - 2026-10-07
+- **Quatrième morceau** de [mall-e](https://mall-e.bandcamp.com/) dans la playlist (`fourth.mp3`, en ligne depuis le 2026-10-07 sous le numéro 2.107).
+- Backend : Python 3.13 (image Docker, CI et cible de ruff) et FastAPI 0.142.2.
+
+## [2.107] - 2026-09-30
+- Boss plus résistant : 5 PV par point faible au lieu de 3, 4 pour le premier boss.
+
+## [2.106] - 2026-09-30
+- **Fix : le boss pouvait être détruit avant son premier tir.** Ses points faibles encaissaient des dégâts pendant son entrée (~3,3 s). Il est maintenant invulnérable pendant une entrée plus rapide, et tire presque aussitôt arrivé.
+- Tests backend : `httpx2` à la place de `httpx`, déprécié par starlette 1.7.
+- Docs : références au lecteur tracker retiré mises à jour, nouvelle capture d'écran dans le README.
+
 ## [2.100] - 2026-09-30
 - **Nouvelle musique** : 3 morceaux originaux de [mall-e](https://mall-e.bandcamp.com/), en MP3, crédité et remercié dans le jeu et le README.
 - Lecteur tracker (`.xm`, libopenmpt, chiptune3) retiré : les pistes sont lues par un simple élément `<audio>` branché sur l'AudioContext des bruitages. Plus de WebAssembly, donc plus besoin de `'unsafe-eval'` dans la CSP.

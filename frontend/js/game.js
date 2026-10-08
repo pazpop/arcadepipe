@@ -70,6 +70,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     wave: 1,
     waveKills: 0,
     waveKillTarget: DIFFICULTY.baseWaveKills,
+    intactBlink: 0, // secondes de clignotement du rappel "INTACT" après le premier coup de la vague (hud.js)
     tookDamageThisWave: false, // pour DIFFICULTY.noDamageWaveBonus — reset dans startWave, mis à true dans onPlayerHit
     grazeChain: 0, // reset dans startWave (pas startRun) — voir graze.js
     maxGrazeChain: 0, // meilleure chaîne de la partie entière — reset dans startRun (pas startWave), voir graze.js

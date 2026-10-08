@@ -9,7 +9,7 @@ export const RES_H = 270;
 // --count HEAD`) au moment du commit — jamais choisie à la main, donc
 // toujours à jour sans y penser. Affichée au menu principal et aux crédits
 // (voir hud.js). Mise à jour à chaque commit qui touche au jeu.
-export const VERSION = "2.118";
+export const VERSION = "2.119";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -165,9 +165,20 @@ export const INPUT = {
   touchXOffset: 45,
 };
 
+// Micro-gel à l'impact (triggerHitStop, states/playing.js), en secondes.
+// Réservé aux événements rares : rien sur un kill normal, sinon l'effet se
+// banalise. Valeurs à ajuster au ressenti.
+export const HIT_STOP = {
+  elite: 0.08,
+  weakPoint: 0.13,
+  bossVictory: 0.14,
+};
+
 // Frôlement des tirs ennemis (graze.js) : récompense l'esquive serrée plutôt
 // que large, alimente la jauge NOVA (voir NOVA ci-dessous).
 export const GRAZE = {
+  // Tailles de chaîne saluées par un son à part (playGrazeMilestone) — à ajuster au ressenti.
+  milestones: [5, 10, 15],
   // Rayon total depuis le centre du vaisseau — nettement plus grand que
   // PLAYER.hitboxRadius (2.2, volontairement minuscule façon danmaku), proche
   // de la moitié de la largeur du sprite (PLAYER.w=14) pour que le frôlement

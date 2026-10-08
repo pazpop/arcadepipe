@@ -1,7 +1,7 @@
 // Tout le texte/UI du jeu, en coordonnées logiques RES_W x RES_H. Le canvas
 // est rendu à la résolution de l'écran (voir renderScale dans main.js), donc
 // le texte reste net quelle que soit sa taille.
-import { RES_W, RES_H, PALETTE, POWERUP, NOVA, BONUS_LEVEL, VERSION } from "./config.js";
+import { RES_W, RES_H, PALETTE, POWERUP, NOVA, BONUS_LEVEL, DIFFICULTY, VERSION } from "./config.js";
 import { drawPowerupIcon } from "./powerups.js";
 import { bossHealthFraction } from "./boss.js";
 import { buildSprites, drawWithGlow } from "./assets.js";
@@ -111,6 +111,18 @@ export function drawGameHud(ctx, s, lives) {
     color: PALETTE.danger,
     glow: PALETTE.danger,
   });
+  // Rappel du bonus "sans dégâts" (DIFFICULTY.noDamageWaveBonus), sous les
+  // vies : affiché tant que la vague est intacte, clignote en rouge 1 s au
+  // premier coup encaissé (s.intactBlink) puis disparaît jusqu'à la vague suivante.
+  const lost = s.tookDamageThisWave;
+  if (!s.bonusLevel && (lost ? Math.floor(s.intactBlink * 8) % 2 === 1 : true)) {
+    text(ctx, `INTACT +${DIFFICULTY.noDamageWaveBonus}`, RES_W - 8, 20, {
+      size: 7,
+      align: "right",
+      color: lost ? PALETTE.danger : PALETTE.bulletPlayer,
+      alpha: 0.85,
+    });
+  }
 }
 
 // Jauge NOVA : charges dispo / max (ex. "NOVA 1/2" — le max lui-même monte

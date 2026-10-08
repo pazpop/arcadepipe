@@ -2,6 +2,11 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.119] - 2026-10-08
+- Rappel « INTACT +500 » sous les vies tant que la vague est sans dégât ; clignote en rouge 1 s au premier coup encaissé, puis disparaît jusqu'à la vague suivante.
+- Micro-gel à l'impact réservé aux événements rares : plus rien sur un kill normal, 0,08 s sur un élite, 0,13 s sur un point faible, 0,14 s à la victoire sur le boss (`HIT_STOP`, à ajuster au ressenti).
+- Graze : son de palier (double tic aigu) quand la chaîne atteint 5, 10 et 15 (`GRAZE.milestones`).
+
 ## [2.118] - 2026-10-08
 - Cache du classement : les lectures (top 10, compteur de parties) sont gardées 60 s dans `js/api.js` et vidées dès qu'un score est soumis ou qu'une partie est comptée. Rouvrir le classement ne refait plus de requête (`api.test.js`).
 

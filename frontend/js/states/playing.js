@@ -5,7 +5,7 @@
 // écrans affichent la scène figée derrière leur overlay plutôt qu'un fond
 // vide, donc le rendu de la scène elle-même n'est pas propre à "playing" au
 // sens strict, mais vit ici avec le reste de l'état qui la nourrit.
-import { RES_W, RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE } from "../config.js";
+import { RES_W, RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE, HIT_STOP } from "../config.js";
 import { loadItem, saveItem } from "../storage.js";
 import { updateStarfield, triggerDeathStarLeave } from "../stars.js";
 import { resetPlayer, updatePlayer, hitPlayer, drawPlayer, applyPowerup, applyShield } from "../player.js";
@@ -141,9 +141,9 @@ function resolveCollisions(g, engine) {
           g.waveKills += 1;
           g.enemiesKilled += 1;
           audio.playExplosion();
-          // Pas de shake sur un kill "classique" (réservé aux coups encaissés/
-          // victoire boss), sinon l'écran tremble en permanence.
-          triggerHitStop(g, en.type === "elite" ? 0.05 : 0.03);
+          // Ni shake ni micro-gel sur un kill "classique" (réservés aux
+          // élites, coups encaissés et boss), sinon l'effet se banalise.
+          if (en.type === "elite") triggerHitStop(g, HIT_STOP.elite);
           // Un seul bonus à la fois, aucun si déjà actif — évite le gâchis et
           // garde le HUD lisible.
           const noBonusInPlay = !player.buff && !player.shield && !powerups.items.some((pu) => pu.active);
@@ -170,14 +170,14 @@ function resolveCollisions(g, engine) {
           if (res === true) {
             g.score += 300; // vaut un ennemi élite (TYPE_STATS.elite.points dans enemies.js)
             triggerShake(g, 6);
-            triggerHitStop(g, 0.06);
+            triggerHitStop(g, HIT_STOP.weakPoint);
             audio.playExplosion();
             if (g.boss.victory) {
               g.score += 1000; // bonus de victoire, nettement au-dessus d'un point faible pour marquer l'accomplissement
               player.lives = Math.min(PLAYER.maxLives, player.lives + 1); // récompense de victoire, plafonnée
               g.flash = Math.max(g.flash, 0.6);
               triggerShake(g, 14);
-              triggerHitStop(g, 0.14);
+              triggerHitStop(g, HIT_STOP.bossVictory);
               vibrate([40, 60, 40]);
               spawnExplosion(particles, g.boss.x, g.boss.y, 80, PALETTE.boss);
               spawnFlashBurst(particles, g.boss.x, g.boss.y, 24);
@@ -283,6 +283,7 @@ function onShieldHit(g, engine) {
 
 function onPlayerHit(g, engine) {
   const { audio, particles, player } = engine;
+  if (!g.tookDamageThisWave) g.intactBlink = 1; // le rappel "INTACT" du HUD clignote 1 s avant de disparaître
   g.tookDamageThisWave = true; // casse l'éligibilité au bonus DIFFICULTY.noDamageWaveBonus — un coup absorbé par le bouclier (onShieldHit) ne compte pas, lui
   triggerShake(g, 10);
   triggerHitStop(g, 0.08);
@@ -430,6 +431,7 @@ export function update(g, engine, dt) {
   g.shake = Math.max(0, g.shake - dt * 40);
   g.flash = Math.max(0, g.flash - dt * 1.5);
   g.controlHint = Math.max(0, g.controlHint - dt);
+  g.intactBlink = Math.max(0, g.intactBlink - dt);
 
   updateProjectiles(projectiles, dt);
   updateParticles(particles, dt);

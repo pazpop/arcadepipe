@@ -214,6 +214,14 @@ export class AudioEngine {
     this._tone({ type: "sine", startFreq: freq, endFreq: freq * 1.15, duration: 0.045, gain: 0.05 });
   }
 
+  // Seuil de chaîne atteint (GRAZE.milestones) : double tic plus aigu que le
+  // plus haut palier de playGraze, pour que le cap s'entende.
+  playGrazeMilestone() {
+    const tic = (freq) => this._tone({ type: "sine", startFreq: freq, endFreq: freq * 1.15, duration: 0.05, gain: 0.07 });
+    tic(1900);
+    setTimeout(() => tic(2400), 70);
+  }
+
   // Anneau du niveau bonus (bonusLevel.js) réussi : note franche, un peu plus
   // riche que le "tic" du graze — un vrai petit succès à chaque passage.
   playRingPass(tier = 1) {

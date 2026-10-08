@@ -110,6 +110,7 @@ Comment les couleurs et les formes sont décidées et générées.
 
 ## Interface & menus
 
+- [x] Rappel « INTACT » dans le HUD tant que la vague en cours est sans dégât (le bonus de fin de vague se comprend sans lire l'Aide).
 - [x] **Rejouer en un clic** depuis l'écran de fin de partie (REJOUER ou CLASSEMENT, au clic, au tap ou au clavier). En rejouant, un score qui entre dans le top 10 est quand même enregistré, sous le dernier pseudo utilisé (ou « AAA » si le joueur n'en a jamais saisi, comme sur les bornes d'arcade).
 - [x] Tous les écrans nécessaires : titre, pause, confirmation avant de quitter une partie, aide, crédits, fin de partie, saisie du pseudo, classement.
 - [x] Navigation possible au clavier (flèches + Entrée) et à la souris, avec un petit son quand la sélection change.

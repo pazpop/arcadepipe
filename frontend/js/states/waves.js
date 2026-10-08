@@ -17,6 +17,7 @@ export function startWave(g, engine, wave) {
   g.wave = wave;
   g.waveKills = 0;
   g.tookDamageThisWave = false;
+  g.intactBlink = 0;
   g.grazeChain = 0;
   g.novaMax = novaMaxForWave(wave);
   g.novaStock = Math.min(g.novaStock, g.novaMax);

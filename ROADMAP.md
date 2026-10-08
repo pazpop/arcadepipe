@@ -23,22 +23,16 @@ Objectif : peaufiner l'existant (game feel, UX, boucle de rejouabilité) — **r
 
 | # | Item | Sévérité | Effort | Existant / mesure | Défaut (à ajuster au ressenti) |
 |---|---|---|---|---|---|
-| 2 | **Bonus « sans dégâts » visible pendant la vague** | Urgent | Faible | Existe en fin de vague (+500, bannière, `waves.js`). Ajouter un rappel HUD « INTACT » qui disparaît au premier coup. Mesure : compris sans lire l'Aide | ~7 px, or, clignote 1 s à la perte |
 | 3 | **Mode attract** au menu (le jeu se joue seul) | Optionnel | Haut | N'existe pas : partie sans score ni son, bot qui esquive | Trajectoire pseudo-aléatoire + esquive du tir le plus proche |
-| 4 | **Hit-stop calibré** (réservé aux événements rares) | Important | Faible | Existe (`triggerHitStop`), mais aussi sur les kills normaux. Mesure : 10 kills normaux contre 1 élite | Normal 0 ; élite 0,08 s ; point faible 0,13 s ; boss 0,14 s |
-| 5 | **Paliers sonores du graze** | Important | Faible | Le son monte déjà avec la chaîne (`playGraze`) ; manque une signature aux seuils | Seuils 5/10/15, note plus haute + double tic |
 | 6 | **Télégraphe des tirs circulaires du boss** | Important | Moyen | Aucun signal d'anticipation. Mesure : aucune mort « injuste » sur 5 boss | ~0,2 s |
 | 7 | **Première minute** : lancement instantané, 1er bonus en 30 s | Important | Faible | Vérification. Mesures : clic → 1re image ; délai avant le 1er drop (10 parties) | Si > 30 s : plus de drops en vague 1 |
 | 8 | **Indications contextuelles** : NOVA prête, son à l'apparition d'un kamikaze | Important | Faible | NOVA déjà signalée ; aucun son de kamikaze | Sifflement descendant ~0,15 s |
 | 9 | **Messages de fin variables** (« Presque le boss ! ») | Optionnel | Faible | Réutilise `getRunSummary()` | 3-4 messages, règle simple |
 | 10 | **Partage réel** testé (Twitter/Discord) | Important | Faible | QR lu à ≥ 400 px en local ; test manuel | — |
 
-**Prochains items** : 2, 4, 5 (un rappel HUD et deux réglages de constantes), puis 6-8. Tout tester en jouant avant d'enchaîner.
+**Prochains items** : 6, 7, 8, puis 10. Les items 2, 4 et 5 sont en place avec leurs valeurs par défaut (`HIT_STOP`, `GRAZE.milestones`, `config.js`) : **à valider en jouant**.
 
-- [ ] 2 — Bonus « sans dégâts » visible pendant la vague
 - [ ] 3 — Mode attract (optionnel, reporté)
-- [ ] 4 — Hit-stop calibré
-- [ ] 5 — Paliers sonores du graze
 - [ ] 6 — Télégraphe des tirs circulaires du boss
 - [ ] 7 — Première minute vérifiée
 - [ ] 8 — Indications contextuelles (NOVA, kamikaze)

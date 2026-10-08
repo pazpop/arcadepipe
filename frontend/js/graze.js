@@ -33,7 +33,8 @@ function registerGraze(g, particles, audio, x, y) {
   spawnSpark(particles, x, y, 2);
   // Palier plafonné : sans ça, une chaîne longue en fin de vague chargée
   // donnerait un son de plus en plus aigu jusqu'à l'insupportable.
-  audio.playGraze(Math.min(g.grazeChain, 8));
+  if (GRAZE.milestones.includes(g.grazeChain)) audio.playGrazeMilestone();
+  else audio.playGraze(Math.min(g.grazeChain, 8));
 }
 
 // Suspendu pendant : l'invulnérabilité post-hit (sinon trivial à spammer en

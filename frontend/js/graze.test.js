@@ -31,7 +31,7 @@ function makeGrazeFixture() {
   const projectiles = { enemy: { items: [{ active: true, grazed: false, x: 0, y: 0 }], radius: 1 } };
   const enemies = { items: [] };
   const particles = createParticlePool();
-  const audio = { playGraze: () => {} };
+  const audio = { playGraze: () => {}, playGrazeMilestone: () => {} };
   return { g, player, projectiles, enemies, particles, audio };
 }
 
@@ -49,4 +49,15 @@ test("contrôle : le même scénario graze bien hors clearingScreen", () => {
   updateGraze(g, 0.016, player, projectiles, enemies, particles, audio);
   assert.equal(g.grazeChain, 1);
   assert.equal(projectiles.enemy.items[0].grazed, true);
+});
+
+test("un seuil de chaîne (GRAZE.milestones) joue le son de palier, pas le tic habituel", () => {
+  const { g, player, projectiles, enemies, particles } = makeGrazeFixture();
+  const played = [];
+  const audio = { playGraze: () => played.push("tic"), playGrazeMilestone: () => played.push("palier") };
+  g.grazeChain = GRAZE.milestones[0] - 2;
+  updateGraze(g, 0.016, player, projectiles, enemies, particles, audio);
+  projectiles.enemy.items[0].grazed = false; // même tir, frôlé une 2e fois
+  updateGraze(g, 0.016, player, projectiles, enemies, particles, audio);
+  assert.deepEqual(played, ["tic", "palier"]);
 });

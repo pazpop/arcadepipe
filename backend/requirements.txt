@@ -1,4 +1,4 @@
-fastapi==0.141.1
+fastapi==0.142.2
 # Dépendance transitive de fastapi, épinglée explicitement : fastapi accepte
 # d'anciennes versions de starlette avec des CVE connues (voir pip-audit en CI).
 starlette==1.7.0

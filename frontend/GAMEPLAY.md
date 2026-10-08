@@ -72,7 +72,8 @@ Les trois armes durent 20 secondes ; le décompte est en pause pendant un saut s
 
 ## Réglages et accessibilité
 
-- Panneau en bas à gauche : pause, musique, bruitages, vitesse du jeu (x1, x1.5, x2), tir automatique, aide, plein écran, cookies, langue (français ou anglais).
+- En bas à gauche : le bouton Pause et le panneau de réglages, repliable (musique, bruitages, vitesse du jeu x1, x1.5 ou x2, tir automatique, aide, plein écran, langue française ou anglaise, cookies si la mesure d'audience est activée).
+- Le jeu est toujours en 16:9. Sur un écran plus large (téléphone en paysage), ces commandes et le bouton NOVA tiennent dans les bandes noires.
 - Clavier : Échap ou P pour la pause, Espace pour NOVA, M pour couper le son, C pour le filtre rétro. Les menus se parcourent aux flèches et à Entrée.
 - Le jeu se met en pause quand l'onglet passe en arrière-plan.
 - Le tremblement d'écran est coupé si le système demande moins d'animations.

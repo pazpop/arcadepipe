@@ -1,8 +1,8 @@
 // Mesure d'audience (Google Analytics) et consentement RGPD.
 //
-// Désactivée par défaut. Elle ne s'active que si le déploiement fournit un
-// identifiant Google Analytics dans /site-config.json (variable d'environnement
-// GA_MEASUREMENT_ID, voir docs/deploiement.md). Sans identifiant : ni script,
+// Désactivée par défaut. Elle ne s'active que si site-config.json contient un
+// identifiant Google Analytics, écrit à la construction de l'image Docker
+// (GA_MEASUREMENT_ID, voir docs/deploiement.md). Sans identifiant : ni script,
 // ni cookie, ni bandeau, ni bouton "Cookies".
 //
 // Avec un identifiant, rien n'est chargé avant un "Accepter" explicite. Le

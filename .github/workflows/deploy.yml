@@ -95,6 +95,10 @@ jobs:
         with:
           context: ./frontend
           push: true
+          # Variable du dépôt (Settings > Secrets and variables > Actions >
+          # Variables). Absente, sur un fork par exemple : pas de mesure d'audience.
+          build-args: |
+            GA_MEASUREMENT_ID=${{ vars.GA_MEASUREMENT_ID }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:${{ github.sha }}

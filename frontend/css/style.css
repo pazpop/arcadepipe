@@ -64,12 +64,16 @@ html, body {
 /* Panneau de réglages, en HTML plutôt que dans le canvas : curseurs, cases et
    boutons y fonctionnent nativement, au doigt comme à la souris.
 
-   Rétractable : #music-controls se replie, #mc-toggle (son frère, pas son
-   enfant) reste visible comme un signet. */
+   Rétractable : #music-controls se replie, #mc-tabs (son frère, pas son enfant)
+   reste visible. Le jeu garde son format 16:9 : sur un écran plus large
+   (téléphone en paysage), ces commandes tiennent dans la bande noire de gauche,
+   et les boutons NOVA et Partager dans celle de droite.
+
+   env(safe-area-inset-*) : la largeur de l'encoche d'un téléphone, 0 ailleurs. */
 #mc-wrap {
   position: absolute;
   bottom: 8px;
-  left: 0;
+  left: env(safe-area-inset-left);
   display: flex;
   align-items: flex-end;
   z-index: 2;
@@ -87,7 +91,7 @@ html, body {
   border-radius: 4px;
   font-family: monospace;
   /* Replié par max-width (pas transform) : le panneau perd sa place dans la
-     ligne, et #mc-toggle glisse jusqu'au bord gauche. */
+     ligne, et #mc-tabs glisse jusqu'au bord gauche. */
   max-width: 200px;
   /* Jamais plus haut que l'écran (téléphone en paysage) : il défile au besoin. */
   max-height: calc(100vh - 16px);
@@ -102,23 +106,26 @@ html, body {
   pointer-events: none;
 }
 
-#mc-toggle {
+/* Pause et onglet du panneau, l'un au-dessus de l'autre, assez grands pour un doigt. */
+#mc-tabs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   flex-shrink: 0;
-  width: 18px;
-  height: 28px;
+  margin: 0 0 6px 4px;
+}
+#mc-tabs button {
+  width: 36px;
+  height: 36px;
   background: rgba(5, 6, 15, 0.7);
   border: 1px solid rgba(78, 225, 255, 0.35);
-  border-radius: 0 4px 4px 0;
+  border-radius: 4px;
   color: #cfe8ff;
-  font-size: 11px;
+  font-size: 14px;
   cursor: pointer;
-  margin-bottom: 6px;
 }
-#mc-wrap:not(.collapsed) #mc-toggle {
-  border-left: none;
-}
-#mc-toggle:hover,
-#mc-toggle:active {
+#mc-tabs button:hover,
+#mc-tabs button:active {
   color: #4ee1ff;
   border-color: #4ee1ff;
 }
@@ -154,7 +161,7 @@ html, body {
 }
 
 /* Boutons avec un libellé (Pause, Aide, Plein écran...), sur toute la largeur. */
-#music-controls .mc-pause-btn {
+#music-controls .mc-btn {
   width: 100%;
   font-size: 11px;
   font-family: monospace;
@@ -163,8 +170,8 @@ html, body {
   border-radius: 3px;
   text-align: center;
 }
-#music-controls .mc-pause-btn:hover,
-#music-controls .mc-pause-btn:active {
+#music-controls .mc-btn:hover,
+#music-controls .mc-btn:active {
   color: #4ee1ff;
   border-color: #4ee1ff;
 }
@@ -206,12 +213,12 @@ html, body {
 
 /* Boutons NOVA (en partie) et Partager (fin de partie) : même coin bas-droit,
    à l'opposé du panneau de réglages. Ils ne sont jamais visibles ensemble
-   (voir loop dans main.js), et rien du jeu n'est dessiné dessous. */
+   (voir loop dans main.js). */
 .nova-btn,
 .share-btn {
   position: absolute;
   bottom: 8px;
-  right: 8px;
+  right: calc(8px + env(safe-area-inset-right));
   z-index: 2;
   background: rgba(5, 6, 15, 0.7);
   border: 1px solid #ffffff;
@@ -314,6 +321,13 @@ html, body {
   }
   #music-controls input[type="range"] {
     width: 50px;
+  }
+}
+
+/* Écran bas (téléphone en paysage) : NOVA plus étroit, pour tenir dans la bande de droite. */
+@media (max-height: 500px) {
+  .nova-btn {
+    padding: 10px 6px;
   }
 }
 

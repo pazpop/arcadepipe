@@ -13,17 +13,13 @@ Port 80 déjà pris ? Changer le mapping `"80:80"` du service `frontend` (ex. `"
 
 ### Mesure d'audience (désactivée par défaut)
 
-Le jeu peut charger Google Analytics, mais aucun identifiant n'est écrit dans ce dépôt : sans réglage, il n'y a ni script, ni cookie, ni bandeau de consentement. Pour l'activer, donner son identifiant de mesure au service `frontend` :
+Le jeu peut charger Google Analytics, mais aucun identifiant n'est écrit dans le code : sans réglage, il n'y a ni script, ni cookie, ni bandeau de consentement. L'identifiant de mesure (`G-XXXXXXXXXX`) est donné à la construction de l'image du frontend, qui l'écrit dans `site-config.json`, lu par le jeu au chargement (`js/consent.js`). Le script n'est chargé qu'après un « Accepter » du visiteur.
 
-```yaml
-  frontend:
-    environment:
-      - GA_MEASUREMENT_ID=G-XXXXXXXXXX
-```
+- **Instance publique** : variable `GA_MEASUREMENT_ID` du dépôt GitHub (*Settings > Secrets and variables > Actions > Variables*), passée à la construction par `.github/workflows/deploy.yml`. Pour désactiver la mesure, supprimer la variable : la prochaine image sera construite sans. Un fork n'a pas cette variable, donc pas de mesure.
+- **Docker autonome** : `docker compose build --build-arg GA_MEASUREMENT_ID=G-XXXXXXXXXX frontend`, puis `docker compose up -d`.
+- **Hors Docker** (`python -m http.server`) : c'est le fichier `frontend/site-config.json` qui est servi ; y mettre l'identifiant pour un essai, sans le commiter.
 
-Caddy le sert dans `/site-config.json` (voir `frontend/Caddyfile`), que le jeu lit au chargement (`js/consent.js`). Le script n'est chargé qu'après un « Accepter » du visiteur. Pour désactiver, retirer la variable et relancer le service. Le reverse-proxy doit autoriser `googletagmanager.com` et `google-analytics.com` dans sa CSP.
-
-Hors Docker (`python -m http.server`), c'est le fichier `frontend/site-config.json` qui est servi : y mettre l'identifiant pour un essai, sans le commiter.
+Le reverse-proxy doit autoriser `googletagmanager.com` et `google-analytics.com` dans sa CSP.
 
 C'est le seul fichier de déploiement Docker de ce repo. Celui qui ajoute Traefik et TLS pour l'instance publique vit dans le repo d'infra séparé.
 

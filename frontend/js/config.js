@@ -7,7 +7,7 @@ export const RES_H = 270;
 
 // 2.<nombre de commits git> (`git rev-list --count HEAD`), mis à jour à chaque
 // commit qui touche au jeu. Affichée dans le panneau et aux crédits.
-export const VERSION = "2.127";
+export const VERSION = "2.128";
 
 export const PALETTE = {
   bgDeep: "#05060f",

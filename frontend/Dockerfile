@@ -21,6 +21,12 @@ COPY js/ /usr/share/caddy/js/
 COPY lib/ /usr/share/caddy/lib/
 COPY music/ /usr/share/caddy/music/
 
+# Réglages de ce déploiement, lus par le jeu au chargement (js/consent.js).
+# GA_MEASUREMENT_ID : identifiant Google Analytics ; vide par défaut, donc
+# aucune mesure d'audience (voir docs/deploiement.md).
+ARG GA_MEASUREMENT_ID=""
+RUN printf '{ "gaMeasurementId": "%s" }\n' "$GA_MEASUREMENT_ID" > /usr/share/caddy/site-config.json
+
 # Utilisateur dédié plutôt que root — même raisonnement que backend/Dockerfile :
 # si Caddy est un jour compromis, l'attaquant hérite des droits de cet
 # utilisateur, pas de root dans le conteneur. /config et /data (autosave de

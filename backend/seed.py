@@ -7,16 +7,17 @@ Usage: python seed.py
 import database
 
 # Scores volontairement bas : faciles à dépasser dès les premières parties.
-# Patriote.QC / Mad Jack / NukePunk : easter egg, clin d'œil à des amis.
+# Pseudos au format du jeu (8 lettres majuscules, chiffres ou espaces).
+# PATRIOTE / MAD JACK / NUKEPUNK : clin d'œil à des amis.
 SEED_SCORES = [
-    ("Alex Rogan", 220),
-    ("Mad Jack", 180),
-    ("Centauri", 150),
-    ("NukePunk", 130),
-    ("Grig", 100),
-    ("Patriote.QC", 90),
-    ("Maggie", 60),
-    ("Ko Dan", 30),
+    ("ALEX", 220),
+    ("MAD JACK", 180),
+    ("CENTAURI", 150),
+    ("NUKEPUNK", 130),
+    ("GRIG", 100),
+    ("PATRIOTE", 90),
+    ("MAGGIE", 60),
+    ("KO DAN", 30),
 ]
 
 if __name__ == "__main__":

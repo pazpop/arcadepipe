@@ -28,9 +28,6 @@
     <div id="mc-wrap">
       <div id="music-controls">
         <div class="mc-section">
-          <button id="pause-btn" type="button" class="mc-pause-btn" data-i18n="panel.pause" data-i18n-title="panel.pause.title"></button>
-        </div>
-        <div class="mc-section">
           <div class="mc-label" data-i18n="panel.music"></div>
           <div class="mc-row">
             <button id="music-stop-btn" type="button" data-i18n-title="panel.music.stop">⏹</button>
@@ -46,7 +43,7 @@
         </div>
         <div class="mc-section">
           <div class="mc-label" data-i18n="panel.speed"></div>
-          <button id="speed-btn" type="button" class="mc-pause-btn" data-i18n-title="panel.speed.title">x1</button>
+          <button id="speed-btn" type="button" class="mc-btn" data-i18n-title="panel.speed.title">x1</button>
         </div>
         <div class="mc-section">
           <label class="mc-check">
@@ -55,22 +52,26 @@
           </label>
         </div>
         <div class="mc-section">
-          <button id="help-btn" type="button" class="mc-pause-btn" data-i18n="panel.help"></button>
+          <button id="help-btn" type="button" class="mc-btn" data-i18n="panel.help"></button>
         </div>
         <div class="mc-section">
-          <button id="fullscreen-btn" type="button" class="mc-pause-btn" data-i18n="panel.fullscreen"></button>
+          <button id="fullscreen-btn" type="button" class="mc-btn" data-i18n="panel.fullscreen"></button>
         </div>
         <!-- Cookies : visible seulement si la mesure d'audience est activée
              (js/consent.js). Langue : affiche la langue courante, un clic passe
              à la suivante (js/i18n.js). -->
         <div class="mc-section mc-row">
-          <button id="cookie-btn" type="button" class="mc-pause-btn hidden" data-i18n="panel.cookies" data-i18n-title="panel.cookies.title"></button>
-          <button id="lang-btn" type="button" class="mc-pause-btn" data-i18n="lang.name" data-i18n-title="panel.lang.title"></button>
+          <button id="cookie-btn" type="button" class="mc-btn hidden" data-i18n="panel.cookies" data-i18n-title="panel.cookies.title"></button>
+          <button id="lang-btn" type="button" class="mc-btn" data-i18n="lang.name" data-i18n-title="panel.lang.title"></button>
         </div>
         <div class="mc-section mc-version" id="version-label"></div>
       </div>
-      <!-- Hors du panneau qui glisse : reste toujours visible, replié ou non. -->
-      <button id="mc-toggle" type="button" data-i18n-title="panel.toggle.title">◀</button>
+      <!-- Hors du panneau qui se replie, donc toujours visibles : Pause (seul
+           moyen de mettre en pause au tactile) et l'onglet du panneau. -->
+      <div id="mc-tabs">
+        <button id="pause-btn" type="button" data-i18n-title="panel.pause.title">⏸</button>
+        <button id="mc-toggle" type="button" data-i18n-title="panel.toggle.title"></button>
+      </div>
     </div>
 
     <!-- NOVA au tactile (Espace au clavier), masqué tant qu'aucune charge n'est prête (main.js). -->

@@ -14,15 +14,6 @@
 		reverse_proxy backend:8000
 	}
 
-	# Réglages propres à ce déploiement, lus par le jeu au chargement
-	# (js/consent.js). GA_MEASUREMENT_ID : identifiant Google Analytics ; vide
-	# ou absent, aucune mesure d'audience (voir docs/deploiement.md).
-	handle /site-config.json {
-		header Content-Type application/json
-		header Cache-Control "no-cache"
-		respond `{"gaMeasurementId": "{$GA_MEASUREMENT_ID}"}`
-	}
-
 	handle {
 		root * /usr/share/caddy
 		# "no-cache" ne veut pas dire "ne pas mettre en cache" : le navigateur

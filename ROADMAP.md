@@ -4,7 +4,7 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 
 ## Avant la publication officielle
 
-- [ ] **Jouer la version en cours sur un vrai téléphone** : fluidité du rendu à la résolution de l'écran (`MAX_PIXEL_RATIO`, `renderer.js`), lisibilité, bouton Partager en bas à droite.
+- [ ] **Jouer la version en cours sur un vrai téléphone** : fluidité du rendu à la résolution de l'écran (`MAX_PIXEL_RATIO`, `renderer.js`), lisibilité, commandes dans les bandes noires en paysage (Pause, onglet du panneau, NOVA), encoche.
 - [ ] **Valider en jouant les réglages par défaut** : micro-gel à l'impact (`HIT_STOP`) et paliers sonores du frôlement (`GRAZE.milestones`), dans `config.js`.
 - [ ] **Faire relire l'anglais** (`frontend/js/i18n/en.js`).
 - [ ] **Cinquième morceau de mall-e** : l'ajouter à `AUDIO.tracks` (`config.js`) et au README.
@@ -17,7 +17,7 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 - [ ] **Son à l'apparition d'un kamikaze** : sifflement descendant d'environ 0,15 s.
 - [ ] **Cadence du boss** : elle accélère par deux mécanismes cumulés (`phaseSpeed` et l'intervalle dans `updateBoss`, `boss.js`), si bien que le plancher de 0,35 s n'en est pas un. N'en garder qu'un, puis régler en jouant.
 - [ ] **Messages de fin de partie variables** (« Presque le boss ! »), à partir de `getRunSummary()`.
-- [ ] **Mode paysage sur téléphone** (prochain chantier) : des bandes noires encadrent le jeu, en 16:9 alors que les téléphones sont plus larges. Élargir la zone de jeu touche le placement du HUD et les zones d'apparition et de tir des ennemis (`LEFT_BOUND`, `FIRE_MIN_X`, `enemies.js`).
+- [ ] **Remplir l'écran des téléphones en paysage** (idée) : le jeu reste en 16:9, avec les commandes dans les bandes noires. Élargir la zone de jeu toucherait le HUD, les zones d'apparition et de tir des ennemis (`LEFT_BOUND`, `FIRE_MIN_X`, `enemies.js`) et l'équité du classement entre écrans.
 - [ ] **Menu Options** : interrupteur du filtre rétro CRT (seulement la touche C aujourd'hui, donc absent sur téléphone), éventuellement une qualité d'affichage.
 - [ ] **Changer de langue sans recharger la page** (voir `nextLang`, `i18n.js`) et traduire les balises `<meta>` de `index.html`.
 - [ ] **Distance parcourue au classement** (change le schéma de la base).

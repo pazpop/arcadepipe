@@ -8,6 +8,7 @@ import pytest
 from pydantic import ValidationError
 
 from main import ScoreIn, get_client_ip
+from seed import SEED_SCORES
 
 
 def test_score_in_accepte_une_entree_valide():
@@ -64,6 +65,11 @@ def test_score_in_rejette_un_score_hors_bornes(score_invalide):
 def test_score_in_rejette_une_vague_hors_bornes(wave_invalide):
     with pytest.raises(ValidationError):
         ScoreIn(player_name="S2FIX", score=100, wave=wave_invalide)
+
+
+def test_les_scores_de_depart_respectent_les_regles_de_l_api():
+    for player_name, score in SEED_SCORES:
+        assert ScoreIn(player_name=player_name, score=score).player_name == player_name
 
 
 def _requete_factice(x_forwarded_for: str | None) -> Mock:

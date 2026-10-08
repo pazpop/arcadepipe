@@ -2,10 +2,14 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.128] - 2026-10-09
+- **Téléphone en paysage** : le jeu garde son format 16:9 et les commandes se rangent dans les bandes noires. Le bouton Pause et l'onglet du panneau sont toujours visibles à gauche (le panneau est replié par défaut sur un écran bas), NOVA et Partager à droite, en tenant compte de l'encoche.
+- Scores de départ (`seed.py`) écrits au format du jeu.
+
 ## [2.127] - 2026-10-09
 Corrections issues d'une seconde relecture complète.
 - **Bonus : un bouclier et une arme peuvent être actifs ensemble.** Aucune arme n'apparaît tant qu'une arme bonus est active, aucun bouclier tant qu'il en reste un.
-- **Mesure d'audience désactivée par défaut** : l'identifiant Google Analytics n'est plus dans le dépôt, il est fourni par le déploiement (variable `GA_MEASUREMENT_ID`, voir [docs/deploiement.md](docs/deploiement.md)). Sans lui : ni script, ni bandeau, ni bouton Cookies.
+- **Mesure d'audience désactivée par défaut** : l'identifiant Google Analytics n'est plus dans le dépôt, il est donné à la construction de l'image (variable `GA_MEASUREMENT_ID` du dépôt GitHub, voir [docs/deploiement.md](docs/deploiement.md)). Sans lui : ni script, ni bandeau, ni bouton Cookies.
 - Fix : un bouton cliqué gardait le focus clavier (Espace décochait « Tir automatique », ou remettait en pause) ; le vaisseau pouvait rester invisible pendant le niveau bonus ; en vitesse x2 des tirs traversaient les ennemis ; la souris posée sur une option bloquait les flèches ; un caractère refusé bloquait la saisie du pseudo ; la partie continuait pendant le ralenti de mort ; relâcher le tir à l'apparition de GAME OVER pouvait choisir une option ; Konami code après un Haut en trop.
 - Musique : elle s'interrompt quand l'onglet passe en arrière-plan, et ne reste plus muette après un arrêt pendant un rechargement de piste.
 - Aide : NOVA détruit tous les ennemis et leurs tirs (pas seulement les « normaux »), deux charges dès le 2e boss.

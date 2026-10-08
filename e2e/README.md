@@ -15,13 +15,14 @@ npm test                   # ou : npx playwright test --headed
 
 - `menu-pause` — menu, pause (scène figée), confirmation de sortie, aide (bienvenue, menu, pause, bouton du panneau)
 - `gameplay` — tir manuel et automatique, choix de piste, fin de vague, fin de partie (REJOUER, saisie du pseudo)
-- `powerups-boss` — bonus, bouclier, premier boss
+- `powerups-boss` — bonus (arme, bouclier, les deux ensemble), premier boss, vie perdue, boss vaincu
 - `graze-nova` — frôlements, jauge NOVA, bouton tactile
 - `bonus-level` — le niveau bonus se déclenche, se termine, puis la partie reprend
 - `music-retry` — un 429 sur les pistes ne déclenche pas de rafale de requêtes
 - `music-end` — une fin de piste enchaîne sur une autre piste, qui joue réellement
-- `consent` — Google Analytics jamais chargé avant « Accepter », bouton Cookies (changer ou retirer son choix) ; bouton Plein écran
+- `consent` — mesure d'audience désactivée par défaut ; activée, Google Analytics jamais chargé avant « Accepter », bouton Cookies (changer ou retirer son choix) ; bouton Plein écran
 - `i18n` — langue du navigateur par défaut, changement de langue mémorisé
+- `mobile` — téléphone en paysage : commandes dans les bandes noires, jeu au doigt
 - `share-qr` — le QR de la carte de partage se décode après recompression JPEG ; contraste vérifié au pixel
 
 ## Attendre un état, pas un délai
@@ -48,4 +49,4 @@ await page.evaluate(async () => {
 });
 ```
 
-Marche pour tout module déjà chargé : `config.js` (constantes), `main.js` (instances `music` et `game`). Voir `tests/helpers.js` : `skipHints()` saute l'aide de bienvenue et refuse d'avance le bandeau de consentement.
+Marche pour tout module déjà chargé : `config.js` (constantes), `main.js` (instances `music` et `game`). Voir `tests/helpers.js` : `skipHints()` saute l'aide de bienvenue, `enableAnalytics()` active la mesure d'audience pour les tests du bandeau.

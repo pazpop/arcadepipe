@@ -4,7 +4,6 @@ export default {
   "lang.name": "English",
 
   // --- Settings panel (HTML, bottom left) ---
-  "panel.pause": "⏸ Pause",
   "panel.pause.title": "Pause menu",
   "panel.music": "MUSIC (by Mall-E)",
   "panel.music.stop": "Stop / play",

@@ -64,9 +64,12 @@ $("game-container").addEventListener("click", (e) => {
 });
 
 // --- Panneau de réglages (bas gauche), rétractable ; #mc-toggle reste visible.
+// Sans préférence mémorisée, il est replié sur un écran bas (téléphone en
+// paysage), où il recouvrirait le jeu.
 const mcWrap = $("mc-wrap");
 const mcToggle = $("mc-toggle");
-let panelCollapsed = loadItem(STORAGE_KEYS.panelCollapsed) === "1";
+const storedCollapsed = loadItem(STORAGE_KEYS.panelCollapsed);
+let panelCollapsed = storedCollapsed === null ? window.innerHeight < 500 : storedCollapsed === "1";
 function applyPanelState() {
   mcWrap.classList.toggle("collapsed", panelCollapsed);
   mcToggle.textContent = panelCollapsed ? "▶" : "◀";
@@ -78,7 +81,7 @@ mcToggle.addEventListener("click", () => {
   saveItem(STORAGE_KEYS.panelCollapsed, panelCollapsed ? "1" : "0");
 });
 
-// Seul moyen de mettre en pause au tactile (pas de touche Échap). Sans effet hors partie.
+// Sans effet hors partie.
 $("pause-btn").addEventListener("click", () => game.pause());
 
 // --- Musique : stop/lecture, piste suivante, volume.

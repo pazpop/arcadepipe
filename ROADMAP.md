@@ -9,7 +9,6 @@ Aucun en ce moment.
 ## Session 3 — optimisations optionnelles (pas pressé)
 
 - [ ] **Rang dynamique** : monte par tranche de X grazes sans dégât, redescend au coup encaissé, module la vitesse des tirs et le spawn (un `g.rank` lu par `bulletSpeedFactor`, le spawn et le boss). Code simple ; **le vrai coût est le réglage**, à faire en jouant, quand le jeu est stable.
-- [ ] **Cache du classement** (`states/leaderboardScreen.js`) : chaque ouverture refait 2 requêtes. Gain négligeable : seulement si un joueur signale une lenteur. Contrainte : invalider le cache après une soumission de score (`confirmNameEntry` rouvre le classement aussitôt).
 - [ ] **Événement mi-run** (ex. formation ennemie en anneau, une fois par partie) : surtout une question de design (déclenché par quoi ?). Le niveau bonus fournit déjà l'échafaudage (seuil, glissée d'entrée, message, garde anti-doublon).
 
 ## Session 4 — mode paysage mobile (pas pressé)

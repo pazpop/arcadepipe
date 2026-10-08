@@ -58,6 +58,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     // createTwinkleStars dans stars.js) — un peu de vie derrière le titre.
     menuTwinkleStars: createTwinkleStars(10),
     pauseSelected: 0,
+    gameOverSelected: 0, // REJOUER par défaut — remis à 0 à chaque mort (playing.js)
     pauseStage: "menu", // "menu" | "confirmQuit"
     confirmQuitSelected: 1, // par défaut sur NON — un Entrée accidentel ne doit pas faire perdre la partie
     helpReturnTo: MODE.MENU, // où revenir en fermant l'aide (MODE.MENU, MODE.PAUSED ou MODE.PLAYING)

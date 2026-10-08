@@ -1,11 +1,11 @@
-// États "game_over" (écran de mort, bouton continuer) et "name_entry" (saisie
-// du pseudo avant le classement) — regroupés car ils forment une seule
-// séquence linéaire (mort -> continuer -> saisir un nom -> classement) sans
-// retour possible en arrière, contrairement aux autres écrans à options.
+// États "game_over" (écran de mort : REJOUER ou CLASSEMENT) et "name_entry"
+// (saisie du pseudo avant le classement) — regroupés car ils forment la fin
+// de partie : mort -> rejouer aussitôt (replay), ou mort -> saisir un nom ->
+// classement (triggerGameOver).
 import { STORAGE_KEYS } from "../config.js";
 import { loadItem, saveItem } from "../storage.js";
 import { consumeJustPressed } from "../input.js";
-import { syncHover } from "./navHelpers.js";
+import { syncHoverWithSound } from "./navHelpers.js";
 import { MODE } from "./mode.js";
 import * as leaderboardScreen from "./leaderboardScreen.js";
 import { fetchTopScores, submitScore, recordGamePlayed } from "../api.js";
@@ -26,22 +26,45 @@ function randomPilotName() {
   return `PILOTE${n}`;
 }
 
-// Bascule PLAYING -> NAME_ENTRY (ou directement LEADERBOARD si le score ne
-// qualifie pas) à la fin de la séquence de mort (voir g.dying dans playing).
-export async function triggerGameOver(g, engine) {
+// Le score entre-t-il dans le top 10 ? Backend indisponible : oui, on tente quand même.
+async function qualifiesForTop(score) {
+  try {
+    const top = await fetchTopScores(10);
+    return top.length < 10 || score > Math.min(...top.map((s) => s.score));
+  } catch {
+    return true;
+  }
+}
+
+// REJOUER : nouvelle partie aussitôt, sans passer par la saisie du nom. Le
+// score n'est pas perdu pour autant : s'il entre dans le top, il est envoyé
+// en arrière-plan sous le pseudo mémorisé (ou un nom de pilote aléatoire,
+// comme celui que la saisie aurait proposé). Valeurs lues avant startRun,
+// qui les remet à zéro.
+function replay(g, engine) {
+  const { score, wave, enemiesKilled } = g;
+  const name = readLastPlayerName() || randomPilotName();
+  recordGamePlayed().catch(() => {});
+  qualifiesForTop(score)
+    .then((qualifies) => qualifies && submitScore(name, score, wave, enemiesKilled))
+    .catch(() => {});
+  engine.actions.startRun();
+}
+
+function selectGameOverOption(g, engine, index) {
+  if (index === 0) replay(g, engine);
+  else triggerGameOver(g, engine);
+}
+
+// CLASSEMENT : bascule GAME_OVER -> NAME_ENTRY (ou directement LEADERBOARD si
+// le score ne qualifie pas).
+async function triggerGameOver(g, engine) {
   g.mode = MODE.NAME_ENTRY;
   g.nameEntry = readLastPlayerName() || randomPilotName();
   // Comptabilisée dès la fin de partie, qualifiée ou non (POST /api/games).
   // Fire-and-forget : un échec réseau ne doit pas bloquer la suite.
   recordGamePlayed().catch(() => {});
-  let qualifies;
-  try {
-    const top = await fetchTopScores(10);
-    qualifies = top.length < 10 || g.score > Math.min(...top.map((s) => s.score));
-  } catch {
-    qualifies = true; // backend indisponible : on tente quand même la saisie
-  }
-  if (!qualifies) {
+  if (!(await qualifiesForTop(g.score))) {
     leaderboardScreen.open(g, MODE.MENU);
     return;
   }
@@ -84,16 +107,19 @@ export function setNameEntryText(g, text) {
 }
 
 export function updateGameOver(g, engine) {
-  syncHover(engine.input, hud.hitTestGameOverContinue, () => {});
-  if (consumeJustPressed(engine.input, "Enter") || consumeJustPressed(engine.input, "Escape")) {
-    triggerGameOver(g, engine);
+  const { input, audio } = engine;
+  syncHoverWithSound(input, audio, hud.hitTestGameOver, () => g.gameOverSelected, (idx) => (g.gameOverSelected = idx));
+  if (consumeJustPressed(input, "ArrowUp") || consumeJustPressed(input, "ArrowDown")) {
+    g.gameOverSelected = 1 - g.gameOverSelected;
   }
+  if (consumeJustPressed(input, "Enter")) selectGameOverOption(g, engine, g.gameOverSelected);
+  if (consumeJustPressed(input, "Escape")) triggerGameOver(g, engine);
 }
 
 // Overlay dessiné par-dessus la scène de jeu partagée (voir game.js draw) —
 // contrairement à l'écran NAME_ENTRY, qui a son propre fond.
 export function drawGameOverOverlay(c2d, g) {
-  hud.drawDeathScreen(c2d, g.score, g.wave, g.enemiesKilled, g.distanceTraveled);
+  hud.drawDeathScreen(c2d, g.score, g.wave, g.enemiesKilled, g.distanceTraveled, g.gameOverSelected);
 }
 
 export function drawNameEntry(c2d, g) {
@@ -102,7 +128,8 @@ export function drawNameEntry(c2d, g) {
 }
 
 export function handleTapGameOver(g, engine, x, y) {
-  if (hud.hitTestGameOverContinue(x, y) === 0) triggerGameOver(g, engine);
+  const idx = hud.hitTestGameOver(x, y);
+  if (idx >= 0) selectGameOverOption(g, engine, idx);
 }
 
 export function handleTapNameEntry(g, engine, x, y) {

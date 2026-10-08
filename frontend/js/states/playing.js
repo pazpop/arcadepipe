@@ -375,6 +375,7 @@ export function update(g, engine, dt) {
     if (g.deathTimer <= 0) {
       g.dying = false;
       g.mode = MODE.GAME_OVER;
+      g.gameOverSelected = 0;
       // Rien ne décrémente g.shake hors d'ici — sans ce reset, un reliquat
       // de tremblement resterait figé sur GAME OVER.
       g.shake = 0;

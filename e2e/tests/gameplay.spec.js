@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { canvasHelpers, collectErrors, skipHints, waitForMode } from "./helpers.js";
+import { canvasHelpers, collectErrors, gameState, skipHints, waitForMode } from "./helpers.js";
 
 test("le tir est manuel : aucune balle sans clic maintenu, tir dès qu'on maintient", async ({ page }) => {
   const errors = collectErrors(page);
@@ -85,7 +85,7 @@ test("vague 1 : transition propre, aucune erreur sur une session de jeu prolong�
   expect(errors).toEqual([]);
 });
 
-test("nom aléatoire pré-rempli + bouton VALIDER tactile (sans clavier)", async ({ page }) => {
+test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + VALIDER tactile (sans clavier)", async ({ page }) => {
   // Sur mobile, focus() sur le champ caché arrive après un `await` (hors du
   // geste utilisateur d'origine) : la plupart des navigateurs mobiles
   // refusent alors d'ouvrir le clavier virtuel. D'où le nom aléatoire déjà
@@ -113,33 +113,30 @@ test("nom aléatoire pré-rempli + bouton VALIDER tactile (sans clavier)", async
     DIFFICULTY.waveKillsStep = 0;
   });
 
+  // Requêtes vers l'API (aucun backend en e2e : elles échouent, mais partent).
+  const apiCalls = [];
+  page.on("request", (r) => {
+    if (r.url().includes("/api/")) apiCalls.push(`${r.method()} ${new URL(r.url()).pathname}`);
+  });
+
   const { canvas, startRun, toPage, clickLogical } = canvasHelpers(page);
   await startRun();
-
-  // Tire en continu en balayant la hauteur pour enchaîner les vagues
-  // (1 kill chacune) le plus vite possible jusqu'au premier boss.
-  await page.mouse.move((await toPage(90, 135)).x, (await toPage(90, 135)).y);
-  await page.mouse.down();
-  for (let i = 0; i < 24; i++) {
-    const y = 30 + (i % 8) * 30;
-    const p = await toPage(90, y);
-    await page.mouse.move(p.x, p.y);
-    await page.waitForTimeout(700);
-  }
-  await page.mouse.up();
-
-  // Fonce dans la coque du boss (arrivée vers x≈361 logique, voir
-  // RIGHT_ZONE_BOUND/BOSS_ZONE_MARGIN dans boss.js) -> contact garanti.
-  const ram = await toPage(360, 135);
-  await page.mouse.move(ram.x, ram.y);
-  // Attend l'écran GAME OVER (après le ralenti de mort) plutôt qu'un délai
-  // fixe : un tap "OK" pendant le ralenti serait ignoré.
-  await waitForMode(page, "game_over", 15000);
+  await dieOnFirstBoss();
   await canvas.screenshot({ path: "test-results/name-entry-game-over.png" });
 
-  // Écran GAME OVER intermédiaire (voir drawDeathScreen) -> "OK" déclenche
-  // triggerGameOver() (states/endOfRun.js) et l'entrée en saisie du nom.
-  await clickLogical(240, 168);
+  // REJOUER (1re option) : nouvelle partie aussitôt, sans saisie du nom ; la
+  // partie est comptée et le score envoyé en arrière-plan (voir replay()
+  // dans states/endOfRun.js).
+  await clickLogical(240, 167.4);
+  await waitForMode(page, "playing");
+  expect((await gameState(page)).wave).toBe(1);
+  await expect.poll(() => apiCalls).toEqual(["POST /api/games", "GET /api/scores", "POST /api/scores"]);
+
+  await dieOnFirstBoss();
+
+  // CLASSEMENT (2e option) -> triggerGameOver() (states/endOfRun.js) et
+  // l'entrée en saisie du nom.
+  await clickLogical(240, 187.4);
   await waitForMode(page, "name_entry");
   await canvas.screenshot({ path: "test-results/name-entry-prefilled.png" });
 
@@ -164,4 +161,26 @@ test("nom aléatoire pré-rempli + bouton VALIDER tactile (sans clavier)", async
   // console de ressource réseau, pas une vraie erreur JS.
   const realErrors = errors.filter((e) => !e.includes("ERR_CONNECTION_REFUSED"));
   expect(realErrors).toEqual([]);
+
+  async function dieOnFirstBoss() {
+    // Tire en continu en balayant la hauteur pour enchaîner les vagues
+    // (1 kill chacune) le plus vite possible jusqu'au premier boss.
+    await page.mouse.move((await toPage(90, 135)).x, (await toPage(90, 135)).y);
+    await page.mouse.down();
+    for (let i = 0; i < 24; i++) {
+      const y = 30 + (i % 8) * 30;
+      const p = await toPage(90, y);
+      await page.mouse.move(p.x, p.y);
+      await page.waitForTimeout(700);
+    }
+    await page.mouse.up();
+
+    // Fonce dans la coque du boss (arrivée vers x≈361 logique, voir
+    // RIGHT_ZONE_BOUND/BOSS_ZONE_MARGIN dans boss.js) -> contact garanti.
+    const ram = await toPage(360, 135);
+    await page.mouse.move(ram.x, ram.y);
+    // Attend l'écran GAME OVER (après le ralenti de mort) plutôt qu'un délai
+    // fixe : un tap pendant le ralenti serait ignoré.
+    await waitForMode(page, "game_over", 15000);
+  }
 });

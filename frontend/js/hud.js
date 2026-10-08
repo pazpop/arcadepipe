@@ -43,9 +43,9 @@ function hitTestRects(x, y, rects) {
   return -1;
 }
 
-// Bouton unique (aide, game over, saisie du nom) : 0 si survolé/cliqué, -1
+// Bouton unique (aide, saisie du nom) : 0 si survolé/cliqué, -1
 // sinon — même contrat que hitTestRects, pour rester compatible avec
-// syncHover()/syncHoverWithSound() côté states/navHelpers.js.
+// syncHoverWithSound() côté states/navHelpers.js.
 function hitTestSingle(x, y, r) {
   return pointInRect(x, y, r) ? 0 : -1;
 }
@@ -585,29 +585,25 @@ export function drawGameOverScreen(ctx, score, wave, kills, distance) {
   text(ctx, `${Math.round(distance)} ANNÉES-LUMIÈRE PARCOURUES`, RES_W / 2, RES_H * 0.28 + 34, { size: 7, align: "center", alpha: 0.8 });
 }
 
-// --- Écran "GAME OVER" intermédiaire (après le ralenti de mort, avant la
-// saisie du nom/le classement) ---
+// --- Écran "GAME OVER" (après le ralenti de mort) : rejouer aussitôt, ou
+// passer par la saisie du nom/le classement ---
 
-function gameOverContinueRect() {
-  return { x: RES_W / 2, y: RES_H * 0.62, w: 200, h: 18 };
+const GAME_OVER_OPTIONS = ["REJOUER", "CLASSEMENT"];
+
+function gameOverOptionRects() {
+  return verticalOptionRects(GAME_OVER_OPTIONS, RES_H * 0.62, 20, 200, 18);
 }
 
-export function hitTestGameOverContinue(x, y) {
-  return hitTestSingle(x, y, gameOverContinueRect());
+export function hitTestGameOver(x, y) {
+  return hitTestRects(x, y, gameOverOptionRects());
 }
 
-export function drawDeathScreen(ctx, score, wave, kills, distance) {
+export function drawDeathScreen(ctx, score, wave, kills, distance, selected) {
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.55)";
   ctx.fillRect(0, 0, RES_W, RES_H);
   drawGameOverScreen(ctx, score, wave, kills, distance);
-  const r = gameOverContinueRect();
-  text(ctx, "▶ OK", r.x, r.y, {
-    size: 12,
-    align: "center",
-    color: PALETTE.bulletPlayer,
-    glow: PALETTE.bulletPlayer,
-  });
+  drawOptionList(ctx, gameOverOptionRects(), selected, 12);
   ctx.restore();
 }
 

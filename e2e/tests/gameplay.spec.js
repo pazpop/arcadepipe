@@ -9,7 +9,9 @@ test("le tir est manuel : aucune balle sans clic maintenu, tir dès qu'on mainti
   await startRun();
   await moveLogical(90, 135);
 
-  await page.waitForTimeout(1000); // rien ne doit se passer : pas d'état à attendre
+  // Glissée d'entrée terminée (1,8 s, pendant laquelle aucun tir n'est possible),
+  // puis une seconde sans cliquer : toujours aucun tir.
+  await page.waitForTimeout(3000);
   expect((await gameState(page)).playerBullets).toBe(0);
 
   await page.mouse.down();
@@ -57,12 +59,13 @@ test("fin de vague : la vague 2 démarre après le saut spatial, sans erreur", a
 
   // Tire en balayant la hauteur jusqu'à la vague 2.
   await page.mouse.down();
-  for (let i = 0; (await gameState(page)).wave < 2; i++) {
+  for (let i = 0; i < 100 && (await gameState(page)).wave < 2; i++) {
     const p = await toPage(90, 30 + (i % 8) * 30);
     await page.mouse.move(p.x, p.y);
     await page.waitForTimeout(300);
   }
   await page.mouse.up();
+  expect((await gameState(page)).wave).toBe(2);
   await canvas.screenshot({ path: "test-results/wave-2.png" });
   expect(errors).toEqual([]);
 });
@@ -85,7 +88,9 @@ test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + V
     DIFFICULTY.waveKillsStep = 0;
   });
 
-  // Requêtes vers l'API (aucun backend en e2e : elles échouent, mais partent).
+  // Requêtes vers l'API : coupées (un backend de développement peut tourner à
+  // côté), mais elles partent, et le jeu doit s'en accommoder.
+  await page.route("**/api/**", (route) => route.abort());
   const apiCalls = [];
   const postedNames = [];
   page.on("request", (r) => {
@@ -116,6 +121,7 @@ test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + V
 
   // M et C sont du texte pendant la saisie du pseudo : ni son coupé, ni CRT basculé.
   const crtAvant = await page.locator("#crt-overlay").getAttribute("class");
+  await page.keyboard.type("é!"); // refusés : ne comptent pas dans les 8 caractères
   await page.keyboard.press("KeyM");
   await page.keyboard.press("KeyC");
   expect(await page.evaluate(async () => (await import("/js/main.js")).music.muted)).toBe(false);
@@ -127,20 +133,20 @@ test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + V
   expect(postedNames).toEqual(["AAA", "AAAMC"]); // pseudo pré-rempli, plus les deux lettres tapées
   await canvas.screenshot({ path: "test-results/name-entry-validated.png" });
 
-  // ERR_CONNECTION_REFUSED attendu : la suite e2e ne lance pas de backend
-  // (playwright.config.js). C'est un message réseau de la console, pas une erreur JS.
-  const realErrors = errors.filter((e) => !e.includes("ERR_CONNECTION_REFUSED"));
+  // Les requêtes coupées laissent un message réseau dans la console, pas une erreur JS.
+  const realErrors = errors.filter((e) => !e.includes("net::ERR_"));
   expect(realErrors).toEqual([]);
 
   async function dieOnFirstBoss() {
     // Tire en balayant la hauteur (1 kill par vague) jusqu'à l'arrivée du premier boss.
     await page.mouse.down();
-    for (let i = 0; !(await gameState(page)).boss?.arrived; i++) {
+    for (let i = 0; i < 150 && !(await gameState(page)).boss?.arrived; i++) {
       const p = await toPage(90, 30 + (i % 8) * 30);
       await page.mouse.move(p.x, p.y);
       await page.waitForTimeout(300);
     }
     await page.mouse.up();
+    expect((await gameState(page)).boss?.arrived).toBe(true);
 
     // Fonce dans la coque du boss : contact garanti (voir hitsBossHull dans boss.js).
     const { weakPoints } = (await gameState(page)).boss;

@@ -83,7 +83,7 @@ export function updateWaveTransition(g, engine, dt) {
   if (!waveDone) return;
 
   // Fin de vague. Tirs et bonus disparaissent ; les ennemis défilent vers la
-  // gauche comme le fond (le boss, lui, reste visible jusqu'à startWave).
+  // gauche comme le fond.
   g.clearingScreen = true;
   setEnemiesLeaving(enemies);
   for (const b of projectiles.enemy.items) b.active = false;

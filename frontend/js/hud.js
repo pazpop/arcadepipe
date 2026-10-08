@@ -1,5 +1,5 @@
 // Tout le texte/UI du jeu, en coordonnées logiques RES_W x RES_H. Le canvas
-// est rendu à la résolution de l'écran (voir renderScale dans main.js), donc
+// est rendu à la résolution de l'écran (voir renderer.js), donc
 // le texte reste net quelle que soit sa taille.
 import { RES_W, RES_H, PALETTE, POWERUP, NOVA, BONUS_LEVEL, DIFFICULTY, VERSION } from "./config.js";
 import { drawPowerupIcon } from "./powerups.js";

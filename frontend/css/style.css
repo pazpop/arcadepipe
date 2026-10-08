@@ -89,8 +89,9 @@ html, body {
   /* Replié par max-width (pas transform) : le panneau perd sa place dans la
      ligne, et #mc-toggle glisse jusqu'au bord gauche. */
   max-width: 200px;
-  overflow: hidden;
-  opacity: 1;
+  /* Jamais plus haut que l'écran (téléphone en paysage) : il défile au besoin. */
+  max-height: calc(100vh - 16px);
+  overflow: hidden auto;
   transition: max-width 0.25s ease, opacity 0.2s ease, margin-left 0.25s ease;
 }
 

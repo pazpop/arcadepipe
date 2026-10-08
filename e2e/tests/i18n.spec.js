@@ -1,13 +1,14 @@
 // Langue du jeu (frontend/js/i18n.js) : suit le navigateur au premier
 // lancement, puis le choix fait avec le bouton du panneau est mémorisé.
 import { test, expect } from "@playwright/test";
-import { collectErrors } from "./helpers.js";
+import { collectErrors, enableAnalytics } from "./helpers.js";
 
 test.describe("navigateur en anglais", () => {
   test.use({ locale: "en-US" });
 
   test("jeu en anglais ; le bouton passe au français, mémorisé au rechargement", async ({ page }) => {
     const errors = collectErrors(page);
+    await enableAnalytics(page); // pour le texte du bandeau
     await page.goto("/");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
     await expect(page.locator("#lang-btn")).toHaveText("English");

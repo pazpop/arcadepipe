@@ -60,12 +60,11 @@
         <div class="mc-section">
           <button id="fullscreen-btn" type="button" class="mc-pause-btn" data-i18n="panel.fullscreen"></button>
         </div>
-        <!-- Même rangée : une section de plus et le panneau ne tient plus sous le
-             bandeau de consentement sur un téléphone en paysage. Le bouton de
-             langue affiche la langue courante ; un clic passe à la suivante
-             (voir js/i18n.js). -->
+        <!-- Cookies : visible seulement si la mesure d'audience est activée
+             (js/consent.js). Langue : affiche la langue courante, un clic passe
+             à la suivante (js/i18n.js). -->
         <div class="mc-section mc-row">
-          <button id="cookie-btn" type="button" class="mc-pause-btn" data-i18n="panel.cookies" data-i18n-title="panel.cookies.title"></button>
+          <button id="cookie-btn" type="button" class="mc-pause-btn hidden" data-i18n="panel.cookies" data-i18n-title="panel.cookies.title"></button>
           <button id="lang-btn" type="button" class="mc-pause-btn" data-i18n="lang.name" data-i18n-title="panel.lang.title"></button>
         </div>
         <div class="mc-section mc-version" id="version-label"></div>
@@ -80,9 +79,7 @@
     <!-- Image du résultat à partager (shareCard.js), visible en fin de partie (main.js). -->
     <button id="share-btn" type="button" class="share-btn hidden" data-i18n="share.button" data-i18n-title="share.title"></button>
 
-    <!-- Consentement RGPD : Google Analytics n'est chargé qu'après "Accepter"
-         (js/consent.js). Affiché tant qu'aucun choix n'est mémorisé, ou rouvert
-         par le bouton Cookies. Les textes viennent de js/i18n/ (data-i18n). -->
+    <!-- Consentement à la mesure d'audience, si le déploiement l'a activée (js/consent.js). -->
     <div id="cookie-banner" class="cookie-banner hidden" role="dialog" data-i18n-aria="cookie.aria">
       <span><span data-i18n="cookie.text"></span> <a data-i18n="cookie.more" href="https://github.com/pazpop/arcadepipe/blob/main/docs/donnees-collectees.md" target="_blank" rel="noopener"></a></span>
       <div class="cookie-actions">

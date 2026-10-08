@@ -87,7 +87,7 @@ export default {
   "help.fire.detail": 'Hold the mouse button, or tick "Auto-fire" (bottom left)',
   "help.nova": "NOVA",
   "help.nova.detail":
-    "Graze (without touching) an enemy shot or an enemy ship — not the boss — to charge the NOVA gauge at the top left: take risks! Once full, SPACE (or the touch button at the bottom right) destroys every normal enemy on screen, never the boss. Up to 2 charges in reserve after the 2nd boss fight (only 1 before). Use them whenever you like.",
+    "Graze (without touching) an enemy shot or an enemy ship — not the boss — to charge the NOVA gauge at the top left: take risks! Once full, SPACE (or the touch button at the bottom right) destroys every enemy on screen and their shots, never the boss. Up to 2 charges in reserve from the 2nd boss fight (only 1 before). Use them whenever you like.",
   "help.boss": "BOSS",
   "help.boss.detail": "Aim for the YELLOW weak points, avoid its hull — defeating it grants +1 life",
   "help.music": "MUSIC",
@@ -99,7 +99,7 @@ export default {
   "help.continue": "▶ CONTINUE",
   "enemy.normal": "EASY — 1 HP, no shots, straight line",
   "enemy.gunner": "MEDIUM — 2 HP, aimed shots (wave 5+)",
-  "enemy.elite": "ELITE — 3 HP, aimed shots, weaves",
+  "enemy.elite": "ELITE — 3 HP, aimed shots, weaves (wave 3+)",
   "enemy.kamikaze": "KAMIKAZE — 1 HP, charges at you (wave 4+)",
 
   // --- End of run ---

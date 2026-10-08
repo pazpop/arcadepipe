@@ -88,7 +88,7 @@ export default {
   "help.fire.detail": 'Maintiens le clic, ou coche "Tir automatique" (bas à gauche)',
   "help.nova": "NOVA",
   "help.nova.detail":
-    "Frôle (sans le toucher) un tir ennemi ou un vaisseau ennemi — pas le boss — pour charger la jauge NOVA en haut à gauche, prends des risques ! Une fois pleine, ESPACE (ou le bouton tactile en bas à droite) détruit tous les ennemis normaux à l'écran, jamais le boss. Jusqu'à 2 charges en réserve après le 2e combat de boss (1 seule avant), à déclencher quand tu veux.",
+    "Frôle (sans le toucher) un tir ennemi ou un vaisseau ennemi — pas le boss — pour charger la jauge NOVA en haut à gauche, prends des risques ! Une fois pleine, ESPACE (ou le bouton tactile en bas à droite) détruit tous les ennemis à l'écran et leurs tirs, jamais le boss. Jusqu'à 2 charges en réserve dès le 2e combat de boss (1 seule avant), à déclencher quand tu veux.",
   "help.boss": "BOSS",
   "help.boss.detail": "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie",
   "help.music": "MUSIQUE",
@@ -100,7 +100,7 @@ export default {
   "help.continue": "▶ CONTINUER",
   "enemy.normal": "FACILE — 1 PV, pas de tir, ligne droite",
   "enemy.gunner": "MOYEN — 2 PV, tire visé (vague 5+)",
-  "enemy.elite": "ÉLITE — 3 PV, tire visé, ondule",
+  "enemy.elite": "ÉLITE — 3 PV, tire visé, ondule (vague 3+)",
   "enemy.kamikaze": "KAMIKAZE — 1 PV, fonce sur toi (vague 4+)",
 
   // --- Fin de partie ---

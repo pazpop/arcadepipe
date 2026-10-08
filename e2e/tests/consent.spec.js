@@ -1,12 +1,14 @@
-// Bandeau de consentement (frontend/js/consent.js) : Google Analytics ne doit
-// JAMAIS être chargé avant "Accepter". Le réseau est intercepté (pas de vraie
-// requête vers googletagmanager.com pendant les tests).
+// Mesure d'audience (frontend/js/consent.js) : désactivée sans identifiant, et
+// avec un identifiant, jamais chargée avant "Accepter". Le réseau est
+// intercepté (aucune vraie requête vers googletagmanager.com).
 import { test, expect } from "@playwright/test";
-import { collectErrors } from "./helpers.js";
+import { collectErrors, enableAnalytics } from "./helpers.js";
 
 const GTM = /googletagmanager\.com/;
 
+// Active la mesure d'audience et note les chargements du script de Google.
 async function trackGtm(page) {
+  await enableAnalytics(page);
   const requests = [];
   await page.route(GTM, (route) => {
     requests.push(route.request().url());
@@ -14,6 +16,19 @@ async function trackGtm(page) {
   });
   return requests;
 }
+
+test("sans identifiant (par défaut) : ni bandeau, ni bouton Cookies, ni chargement", async ({ page }) => {
+  const requests = [];
+  await page.route(GTM, (route) => {
+    requests.push(route.request().url());
+    route.abort();
+  });
+  await page.goto("/");
+  await page.waitForTimeout(300); // rien ne doit se passer : pas d'état à attendre
+  await expect(page.locator("#cookie-banner")).toBeHidden();
+  await expect(page.locator("#cookie-btn")).toBeHidden();
+  expect(requests).toEqual([]);
+});
 
 test("sans choix : bandeau affiché, aucun chargement de Google Analytics", async ({ page }) => {
   const errors = collectErrors(page);

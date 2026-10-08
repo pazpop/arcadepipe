@@ -42,10 +42,25 @@ function beginAudio() {
 window.addEventListener("pointerdown", beginAudio);
 window.addEventListener("keydown", beginAudio);
 
-// --- Tap ou clic dans le jeu (menus), en coordonnées logiques.
+// --- Tap ou clic dans le jeu (menus), en coordonnées logiques. Il doit avoir
+// commencé sur l'écran courant : relâcher le tir à l'apparition de GAME OVER
+// ne doit pas choisir une option.
+let pointerDownMode = null;
+canvas.addEventListener("pointerdown", () => (pointerDownMode = game.mode));
 canvas.addEventListener("pointerup", (e) => {
+  if (pointerDownMode !== game.mode) return;
   const p = canvasToLogical(canvas, e.clientX, e.clientY);
   game.handleTap(p.x, p.y);
+});
+
+// --- Un bouton, une case ou un curseur cliqué à la souris garde le focus
+// clavier : Espace ou Entrée, des touches du jeu, l'actionneraient de nouveau.
+// Le focus est donc rendu après chaque clic (au champ du pseudo pendant sa
+// saisie). e.detail vaut 0 pour un "clic" venu du clavier, laissé tel quel.
+$("game-container").addEventListener("click", (e) => {
+  if (e.detail === 0) return;
+  if (game.mode === game.MODE.NAME_ENTRY) nameInputEl.focus();
+  else document.activeElement.blur();
 });
 
 // --- Panneau de réglages (bas gauche), rétractable ; #mc-toggle reste visible.
@@ -106,12 +121,12 @@ if (document.fullscreenEnabled) {
     fullscreenBtn.textContent = t(document.fullscreenElement ? "panel.fullscreen.exit" : "panel.fullscreen");
   });
 } else {
-  fullscreenBtn.classList.add("hidden");
+  fullscreenBtn.parentElement.classList.add("hidden");
 }
 
-// --- Vitesse du jeu (x1, x1.5, x2 au clic) : multiplie le temps écoulé envoyé
-// à game.update() (voir loop). Tout accélère du même facteur, donc la
-// difficulté relative ne change pas ; la musique et les bruitages gardent leur vitesse.
+// --- Vitesse du jeu (x1, x1.5, x2 au clic) : multiplie le temps de jeu écoulé
+// à chaque image (voir loop). Tout le jeu accélère du même facteur ; la musique
+// et les bruitages gardent leur vitesse.
 const speedBtn = $("speed-btn");
 const storedSpeed = parseFloat(loadItem(STORAGE_KEYS.gameSpeed));
 let gameSpeed = GAME_SPEEDS.includes(storedSpeed) ? storedSpeed : 1;
@@ -141,9 +156,6 @@ shareBtn.addEventListener("click", async () => {
   link.click();
   // Libérée après un délai : révoquée tout de suite, certains navigateurs annulent le téléchargement.
   setTimeout(() => URL.revokeObjectURL(url), 1000);
-
-  // Le clic a pris le focus : le rendre au champ du pseudo, sinon la frappe ne passe plus.
-  if (game.mode === game.MODE.NAME_ENTRY) nameInputEl.focus();
 
   try {
     await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
@@ -180,12 +192,11 @@ window.addEventListener("keydown", (e) => {
 
 // --- Konami code : un jingle et le canvas qui penche (konami-tilt, css/style.css). Aucun effet de jeu.
 const KONAMI_SEQUENCE = ["arrowup", "arrowup", "arrowdown", "arrowdown", "arrowleft", "arrowright", "arrowleft", "arrowright", "b", "a"];
-let konamiProgress = 0;
+let lastKeys = [];
 function checkKonami(key) {
-  if (key === KONAMI_SEQUENCE[konamiProgress]) konamiProgress++;
-  else konamiProgress = key === KONAMI_SEQUENCE[0] ? 1 : 0; // une mauvaise touche peut être le début d'un nouvel essai
-  if (konamiProgress < KONAMI_SEQUENCE.length) return;
-  konamiProgress = 0;
+  lastKeys = [...lastKeys, key].slice(-KONAMI_SEQUENCE.length);
+  if (lastKeys.join() !== KONAMI_SEQUENCE.join()) return;
+  lastKeys = [];
   audio.playKonami();
   // Relance l'animation même si elle est en cours : lire offsetWidth force le
   // navigateur à prendre en compte le retrait de la classe avant son retour.
@@ -195,24 +206,30 @@ function checkKonami(key) {
 }
 
 // --- Saisie du pseudo : un champ caché reçoit la frappe (et ouvre le clavier
-// virtuel sur mobile) ; le jeu affiche sa valeur.
-nameInputEl.addEventListener("input", () => game.setNameEntryText(nameInputEl.value));
+// virtuel sur mobile) ; le jeu affiche sa valeur, nettoyée, et la lui renvoie.
+nameInputEl.addEventListener("input", () => (nameInputEl.value = game.setNameEntryText(nameInputEl.value)));
 
-// --- Onglet en arrière-plan : pause, pour ne pas perdre de vies pendant
-// l'absence. Au retour, reprise du contexte audio, que certains navigateurs
-// suspendent sans jamais le relancer.
+// --- Onglet en arrière-plan : le jeu se met en pause (pas de vie perdue
+// pendant l'absence) et la musique s'interrompt. Au retour, reprise du contexte
+// audio, que certains navigateurs suspendent sans jamais le relancer.
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) game.pause();
   else audio.ensure();
+  music.setInBackground(document.hidden);
 });
 
 // --- Boucle principale.
+const MAX_STEP = 1 / 60;
 let lastTime = 0;
 function loop(timestamp) {
   // Temps écoulé borné à 50 ms : après un onglet gelé, le jeu ne fait pas un bond.
   const dt = Math.min(0.05, (timestamp - lastTime) / 1000 || 0);
   lastTime = timestamp;
-  game.update(dt * gameSpeed);
+  // Avancé par pas de 1/60 s au plus : d'un seul grand pas (vitesse x2, image
+  // en retard), un tir sauterait par-dessus un ennemi sans le toucher.
+  for (let left = dt * gameSpeed; left > 0.0001; left -= MAX_STEP) {
+    game.update(Math.min(left, MAX_STEP));
+  }
   renderer.applyScale();
   game.draw(renderer.ctx);
   const { mode, MODE } = game;

@@ -4,7 +4,7 @@
 // contenu pixel exact. Les captures d'écran restent le moyen de vérifier
 // visuellement (voir test-results/ après un run, ou joue au jeu directement).
 import { test, expect } from "@playwright/test";
-import { canvasHelpers, collectErrors, skipHints, waitForMode } from "./helpers.js";
+import { canvasHelpers, collectErrors, gameState, skipHints, waitForMode } from "./helpers.js";
 
 test("le menu se charge sans erreur et les contrôles musique sont visibles", async ({ page }) => {
   const errors = collectErrors(page);
@@ -155,4 +155,33 @@ test("en pause, la scène est figée : deux captures identiques", async ({ page 
   const first = await canvas.screenshot();
   await page.waitForTimeout(300);
   expect((await canvas.screenshot()).equals(first)).toBe(true);
+});
+
+test("la souris immobile sur une option n'empêche pas de choisir au clavier", async ({ page }) => {
+  await page.goto("/");
+  await skipHints(page);
+  const { moveLogical } = canvasHelpers(page);
+  await moveLogical(240, 151.2); // sur JOUER
+  await page.keyboard.press("ArrowDown"); // CLASSEMENT
+  await page.keyboard.press("Enter");
+  await waitForMode(page, "leaderboard");
+});
+
+test("un réglage cliqué ne garde pas le focus : Espace ne le rebascule pas", async ({ page }) => {
+  await page.goto("/");
+  await skipHints(page);
+  await page.click("#autofire-toggle");
+  await page.keyboard.press("Space");
+  await expect(page.locator("#autofire-toggle")).toBeChecked();
+
+  // Bouton Pause cliqué en partie, reprise au clavier : Espace ne remet pas en pause.
+  const { startRun } = canvasHelpers(page);
+  await startRun();
+  await page.click("#pause-btn");
+  await waitForMode(page, "paused");
+  await page.keyboard.press("KeyP");
+  await waitForMode(page, "playing");
+  await page.keyboard.press("Space");
+  await page.waitForTimeout(300); // rien ne doit se passer : pas d'état à attendre
+  expect((await gameState(page)).mode).toBe("playing");
 });

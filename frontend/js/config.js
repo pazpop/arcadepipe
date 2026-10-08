@@ -7,7 +7,7 @@ export const RES_H = 270;
 
 // 2.<nombre de commits git> (`git rev-list --count HEAD`), mis à jour à chaque
 // commit qui touche au jeu. Affichée dans le panneau et aux crédits.
-export const VERSION = "2.124";
+export const VERSION = "2.127";
 
 export const PALETTE = {
   bgDeep: "#05060f",
@@ -148,10 +148,6 @@ export const STORAGE_KEYS = {
   analyticsConsent: "arcadepipe_analytics_consent",
   lang: "arcadepipe_lang",
 };
-
-// Google Analytics n'est chargé qu'après consentement explicite (bannière,
-// voir consent.js) — jamais avant, conformément au RGPD.
-export const GA_MEASUREMENT_ID = "G-YC4WFVN9JY";
 
 // Multiplicateurs de vitesse de jeu proposés par le bouton "VITESSE DU JEU" (panneau
 // bas gauche) — voir main.js. N'affecte que le rythme du jeu (dt), jamais

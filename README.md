@@ -10,7 +10,7 @@ Shoot'em up spatial rétro (*The Last Starfighter*) jouable dans le navigateur :
 
 ## Lancer en local
 
-Il faut Python 3.13 (backend, et serveur de fichiers du frontend). Node n'est nécessaire que pour les tests et le lint.
+Il faut Python 3.13 (backend, et serveur de fichiers du frontend). Node 20 ou plus récent n'est nécessaire que pour les tests et le lint.
 
 ```bash
 cd backend && python -m venv venv && source venv/bin/activate  # Windows : venv\Scripts\activate

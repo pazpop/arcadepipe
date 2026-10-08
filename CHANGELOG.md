@@ -2,6 +2,16 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.127] - 2026-10-09
+Corrections issues d'une seconde relecture complète.
+- **Bonus : un bouclier et une arme peuvent être actifs ensemble.** Aucune arme n'apparaît tant qu'une arme bonus est active, aucun bouclier tant qu'il en reste un.
+- **Mesure d'audience désactivée par défaut** : l'identifiant Google Analytics n'est plus dans le dépôt, il est fourni par le déploiement (variable `GA_MEASUREMENT_ID`, voir [docs/deploiement.md](docs/deploiement.md)). Sans lui : ni script, ni bandeau, ni bouton Cookies.
+- Fix : un bouton cliqué gardait le focus clavier (Espace décochait « Tir automatique », ou remettait en pause) ; le vaisseau pouvait rester invisible pendant le niveau bonus ; en vitesse x2 des tirs traversaient les ennemis ; la souris posée sur une option bloquait les flèches ; un caractère refusé bloquait la saisie du pseudo ; la partie continuait pendant le ralenti de mort ; relâcher le tir à l'apparition de GAME OVER pouvait choisir une option ; Konami code après un Haut en trop.
+- Musique : elle s'interrompt quand l'onglet passe en arrière-plan, et ne reste plus muette après un arrêt pendant un rechargement de piste.
+- Aide : NOVA détruit tous les ennemis et leurs tirs (pas seulement les « normaux »), deux charges dès le 2e boss.
+- Panneau de réglages : il défile s'il est plus haut que l'écran (téléphone en paysage).
+- Backend : 10 000 scores gardés en base (100 lisibles), pour que de faux scores ne puissent pas effacer les vrais.
+
 ## [2.124] - 2026-10-08
 - Anglais : une douzaine de formulations retouchées (aide, bandeau de cookies, fin de partie).
 
@@ -37,7 +47,7 @@ Corrections issues d'une relecture complète du dépôt.
 - **Rejouer en 1 clic.** L'écran GAME OVER propose REJOUER (par défaut) et CLASSEMENT à la place de « OK ». REJOUER relance aussitôt : avant, il fallait 3 ou 4 clics (OK, valider le pseudo, classement, JOUER). Le score n'est pas perdu : s'il entre dans le top 10, il est envoyé en arrière-plan sous le pseudo mémorisé, ou un nom de pilote aléatoire.
 
 ## [2.115] - 2026-10-08
-- **Fix : textes illisibles.** Le jeu était dessiné en 480×270 puis agrandi : un texte de 7 px n'avait que 7 pixels de haut. Le canvas est maintenant rendu à la résolution de l'écran (densité plafonnée à 2), le jeu dessine toujours en coordonnées 480×270 (`renderScale`, `main.js`). Sprites inchangés.
+- **Fix : textes illisibles.** Le jeu était dessiné en 480×270 puis agrandi : un texte de 7 px n'avait que 7 pixels de haut. Le canvas est maintenant rendu à la résolution de l'écran (densité plafonnée à 2), le jeu dessine toujours en coordonnées 480×270 (`renderer.js`). Sprites inchangés.
 
 ## [2.114] - 2026-10-08
 - **Fix : les ennemis pouvaient tirer vers l'arrière.** Un élite ou un gunner ne tire plus que si le joueur est devant lui (`enemies.test.js`).

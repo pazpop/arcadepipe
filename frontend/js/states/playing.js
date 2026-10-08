@@ -4,7 +4,7 @@
 import { RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE, HIT_STOP } from "../config.js";
 import { loadItem, saveItem } from "../storage.js";
 import { updateStarfield, triggerDeathStarLeave } from "../stars.js";
-import { resetPlayer, updatePlayer, hitPlayer, drawPlayer, applyPowerup, applyShield } from "../player.js";
+import { resetPlayer, updatePlayer, hitPlayer, drawPlayer, applyPowerup, applyShield, canReceivePowerup } from "../player.js";
 import { updateProjectiles, drawProjectiles } from "../projectiles.js";
 import { updateParticles, drawParticles, spawnExplosion, spawnFlashBurst, spawnSpark } from "../particles.js";
 import { spawnEnemy, updateEnemies, damageEnemy, pointsFor, drawEnemies, enemyGlowColor } from "../enemies.js";
@@ -21,7 +21,7 @@ import { startWave, updateWaveTransition } from "./waves.js";
 import * as endOfRunState from "./endOfRun.js";
 import { t } from "../i18n.js";
 
-// Accessibilité : coupe le screen shake pour les joueurs sensibles au mouvement (réglage système).
+// Accessibilité : ni tremblement d'écran ni micro-gel pour les joueurs sensibles au mouvement (réglage système).
 const REDUCED_MOTION =
   typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
@@ -121,7 +121,9 @@ export function startRun(g, engine) {
 
 function resolveCollisions(g, engine) {
   const { audio, player, projectiles, particles, enemies, powerups, starfield } = engine;
-  if (g.clearingScreen) return;
+  // Rien pendant un saut spatial ou le niveau bonus, ni une fois le vaisseau
+  // détruit (ralenti de mort) : la partie est jouée.
+  if (g.clearingScreen || !player.alive) return;
 
   // Balles alliées (tirs normaux + plombs CHEVROTINE) vs ennemis normaux/élites
   for (const pool of [projectiles.player, projectiles.pellet]) {
@@ -140,12 +142,13 @@ function resolveCollisions(g, engine) {
           // Ni shake ni micro-gel sur un kill "classique" (réservés aux
           // élites, coups encaissés et boss), sinon l'effet se banalise.
           if (en.type === "elite") triggerHitStop(g, HIT_STOP.elite);
-          // Un seul bonus à la fois, aucun si déjà actif — évite le gâchis et
-          // garde le HUD lisible.
-          const noBonusInPlay = !player.buff && !player.shield && !powerups.items.some((pu) => pu.active);
+          // Un seul bonus au sol à la fois, et jamais un bonus dont le joueur
+          // profite déjà (canReceivePowerup).
           const dropChance = en.type === "elite" ? POWERUP.dropChanceElite : POWERUP.dropChanceNormal;
-          if (noBonusInPlay && Math.random() < dropChance) {
-            spawnPowerup(powerups, en.x, en.y, pickPowerupType());
+          const type = pickPowerupType();
+          const noneOnScreen = !powerups.items.some((pu) => pu.active);
+          if (noneOnScreen && canReceivePowerup(player, type) && Math.random() < dropChance) {
+            spawnPowerup(powerups, en.x, en.y, type);
           }
         } else {
           audio.playBossHit();
@@ -186,9 +189,6 @@ function resolveCollisions(g, engine) {
       }
     }
   }
-
-  // Vaisseau détruit (ralenti de mort) : plus rien ne le touche.
-  if (!player.alive) return;
 
   // Tirs ennemis vs joueur
   for (const eb of projectiles.enemy.items) {
@@ -233,10 +233,6 @@ function resolveCollisions(g, engine) {
   }
 }
 
-// Qui écrit g.novaStock/g.novaProgress (hud.js les lit seulement) :
-//   - graze.js, registerGraze() : +1 à chaque frôlement.
-//   - useNova() ci-dessous : consommation manuelle.
-//   - states/waves.js, applyNovaReward() : récompense du niveau bonus.
 // NOVA (Espace ou bouton tactile) : dépense une charge et détruit les ennemis
 // actifs et leurs tirs en vol, jamais le boss.
 function useNova(g, engine) {
@@ -366,6 +362,9 @@ export function update(g, engine, dt) {
       return;
     }
   } else {
+    // Décomptée ici et pas dans updatePlayer, qui ne tourne ni pendant la
+    // glissée d'entrée ni pendant le niveau bonus : le clignotement resterait figé.
+    player.invuln = Math.max(0, player.invuln - dt);
     if (g.shipIntro) {
       updateShipIntro(g, engine, dt);
     } else if (g.bonusLevel) {
@@ -396,7 +395,7 @@ export function update(g, engine, dt) {
   }
 
   // Vagues, saut spatial entre deux vagues, niveau bonus : voir states/waves.js.
-  updateWaveTransition(g, engine, dt);
+  if (!g.dying) updateWaveTransition(g, engine, dt);
 
   updateStarfield(starfield, dt, g.warp);
 

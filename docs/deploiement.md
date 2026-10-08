@@ -9,7 +9,21 @@ docker compose up --build -d
 # -> http://localhost
 ```
 
-Port 80 déjà pris ? Changer le mapping `"80:80"` du service `frontend` (ex. `"8080:80"`) et adapter `ALLOWED_ORIGINS` du service `backend`.
+Port 80 déjà pris ? Changer le mapping `"80:80"` du service `frontend` (ex. `"8080:80"`).
+
+### Mesure d'audience (désactivée par défaut)
+
+Le jeu peut charger Google Analytics, mais aucun identifiant n'est écrit dans ce dépôt : sans réglage, il n'y a ni script, ni cookie, ni bandeau de consentement. Pour l'activer, donner son identifiant de mesure au service `frontend` :
+
+```yaml
+  frontend:
+    environment:
+      - GA_MEASUREMENT_ID=G-XXXXXXXXXX
+```
+
+Caddy le sert dans `/site-config.json` (voir `frontend/Caddyfile`), que le jeu lit au chargement (`js/consent.js`). Le script n'est chargé qu'après un « Accepter » du visiteur. Pour désactiver, retirer la variable et relancer le service. Le reverse-proxy doit autoriser `googletagmanager.com` et `google-analytics.com` dans sa CSP.
+
+Hors Docker (`python -m http.server`), c'est le fichier `frontend/site-config.json` qui est servi : y mettre l'identifiant pour un essai, sans le commiter.
 
 C'est le seul fichier de déploiement Docker de ce repo. Celui qui ajoute Traefik et TLS pour l'instance publique vit dans le repo d'infra séparé.
 

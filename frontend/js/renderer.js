@@ -3,7 +3,7 @@
 // en 480x270 puis agrandi, un texte de 7 px n'aurait que 7 pixels de haut.
 import { RES_W, RES_H } from "./config.js";
 
-// ponytail: densité plafonnée à 2 (un écran à 3 rendrait 2,25 fois plus de
+// Densité plafonnée à 2 (un écran à 3 rendrait 2,25 fois plus de
 // pixels pour un gain invisible) ; à baisser si un appareil rame.
 const MAX_PIXEL_RATIO = 2;
 

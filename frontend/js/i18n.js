@@ -25,7 +25,7 @@ export function t(key, params = {}) {
   return str.replace(/\{(\w+)\}/g, (_, name) => params[name] ?? `{${name}}`);
 }
 
-// ponytail: la page est rechargée au changement de langue (la partie en cours
+// La page est rechargée au changement de langue (la partie en cours
 // est perdue) — beaucoup de textes sont évalués une seule fois au chargement
 // des modules. Les rendre dynamiques si changer de langue en jeu devient utile.
 export function nextLang() {

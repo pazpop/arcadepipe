@@ -10,7 +10,9 @@ FastAPI + `sqlite3` natif — API du classement.
 | `GET /api/games/count` | nombre total de parties jouées |
 | `POST /api/games` | compte une partie terminée |
 
-Variables d'environnement : `DB_PATH` (fichier SQLite, `./arcadepipe.db` par défaut) et `ALLOWED_ORIGINS` (origines autorisées par CORS, séparées par des virgules ; `http://localhost:5500` par défaut).
+Variables d'environnement : `DB_PATH` (fichier SQLite, `./arcadepipe.db` par défaut) et `ALLOWED_ORIGINS` (origines autorisées par CORS, séparées par des virgules ; `http://localhost:5500` par défaut). Cette dernière ne sert que si le jeu et l'API ne sont pas servis à la même adresse, comme en développement.
+
+En local, l'API écoute sur http://localhost:8000 : http://localhost:8000/api/health doit répondre `{"status":"ok"}`.
 
 ## Lancer en local
 

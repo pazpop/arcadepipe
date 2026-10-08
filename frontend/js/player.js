@@ -21,8 +21,13 @@ export function resetPlayer(player) {
   player.shield = 0; // coups restants absorbés par le bouclier (indépendant de `buff`, pas de minuteur)
 }
 
-// Un seul bonus à la fois : aucun autre n'apparaît tant qu'une arme ou un
-// bouclier est actif (voir resolveCollisions, states/playing.js).
+// Un bonus de ce type peut-il apparaître ? Pas d'arme tant qu'une arme bonus
+// est active, pas de bouclier tant qu'il en reste un. Une arme et un bouclier
+// peuvent être actifs ensemble.
+export function canReceivePowerup(player, type) {
+  return type === "shield" ? player.shield === 0 : player.buff === null;
+}
+
 export function applyPowerup(player, type) {
   player.buff = { type, timer: POWERUP.duration };
 }
@@ -47,8 +52,6 @@ export function updatePlayer(player, input, projectiles, dt, onShotFired, canFir
   player.x = Math.max(6, Math.min(RES_W - 6, player.x));
   player.y = Math.max(6, Math.min(RES_H - 6, player.y));
 
-  player.invuln = Math.max(0, player.invuln - dt);
-
   if (player.buff) {
     // Gelé pendant le saut spatial (canFire=false, voir plus bas) : sinon la
     // durée du bonus s'écoule pendant une phase où on ne peut de toute façon
@@ -60,9 +63,8 @@ export function updatePlayer(player, input, projectiles, dt, onShotFired, canFir
 
   // Tir manuel : clic/doigt maintenu (input.fireHeld), ou tir automatique
   // (input.autoFire, case à cocher du panneau). Cadence plafonnée par fireCooldown,
-  // modulée par le bonus actif. canFire=false (saut spatial ou niveau bonus,
-  // g.clearingScreen dans states/waves.js) gèle le minuteur — sinon RAFALE
-  // (cooldown ~44ms) accumule des dizaines de tirs pendant l'attente.
+  // modulée par le bonus actif. canFire=false : pas de tir pendant un saut
+  // spatial ou le niveau bonus (g.clearingScreen, states/waves.js).
   if (canFire) {
     player.fireTimer -= dt;
     if (player.alive && (input.fireHeld || input.autoFire) && player.fireTimer <= 0) {

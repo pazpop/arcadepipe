@@ -68,7 +68,9 @@ export class MusicPlayer {
     const delay = Math.min(RETRY_MAX_DELAY_MS, 2000 * this._retries);
     this._retryTimer = setTimeout(() => {
       this._retryTimer = null;
-      if (!this.paused) this._load(); // musique arrêtée par le joueur entre-temps : on n'insiste pas
+      // Musique arrêtée par le joueur entre-temps : la piste sera chargée à la reprise.
+      if (this.paused) this._pendingTrack = true;
+      else this._load();
     }, delay);
   }
 
@@ -111,6 +113,14 @@ export class MusicPlayer {
     } else {
       this.audio.play().catch(() => {});
     }
+  }
+
+  // Onglet en arrière-plan : la musique s'interrompt, et reprend au retour si
+  // le joueur ne l'avait pas arrêtée.
+  setInBackground(hidden) {
+    if (!this.started || this.paused) return;
+    if (hidden) this.audio.pause();
+    else this.audio.play().catch(() => {});
   }
 
   setMuted(muted) {

@@ -16,7 +16,7 @@ test("niveau bonus : se déclenche avant la vague 10, se termine, puis la partie
     DIFFICULTY.waveKillsStep = 0;
     DIFFICULTY.waveBreakDuration = 0.3;
     DIFFICULTY.bossWaveEvery = 999; // pas de combat de boss pour ce test
-    BONUS_LEVEL.firstScoreThreshold = 0; // seuil trivial : le score de départ (0) suffit déjà
+    BONUS_LEVEL.firstScoreThreshold = 0;
   });
 
   const { startRun } = canvasHelpers(page);
@@ -29,7 +29,7 @@ test("niveau bonus : se déclenche avant la vague 10, se termine, puis la partie
 
   // Fin du niveau (intro + 10 anneaux à ~1.3 s d'intervalle), puis la partie reprend.
   await expect.poll(inBonus, { timeout: 25000 }).toBe(false);
-  expect((await gameState(page)).wave).toBeGreaterThanOrEqual(10);
+  await expect.poll(async () => (await gameState(page)).wave).toBeGreaterThanOrEqual(10);
   await page.screenshot({ path: "test-results/bonus-level-reward.png" });
 
   expect(errors).toEqual([]);

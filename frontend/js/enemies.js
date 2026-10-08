@@ -220,9 +220,7 @@ export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
   }
 }
 
-// Couleur du palier de menace (facile/moyen/difficile — voir PALETTE dans
-// config.js) — partagée entre le rendu (sprite/glow) et les explosions, pour
-// qu'un vaisseau explose dans sa propre couleur.
+// Couleur du type d'ennemi (voir PALETTE dans config.js) : celle de son explosion.
 export function enemyGlowColor(en) {
   if (en.type === "elite") return PALETTE.enemyElite;
   if (en.type === "kamikaze") return PALETTE.danger;

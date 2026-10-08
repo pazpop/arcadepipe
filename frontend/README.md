@@ -17,7 +17,8 @@ JS vanilla (modules ES6) + Canvas 2D, sans étape de build : les fichiers sont s
 | `js/assets.js`, `stars.js` | sprites dessinés par le code, décor étoilé |
 | `js/audio/` | bruitages synthétisés (`sfx.js`) et lecteur de musique (`music.js`) |
 | `js/i18n.js`, `js/i18n/` | traductions, un fichier par langue |
-| `js/api.js`, `consent.js`, `analytics.js`, `shareCard.js` | classement en ligne, consentement aux cookies, image de partage |
+| `js/api.js`, `consent.js`, `analytics.js`, `shareCard.js` | classement en ligne, mesure d'audience et consentement, image de partage |
+| `site-config.json` | réglages du déploiement (identifiant de mesure d'audience, vide par défaut) |
 | `js/renderer.js`, `input.js`, `storage.js` | canvas à la résolution de l'écran, entrées clavier/souris/tactile, préférences |
 
 ## Architecture
@@ -51,11 +52,11 @@ Le classement n'apparaît que si le [backend](../backend/README.md) tourne aussi
 
 ## Tests et lint
 
-Node 18 ou plus récent, sans autre dépendance pour les tests :
+Node 20 ou plus récent. Chaque commande part de la racine du dépôt :
 
 ```bash
-cd js && node --test          # logique pure : collisions, frôlement, vagues, traductions, cache de l'API
-npm install && npm run lint   # ESLint, depuis frontend/
+cd frontend/js && node --test                # logique pure : collisions, frôlement, bonus, ennemis, traductions, cache de l'API
+cd frontend && npm install && npm run lint   # ESLint
 ```
 
 Le canvas, les entrées et l'audio sont couverts par les [tests bout-en-bout](../e2e/README.md).

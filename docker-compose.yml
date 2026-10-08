@@ -7,16 +7,13 @@
 #   docker compose up --build -d
 #   -> le jeu est sur http://localhost (port 80)
 #
-# Pour changer le port publié (80 déjà pris, etc.), modifier le mapping
-# "80:80" ci-dessous (ex: "8080:80") ET la valeur ALLOWED_ORIGINS du backend
-# pour qu'elle corresponde à l'URL réellement utilisée dans le navigateur.
+# Port 80 déjà pris : modifier le mapping "80:80" ci-dessous (ex: "8080:80").
+# Mesure d'audience : désactivée ; pour l'activer, voir docs/deploiement.md.
 services:
   backend:
     build: ./backend
     volumes:
       - backend_data:/data
-    environment:
-      - ALLOWED_ORIGINS=http://localhost
     restart: unless-stopped
     read_only: true
     tmpfs:

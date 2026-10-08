@@ -2,7 +2,7 @@
 // score qui entre dans le top, "name_entry" (saisie du pseudo) avant le classement.
 import { STORAGE_KEYS } from "../config.js";
 import { loadItem, saveItem } from "../storage.js";
-import { consumeJustPressed } from "../input.js";
+import { consumeJustPressed, clearJustPressed } from "../input.js";
 import { syncHoverWithSound } from "./navHelpers.js";
 import { MODE } from "./mode.js";
 import * as leaderboardScreen from "./leaderboardScreen.js";
@@ -62,7 +62,7 @@ async function goToLeaderboard(g, engine) {
   g.nameEntry = lastPlayerName();
   // Hors du geste du joueur (après un await), la plupart des mobiles refusent
   // d'ouvrir le clavier : le pseudo est pré-rempli, le bouton VALIDER suffit,
-  // et un tap ailleurs rouvre le clavier (handleTapNameEntry).
+  // et un tap ailleurs rouvre le clavier (clic sur #game-container, main.js).
   engine.nameInputEl.value = g.nameEntry;
   engine.nameInputEl.focus();
 }
@@ -85,11 +85,15 @@ export async function confirmNameEntry(g, engine) {
   }
   busy = false;
   engine.nameInputEl.blur();
+  // L'Entrée qui vient de valider ne doit pas aussi refermer le classement.
+  clearJustPressed(engine.input);
   leaderboardScreen.open(g, MODE.MENU);
 }
 
+// Garde les seuls caractères permis et renvoie le pseudo obtenu.
 export function setNameEntryText(g, text) {
   g.nameEntry = text.toUpperCase().replace(/[^A-Z0-9 ]/g, "").slice(0, 8);
+  return g.nameEntry;
 }
 
 export function updateGameOver(g, engine) {
@@ -118,9 +122,6 @@ export function handleTapGameOver(g, engine, x, y) {
   if (idx >= 0) selectGameOverOption(g, engine, idx);
 }
 
-// Un tap hors du bouton rend le focus au champ caché : la frappe au clavier
-// continue de marcher, et le clavier virtuel s'ouvre sur mobile.
 export function handleTapNameEntry(g, engine, x, y) {
   if (hud.hitTestNameEntryValidate(x, y)) confirmNameEntry(g, engine);
-  else engine.nameInputEl.focus();
 }

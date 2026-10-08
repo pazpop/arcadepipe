@@ -1,6 +1,6 @@
 # Règles du jeu
 
-Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/config.js`](js/config.js) ; l'organisation du code est décrite dans le [README du frontend](README.md).
+Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/config.js`](js/config.js), sauf celles des ennemis ([`js/enemies.js`](js/enemies.js)) ; l'organisation du code est décrite dans le [README du frontend](README.md).
 
 ## Le vaisseau
 
@@ -40,7 +40,7 @@ Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/confi
 
 ## Les bonus
 
-Un ennemi détruit lâche parfois un bonus. Un seul à la fois : aucun autre n'apparaît tant qu'un bonus est actif ou à l'écran.
+Un ennemi détruit lâche parfois un bonus. Une arme et un bouclier peuvent être actifs ensemble, mais aucune arme n'apparaît tant qu'une arme bonus est active, ni aucun bouclier tant qu'il en reste un. Un seul bonus au sol à la fois.
 
 | Bonus | Effet |
 | --- | --- |
@@ -81,6 +81,6 @@ Les trois armes durent 20 secondes ; le décompte est en pause pendant un saut s
 ## Partis pris visuels et sonores
 
 - Aucun fichier image : chaque sprite est une grille de caractères convertie en image au démarrage ([`js/assets.js`](js/assets.js)).
-- La couleur porte une information. Le jaune or est réservé au boss ; la couleur d'un tir dit comment l'esquiver, pas qui l'a tiré.
+- La couleur porte une information. Aucun autre ennemi que le boss n'est jaune or ; la couleur d'un tir dit comment l'esquiver, pas qui l'a tiré.
 - Les couleurs de jeu sont saturées ; le décor et les particules sont ternis pour ne jamais se confondre avec un tir.
 - Tous les bruitages sont synthétisés par le code ([`js/audio/sfx.js`](js/audio/sfx.js)). La musique est une playlist de morceaux de mall-e, tirés au hasard sans répétition immédiate.

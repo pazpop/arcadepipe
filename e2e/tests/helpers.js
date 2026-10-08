@@ -50,12 +50,13 @@ export function canvasHelpers(page) {
 // première partie s'ouvrirait et le test continuerait sans rien jouer. Un test
 // dédié (menu-pause.spec.js) vérifie cette aide sans appeler ceci.
 export async function skipHints(page) {
-  await page.evaluate(() => {
-    localStorage.setItem("arcadepipe_seen_intro", "1");
-    // Le bandeau de consentement recouvre le haut du jeu : refusé d'avance.
-    localStorage.setItem("arcadepipe_analytics_consent", "denied");
-  });
-  await page.evaluate(() => document.getElementById("cookie-banner")?.classList.add("hidden"));
+  await page.evaluate(() => localStorage.setItem("arcadepipe_seen_intro", "1"));
+}
+
+// Active la mesure d'audience, désactivée par défaut (frontend/site-config.json) :
+// à appeler avant page.goto(). Le jeu affiche alors le bandeau de consentement.
+export async function enableAnalytics(page) {
+  await page.route("**/site-config.json", (route) => route.fulfill({ json: { gaMeasurementId: "G-TEST" } }));
 }
 
 // État du jeu lu dans la page (main.js exporte l'instance `game`, voir
@@ -68,7 +69,8 @@ export function gameState(page) {
     return {
       mode: game.mode,
       playerBullets: game.playerBulletsOnScreen,
-      novaStock: game.novaStock,
+      lives: game.lives,
+      kills: game.getRunSummary().kills,
       wave: game.getRunSummary().wave,
       inBonusLevel: game.inBonusLevel,
       buff: game.buffType,

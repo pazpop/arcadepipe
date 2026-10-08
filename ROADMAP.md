@@ -4,7 +4,7 @@ Organisée par session de travail, chacune indépendante, à reprendre quand il 
 
 ## Bugs signalés
 
-- [ ] **Bug** : les textes sont illisibles.
+Aucun en ce moment.
 
 ## Session 3 — optimisations optionnelles (pas pressé)
 
@@ -50,6 +50,7 @@ Objectif : peaufiner l'existant (game feel, UX, boucle de rejouabilité) — **r
 
 ## À faire
 
+- [ ] **Jeu en anglais et en français** : pouvoir choisir la langue du jeu, depuis un menu Options à créer (idée : y mettre aussi une qualité d'affichage et l'interrupteur du filtre rétro CRT, aujourd'hui accessible seulement par la touche C ; le ratio d'écran relève de la Session 4).
 - [ ] **Helper unique pour les conditions « combat suspendu ».** Prédicats dupliqués : `updateGraze` (`graze.js`) contre `resolveCollisions` et `update` (`states/playing.js`). Proposer `isCombatSuspended(g, player)` après avoir listé les différences voulues ; `graze.test.js` couvre déjà le cas du niveau bonus.
 - [ ] **Refonte du câblage DOM de `main.js`** (~350 lignes, une quinzaine de sections sans lien entre elles) : sortir le panneau du bas gauche (musique, volumes, tir auto, vitesse, aide, plein écran, CRT) dans un module. Objectif : lisibilité pour un débutant, comportement inchangé. Tests à relancer : `menu-pause`, `gameplay`, `consent`.
 - [ ] **Features d'inspiration** (idées à évaluer, hors de la Session 5 qui reste une liste fermée) : manette via la Gamepad API (détection de connexion, analogique et croix, remappage — [SpeedLazer](https://github.com/speedlazer/speedlazer), [INNBC-STARFIGHTER](https://github.com/InnovativeBioresearch/INNBC-STARFIGHTER)) · interrupteurs de debug hitbox/FPS ([bullethell](https://github.com/selenebun/bullethell)) · démarrage à la vague N par paramètre d'URL ([galaga](https://github.com/civilian7/galaga), utile aux tests) · jeton de session serveur pour le score (le hachage côté client se contourne) · PWA installable hors ligne · leaderboard hebdomadaire · ralenti passif d'esquive (à étudier, inspiré du « slowdown » de bullethell).

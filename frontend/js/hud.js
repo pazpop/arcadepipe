@@ -1,5 +1,6 @@
-// Tout le texte/UI du jeu — le petit canvas interne + `image-rendering:
-// pixelated` suffit à un rendu "façon bitmap" sans dessiner une police pixel par pixel.
+// Tout le texte/UI du jeu, en coordonnées logiques RES_W x RES_H. Le canvas
+// est rendu à la résolution de l'écran (voir renderScale dans main.js), donc
+// le texte reste net quelle que soit sa taille.
 import { RES_W, RES_H, PALETTE, POWERUP, NOVA, BONUS_LEVEL, VERSION } from "./config.js";
 import { drawPowerupIcon } from "./powerups.js";
 import { bossHealthFraction } from "./boss.js";

@@ -11,11 +11,23 @@ import { initConsent } from "./consent.js";
 
 const canvas = document.getElementById("game-canvas");
 const ctx = canvas.getContext("2d");
-canvas.width = RES_W;
-canvas.height = RES_H;
-// Sans ça, drawImage est lissé par défaut — à cette résolution minuscule, ça
-// rend les sprites en blobs flous.
-ctx.imageSmoothingEnabled = false;
+// Le canvas est rendu à la résolution réelle de l'écran (resizeCanvas), mais
+// tout le jeu dessine en coordonnées logiques RES_W x RES_H : renderScale
+// fait la conversion (voir loop). Sans ça, un texte de 7 px logiques n'a que
+// 7 pixels de haut, agrandis ensuite en bouillie illisible.
+let renderScale = 1;
+// shadowBlur ignore la transformation du contexte (spécification Canvas) :
+// on le met à l'échelle ici plutôt qu'à chaque appel, sinon les halos
+// rétrécissent quand la résolution monte.
+const shadowBlurProp = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(ctx), "shadowBlur");
+Object.defineProperty(ctx, "shadowBlur", {
+  get() {
+    return shadowBlurProp.get.call(this) / renderScale;
+  },
+  set(v) {
+    shadowBlurProp.set.call(this, v * renderScale);
+  },
+});
 
 const nameInputEl = document.getElementById("name-input");
 const crtOverlay = document.getElementById("crt-overlay");
@@ -49,8 +61,10 @@ export { music, audio, game };
 // Bannière RGPD : charge Google Analytics seulement après consentement.
 initConsent();
 
-// --- Redimensionnement responsive : ratio 480x270 gardé, agrandi au max, net
-// grâce à `image-rendering: pixelated` (css/style.css).
+// --- Redimensionnement responsive : ratio 480x270 gardé, agrandi au max.
+// ponytail: densité plafonnée à 2 (un téléphone à 3 rendrait 2,25 fois plus de
+// pixels pour un gain invisible) ; à baisser si un appareil rame.
+const MAX_PIXEL_RATIO = 2;
 function resizeCanvas() {
   const ratio = RES_W / RES_H;
   let w = window.innerWidth;
@@ -62,6 +76,17 @@ function resizeCanvas() {
   }
   canvas.style.width = `${Math.floor(w)}px`;
   canvas.style.height = `${Math.floor(h)}px`;
+  // Changer width/height efface le canvas et remet le contexte à zéro :
+  // seulement si la taille change vraiment, et imageSmoothingEnabled à refaire
+  // (sinon drawImage lisse les sprites en blobs flous).
+  const pixelRatio = Math.min(window.devicePixelRatio || 1, MAX_PIXEL_RATIO);
+  const bw = Math.max(RES_W, Math.round(Math.floor(w) * pixelRatio));
+  if (canvas.width !== bw) {
+    canvas.width = bw;
+    canvas.height = Math.round((bw * RES_H) / RES_W);
+    ctx.imageSmoothingEnabled = false;
+  }
+  renderScale = canvas.width / RES_W;
 }
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
@@ -338,6 +363,7 @@ function loop(timestamp) {
   const realDt = Math.min(0.05, (timestamp - lastTime) / 1000 || 0); // borné avant le multiplicateur de vitesse, pas après
   lastTime = timestamp;
   game.update(realDt * gameSpeed);
+  ctx.setTransform(renderScale, 0, 0, renderScale, 0, 0);
   game.draw(ctx);
   if (novaBtn) {
     novaBtn.classList.toggle("hidden", !(game.mode === game.MODE.PLAYING && game.novaStock > 0 && !game.inBonusLevel));

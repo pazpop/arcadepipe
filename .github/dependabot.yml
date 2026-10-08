@@ -6,6 +6,16 @@ updates:
     schedule:
       interval: "weekly"
 
+  # Outils de lint (frontend) et de test (e2e).
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/e2e"
+    schedule:
+      interval: "weekly"
+
   # Actions (épinglées par SHA) et images de base (épinglées par digest) :
   # voir docs/deploiement.md.
   - package-ecosystem: "github-actions"

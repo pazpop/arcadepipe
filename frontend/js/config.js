@@ -26,8 +26,8 @@ export const PALETTE = {
   bulletBossCircular: "#e8f4ff", // spirale/anneau (patternSpiralStep/patternRing) — blanc-glacé, contraste maximal pour les patterns les plus denses
   // Rouge d'alerte générique (HUD : vies, bannières, avertissements, kamikaze).
   danger: "#ff5d73",
-  // Code couleur des ennemis façon jeu de rôle — voir GAMEPLAY.md, section
-  // Charte graphique. Le jaune/or reste exclusif au boss (aucun autre
+  // Code couleur des ennemis façon jeu de rôle — voir GAMEPLAY.md, « Partis pris
+  // visuels et sonores ». Le jaune/or reste exclusif au boss (aucun autre
   // ennemi ne s'en approche), pour ne jamais laisser croire qu'un ennemi
   // normal "vaut" le boss.
   enemyNormal: "#27be4d", // facile (petit vaisseau)

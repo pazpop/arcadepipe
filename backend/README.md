@@ -1,6 +1,16 @@
 # Backend
 
-FastAPI + `sqlite3` natif — API du leaderboard.
+FastAPI + `sqlite3` natif — API du classement.
+
+| Route | Rôle |
+| --- | --- |
+| `GET /api/health` | l'API répond |
+| `GET /api/scores?limit=10` | meilleurs scores (100 au maximum) |
+| `POST /api/scores` | enregistre un score (`player_name`, `score`, `wave`, `kills`) |
+| `GET /api/games/count` | nombre total de parties jouées |
+| `POST /api/games` | compte une partie terminée |
+
+Variables d'environnement : `DB_PATH` (fichier SQLite, `./arcadepipe.db` par défaut) et `ALLOWED_ORIGINS` (origines autorisées par CORS, séparées par des virgules ; `http://localhost:5500` par défaut).
 
 ## Lancer en local
 
@@ -9,12 +19,16 @@ python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activat
 pip install -r requirements.txt && python seed.py && uvicorn main:app --reload
 ```
 
+`seed.py` ajoute quelques scores de départ si la base est vide.
+
 ## Tests
 
-Logique pure (`tests/test_main.py` : validation des scores, `get_client_ip`) + intégration HTTP (`tests/test_api.py` : vraies routes FastAPI via `TestClient`, DB SQLite temporaire par test) + rate limiting réellement exercé (`tests/test_rate_limit.py`, fixture séparée avec le limiter actif — `test_api.py` le désactive pour ses propres tests) :
+- `tests/test_main.py` : validation des scores et lecture de l'IP du client.
+- `tests/test_api.py` : les routes, via `TestClient`, sur une base SQLite temporaire par test.
+- `tests/test_rate_limit.py` : le rate limiting, que `test_api.py` désactive pour ses propres tests.
 
 ```bash
-pip install -r requirements-dev.txt && pytest   # 27 tests
+pip install -r requirements-dev.txt && pytest
 ```
 
 ## Lint

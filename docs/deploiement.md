@@ -18,10 +18,10 @@ C'est le seul fichier de déploiement Docker de ce repo. Celui qui ajoute Traefi
 `.github/workflows/deploy.yml` : sur chaque PR et chaque push vers `main`, lint backend (`ruff`), audit des dépendances (`pip-audit`), lint frontend (`eslint`), tests backend (`pytest`) et frontend (`node --test`), puis, sur `main` seulement, build et push des images vers GHCR (`:latest` et `:<sha>`, public). Les PR de Dependabot sont donc testées avant fusion.
 
 - Actions GitHub épinglées par SHA de commit, images de base épinglées par digest : un tag peut être redéplacé, un SHA ou un digest non.
-- [Dependabot](../.github/dependabot.yml) ouvre une PR à chaque mise à jour (`pip`, `github-actions`, `docker`).
+- [Dependabot](../.github/dependabot.yml) ouvre une PR à chaque mise à jour (`pip`, `npm`, `github-actions`, `docker`).
 - Un test en échec bloque le build, donc le déploiement.
 - **Choix assumé : les tests e2e (Playwright, ~2 min) ne tournent pas en CI**, ils sont lancés à la main avant de pousser. À reconsidérer si le rythme ou le nombre de contributeurs augmente.
 
 Ce repo ne connaît ni VPS ni serveur cible. L'instance `arcadepipe.pazpop.net` est déployée par [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner), notifié par un événement `repository_dispatch` une fois les images publiées. Un fork n'a pas ce déclenchement (secret absent) et n'en a pas besoin : voir la section Docker ci-dessus.
 
-⚠️ GHCR crée les packages en **privé** au premier push : après le premier run, les passer en public dans *Package Settings* (sinon `docker compose pull` échoue sans authentification).
+⚠️ GHCR crée les packages en **privé** au premier push : après le premier run, les passer en public dans *Package Settings*, sinon le déploiement du repo d'infra ne peut pas les télécharger sans authentification.

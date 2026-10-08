@@ -1,39 +1,45 @@
 # Frontend
 
-JS vanilla (modules ES6) + Canvas 2D — shoot'em up à défilement horizontal, pixel art généré par code.
+JS vanilla (modules ES6) + Canvas 2D, sans étape de build : les fichiers sont servis tels quels. Les règles du jeu sont dans [`GAMEPLAY.md`](GAMEPLAY.md).
 
-Ce que le jeu implémente, système par système : [`GAMEPLAY.md`](GAMEPLAY.md).
+## Par où commencer
+
+| Fichier | Rôle |
+| --- | --- |
+| `index.html`, `css/style.css` | la page : le canvas, le panneau de réglages, les boutons posés par-dessus |
+| `js/main.js` | point d'entrée : crée le jeu, branche boutons et touches, lance la boucle |
+| `js/game.js` | machine à états : appelle l'écran courant de `js/states/` |
+| `js/config.js` | toutes les constantes (couleurs, difficulté, bonus, boss...) |
+| `js/states/` | un fichier par écran ; `playing.js` est la partie elle-même, `waves.js` l'enchaînement des vagues |
+| `js/player.js`, `enemies.js`, `boss.js`, `projectiles.js`, `powerups.js`, `particles.js` | les objets du jeu : création, mise à jour, dessin |
+| `js/graze.js`, `bonusLevel.js`, `collisions.js`, `patterns.js` | frôlement et NOVA, niveau bonus, collisions, formes de tirs ennemis |
+| `js/hud.js` | tout le texte dessiné dans le canvas (HUD, menus, aide, classement) |
+| `js/assets.js`, `stars.js` | sprites dessinés par le code, décor étoilé |
+| `js/audio/` | bruitages synthétisés (`sfx.js`) et lecteur de musique (`music.js`) |
+| `js/i18n.js`, `js/i18n/` | traductions, un fichier par langue |
+| `js/api.js`, `consent.js`, `analytics.js`, `shareCard.js` | classement en ligne, consentement aux cookies, image de partage |
+| `js/renderer.js`, `input.js`, `storage.js` | canvas à la résolution de l'écran, entrées clavier/souris/tactile, préférences |
 
 ## Architecture
 
-Le jeu est une machine à états : à tout instant, `g.mode` vaut `"menu"`, `"playing"`, `"paused"`, `"help"`, `"game_over"`, `"name_entry"`, `"leaderboard"` ou `"credits"` (voir `js/states/mode.js`). `js/game.js` ne connaît plus la logique de chaque écran — il se contente de regarder `g.mode` et d'appeler le bon module de `js/states/` :
+Le jeu est une machine à états : à tout instant, `g.mode` désigne l'écran affiché (`"menu"`, `"playing"`, `"paused"`... voir `js/states/mode.js`). À chaque image, `js/game.js` regarde `g.mode` et appelle le module correspondant de `js/states/`.
 
 ```mermaid
 flowchart LR
-    main[main.js] -->|update dt / draw ctx / handleTap x y| game[game.js]
-    game -->|dispatch selon g.mode| states["js/states/*.js
-    (menu, playing, paused, help,
-    endOfRun, leaderboardScreen, credits)"]
-    states -->|lit/écrit| g[("g — état partagé
-    (score, wave, mode...)")]
-    states -->|lit| engine[("engine — pools, input,
-    audio, music... + engine.actions")]
+    main[main.js] -->|update, draw, handleTap| game[game.js]
+    game -->|selon g.mode| states["js/states/*.js"]
+    states -->|lit et écrit| g[("g : état de la partie")]
+    states -->|utilise| engine[("engine : entrées, audio, objets du jeu")]
 ```
 
-Deux objets circulent entre `game.js` et les modules de `states/`, créés une seule fois par `createGame()` :
+Deux objets, créés une fois par `createGame()`, circulent partout :
 
-- **`g`** : l'état de la partie (score, vague, mode courant, jauge NOVA...). Un seul objet plat, pas un sous-objet par écran — `hud.js` et les autres systèmes lisent ses champs directement, et restructurer `g` aurait touché tout le code pour un gain surtout cosmétique.
-- **`engine`** : ce dont un écran a besoin sans avoir à le recréer (`input`, `audio`, `music`, les pools de joueur/ennemis/projectiles...), plus `engine.actions` — des rappels (`startRun`, `goToLeaderboard`) pour qu'un écran puisse déclencher la transition vers un autre sans créer d'import circulaire entre modules de `states/`.
+- **`g`** : l'état du jeu (écran courant, score, vague, jauge NOVA...), dans un seul objet.
+- **`engine`** : ce dont un écran a besoin (`input`, `audio`, `music`, le joueur, les ennemis, les projectiles...), plus `engine.actions`, des fonctions pour passer à un autre écran sans import circulaire.
 
-Chaque module de `states/` exporte les mêmes formes de fonctions :
+Un écran expose jusqu'à trois fonctions : `update` (fait avancer l'écran d'une image), `draw` (le dessine) et `handleTap` (traite un clic ou un tap). `endOfRun.js` regroupe deux écrans (game over et saisie du pseudo) et nomme donc ses fonctions `updateGameOver`, `drawNameEntry`, etc.
 
-| Export | Rôle |
-| --- | --- |
-| `update(g, engine, dt)` | fait avancer la logique de l'écran d'une frame |
-| `draw(c2d, g[, engine])` | dessine l'écran |
-| `handleTap(g, engine, x, y)` | gère un tap/clic tactile (quand l'écran en a besoin) |
-
-`js/states/playing.js` est à part : c'est le plus gros (collisions, boss, niveau bonus, NOVA), et sa fonction `drawScene()` est aussi appelée pour les écrans `paused` et `game_over`, qui affichent la scène de jeu figée derrière leur propre overlay plutôt qu'un fond vide. La gestion des vagues (démarrage, transition entre deux vagues, déclenchement du niveau bonus) vit dans `js/states/waves.js`, un module utilitaire dans le même dossier — pas un écran au sens `MODE`, juste un sous-système extrait pour la même raison que `bonusLevel.js` : son propre minuteur, ses propres champs `g`.
+Tout le jeu dessine en coordonnées logiques 480×270 (`RES_W`, `RES_H`) ; `renderer.js` les convertit à la taille réelle de l'écran.
 
 ## Lancer en local
 
@@ -41,16 +47,15 @@ Chaque module de `states/` exporte les mêmes formes de fonctions :
 python -m http.server 5500   # http://localhost:5500
 ```
 
-## Tests
+Le classement n'apparaît que si le [backend](../backend/README.md) tourne aussi, et seulement à cette adresse exacte (`localhost`, port 5500).
 
-Logique pure des modules JS, aucune dépendance npm (Node ≥ 18) :
+## Tests et lint
+
+Node 18 ou plus récent, sans autre dépendance pour les tests :
 
 ```bash
-cd js && node --test   # 18 tests
+cd js && node --test          # logique pure : collisions, frôlement, vagues, traductions, cache de l'API
+npm install && npm run lint   # ESLint, depuis frontend/
 ```
 
-Rien du canvas, de la souris/du tactile ni de l'audio n'est couvert ici — voir [`../e2e/README.md`](../e2e/README.md) pour les tests bout-en-bout (Playwright) qui pilotent un vrai navigateur.
-
-## Lint
-
-`npm install && npm run lint` (ESLint, config minimale `eslint:recommended`, vérifié en CI). `package.json` ne sert qu'à ça : le jeu reste du JS vanilla servi tel quel.
+Le canvas, les entrées et l'audio sont couverts par les [tests bout-en-bout](../e2e/README.md).

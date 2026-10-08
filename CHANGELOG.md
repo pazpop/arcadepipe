@@ -72,7 +72,7 @@ Corrections issues d'une relecture complète du dépôt.
 - Nettoyage sans changement de comportement : client HTTP du classement déplacé de `js/audio/leaderboard.js` vers `js/api.js`, références périmées corrigées dans les commentaires et les docs, commentaires historiques retirés. Docs raccourcies (GAMEPLAY.md, tableau de la Session 5 de la ROADMAP). CI : `npm ci`.
 
 ## [2.88] - 2026-09-30
-- **Fix : musique parfois muette pendant toute la première partie.** Une piste envoyée au lecteur avant qu'il soit prêt (nœud audio pas encore créé, ou WASM de libopenmpt pas encore chargé) était perdue sans erreur. Les messages attendent maintenant que le lecteur soit prêt ([correctif n° 4](frontend/lib/PATCHES.md)).
+- **Fix : musique parfois muette pendant toute la première partie.** Une piste envoyée au lecteur avant qu'il soit prêt (nœud audio pas encore créé, ou WASM de libopenmpt pas encore chargé) était perdue sans erreur. Les messages attendent maintenant que le lecteur soit prêt (correctif n° 4 du lecteur tracker, retiré depuis).
 - Tests e2e : attente de l'état réel du jeu (`waitForMode`, `gameState`) au lieu de délais fixes ; `music-end` stable, et le test du boss atteint enfin un combat de boss.
 
 ## [2.87] - 2026-09-30

@@ -2,6 +2,11 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. `VERSION` (`frontend/js/config.js`) vaut `2.<nombre de commits>` au dernier commit qui touche le jeu (les commits doc/infra ne l'incrémentent pas). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.114] - 2026-10-08
+- **Fix : les ennemis pouvaient tirer vers l'arrière.** Un élite ou un gunner ne tire plus que si le joueur est devant lui (`enemies.test.js`).
+- Fix : le bandeau de consentement recouvrait le bas du panneau de gauche ; il est maintenant en haut de l'écran.
+- Panneau de gauche : barres de volume musique et bruitages alignées, libellé « MUSIQUE (by Mall-E) ».
+
 ## [2.113] - 2026-10-07
 - **Quatrième morceau** de [mall-e](https://mall-e.bandcamp.com/) dans la playlist (`fourth.mp3`, en ligne depuis le 2026-10-07 sous le numéro 2.107).
 - Backend : Python 3.13 (image Docker, CI et cible de ruff) et FastAPI 0.142.2.

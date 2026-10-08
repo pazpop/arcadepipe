@@ -202,8 +202,10 @@ export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
       continue;
     }
     // En fuite : ne tire plus. Dans le tiers gauche non plus (FIRE_MIN_X) : le
-    // joueur doit pouvoir rester concentré sur les 2/3 droits.
-    if ((en.type === "elite" || en.gunner) && !en.leaving && en.x > FIRE_MIN_X) {
+    // joueur doit pouvoir rester concentré sur les 2/3 droits. Jamais vers
+    // l'arrière : le joueur doit être devant l'ennemi (du côté où il vole).
+    const playerAhead = (target.x - en.x) * en.vx + (target.y - en.y) * en.vy > 0;
+    if ((en.type === "elite" || en.gunner) && !en.leaving && en.x > FIRE_MIN_X && playerAhead) {
       en.fireTimer -= dt;
       if (en.fireTimer <= 0) {
         const speed = en.gunner ? bulletSpeed * 0.75 : bulletSpeed;

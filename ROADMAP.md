@@ -4,8 +4,6 @@ Organisée par session de travail, chacune indépendante, à reprendre quand il 
 
 ## Bugs signalés
 
-- [ ] **Bug** : les vaisseaux ne devraient pas pouvoir tirer derrière eux.
-- [ ] **Bug** : les boss mettent plusieurs secondes avant de commencer à tirer.
 - [ ] **Bug** : les textes sont illisibles.
 
 ## Session 3 — optimisations optionnelles (pas pressé)
@@ -52,7 +50,6 @@ Objectif : peaufiner l'existant (game feel, UX, boucle de rejouabilité) — **r
 
 ## À faire
 
-- [ ] Vérifier en production que `/js/graze.test.js` et `/js/package.json` répondent 404 (exclus de l'image par `frontend/.dockerignore`).
 - [ ] **Helper unique pour les conditions « combat suspendu ».** Prédicats dupliqués : `updateGraze` (`graze.js`) contre `resolveCollisions` et `update` (`states/playing.js`). Proposer `isCombatSuspended(g, player)` après avoir listé les différences voulues ; `graze.test.js` couvre déjà le cas du niveau bonus.
 - [ ] **Refonte du câblage DOM de `main.js`** (~350 lignes, une quinzaine de sections sans lien entre elles) : sortir le panneau du bas gauche (musique, volumes, tir auto, vitesse, aide, plein écran, CRT) dans un module. Objectif : lisibilité pour un débutant, comportement inchangé. Tests à relancer : `menu-pause`, `gameplay`, `consent`.
 - [ ] **Features d'inspiration** (idées à évaluer, hors de la Session 5 qui reste une liste fermée) : manette via la Gamepad API (détection de connexion, analogique et croix, remappage — [SpeedLazer](https://github.com/speedlazer/speedlazer), [INNBC-STARFIGHTER](https://github.com/InnovativeBioresearch/INNBC-STARFIGHTER)) · interrupteurs de debug hitbox/FPS ([bullethell](https://github.com/selenebun/bullethell)) · démarrage à la vague N par paramètre d'URL ([galaga](https://github.com/civilian7/galaga), utile aux tests) · jeton de session serveur pour le score (le hachage côté client se contourne) · PWA installable hors ligne · leaderboard hebdomadaire · ralenti passif d'esquive (à étudier, inspiré du « slowdown » de bullethell).
@@ -62,7 +59,6 @@ Objectif : peaufiner l'existant (game feel, UX, boucle de rejouabilité) — **r
 - [ ] **Distance parcourue, phase 2** : l'ajouter au classement (changement de schéma serveur, non urgent).
 - [ ] Test e2e comparant deux captures d'écran prises en pause (doivent être identiques bit à bit), si l'invariant de `drawScene()` (`states/playing.js`) doit être renforcé au-delà d'un commentaire.
 
-- [ ] **Bandeau de consentement qui recouvre le bas du panneau de gauche** sur desktop (boutons Plein écran/version masqués tant que le visiteur n'a pas choisi) — le décaler ou le rétrécir. Cosmétique, rien d'urgent.
 - [ ] **Permettre de changer son choix de consentement** (RGPD : retirer son accord aussi facilement qu'on l'a donné) : ajouter un bouton **« Cookies »** dans le panneau de gauche qui rouvre le bandeau (`js/consent.js` n'affiche aujourd'hui le bandeau que tant qu'aucun choix n'est mémorisé). Prévoir aussi un lien depuis le bandeau vers [docs/donnees-collectees.md](docs/donnees-collectees.md). À faire plus tard, pas urgent.
 - [ ] **Tests e2e sur Firefox et WebKit** (Safari/iOS), pas seulement Chromium — ajouter deux projets dans `e2e/playwright.config.js`, voir quels tests passent (audio, plein écran absent sur iPhone). Le jeu vise le mobile, donc Safari compte. Pas urgent.
 - [ ] Côté **infra** (décision Traefik ou Caddy, copie distante et alertes des backups) : suivi dans la *Roadmap* du README de [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner).

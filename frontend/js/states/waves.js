@@ -1,7 +1,7 @@
 // Vagues : démarrage d'une vague (boss ou non) et transition entre deux
 // vagues (saut spatial, niveau bonus).
 import { RES_H, DIFFICULTY, BONUS_LEVEL, PLAYER } from "../config.js";
-import { spawnDeathStarBackdrop } from "../stars.js";
+import { spawnBossBackdrop } from "../stars.js";
 import { spawnBoss } from "../boss.js";
 import { novaMaxForWave } from "../graze.js";
 import { createBonusLevel, updateBonusLevel, bonusLevelRewardFraction } from "../bonusLevel.js";
@@ -31,10 +31,10 @@ export function startWave(g, engine, wave) {
   if (isBossWave(wave)) {
     g.banner = { text: t("banner.bossWave", { wave }), timer: 2.5 };
     g.boss = spawnBoss(wave);
-    spawnDeathStarBackdrop(engine.starfield);
+    spawnBossBackdrop(engine.starfield);
   } else {
     g.banner = { text: t("hud.wave", { wave }), timer: 1.8 };
-    engine.starfield.deathStar = null; // rejouer après une mort en plein combat de boss
+    engine.starfield.bossBackdrop = null; // rejouer après une mort en plein combat de boss
   }
 }
 

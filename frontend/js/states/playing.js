@@ -3,7 +3,7 @@
 // GAME OVER, qui affichent la scène figée derrière leur écran (voir game.js).
 import { RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE, HIT_STOP } from "../config.js";
 import { loadItem, saveItem } from "../storage.js";
-import { updateStarfield, triggerDeathStarLeave } from "../stars.js";
+import { updateStarfield, triggerBossBackdropLeave } from "../stars.js";
 import { resetPlayer, updatePlayer, hitPlayer, drawPlayer, applyPowerup, applyShield, canReceivePowerup } from "../player.js";
 import { updateProjectiles, drawProjectiles } from "../projectiles.js";
 import { updateParticles, drawParticles, spawnExplosion, spawnFlashBurst, spawnSpark } from "../particles.js";
@@ -180,7 +180,7 @@ function resolveCollisions(g, engine) {
               vibrate([40, 60, 40]);
               spawnExplosion(particles, g.boss.x, g.boss.y, 80, PALETTE.boss);
               spawnFlashBurst(particles, g.boss.x, g.boss.y, 24);
-              triggerDeathStarLeave(starfield);
+              triggerBossBackdropLeave(starfield);
             }
           } else {
             audio.playBossHit();

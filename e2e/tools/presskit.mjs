@@ -108,7 +108,26 @@ const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png
   await context.close();
 }
 
-// 5. Vidéo : vingt secondes de jeu, depuis le début d'une partie
+// 5. Un combat de boss (dès la vague 2, après un seul ennemi)
+{
+  const { context, page } = await openGame();
+  await setConfig(page, { DIFFICULTY: { bossWaveEvery: 2, baseWaveKills: 1, waveKillsStep: 0 }, PLAYER: { startingLives: 5 } });
+  await page.mouse.click(...at(240, 150));
+  await page.mouse.down();
+  for (let i = 0; i < 100; i++) {
+    const arrived = await page.evaluate(async () => (await import("/js/main.js")).game.bossState?.arrived);
+    if (arrived) break;
+    await page.mouse.move(...at(110, 135 + 85 * Math.sin(i / 3)), { steps: 5 });
+    await page.waitForTimeout(250);
+  }
+  await page.mouse.up(); // sans tirer : le boss garde tous ses points faibles
+  await page.mouse.move(...at(110, 200), { steps: 10 });
+  await page.waitForTimeout(3800); // quelques salves à l'écran
+  await shot(page, "screenshot-boss");
+  await context.close();
+}
+
+// 6. Vidéo : vingt secondes de jeu, depuis le début d'une partie
 {
   const videoDir = path.join(OUT, "video-tmp");
   const { context, page } = await openGame({ recordVideo: { dir: videoDir, size: SIZE } });

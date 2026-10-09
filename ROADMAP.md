@@ -8,16 +8,15 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 - [ ] **Valider en jouant les réglages par défaut** : micro-gel à l'impact (`HIT_STOP`) et paliers sonores du frôlement (`GRAZE.milestones`), dans `config.js`.
 - [ ] **Faire relire l'anglais** (`frontend/js/i18n/en.js`).
 - [ ] **Cinquième morceau de mall-e** : l'ajouter à `AUDIO.tracks` (`config.js`) et au README.
-- [ ] **Tester le partage d'un score en conditions réelles** : partager l'image d'une partie et vérifier que le QR code se lit avec un téléphone. (L'aperçu du lien du jeu est vérifié sur Discord ; reste à le voir sur X.)
+- [ ] **Tester le partage d'un score en conditions réelles** : partager l'image d'une partie et vérifier que le QR code se lit avec un téléphone. (L'aperçu du lien du jeu et l'image de score s'affichent bien sur Discord.)
 - [ ] **Première minute** : mesurer le délai avant le premier bonus sur dix parties ; s'il dépasse 30 s, augmenter les chances de drop en vague 1.
 
 ## Avant de publier sur des plateformes (itch.io...)
 
 - [ ] **Accord de mall-e** pour diffuser sa musique ailleurs que sur le site : donné par message (Signal, à conserver) ; garder aussi sa réponse par courriel quand elle arrivera.
-- [ ] **Redessiner le décor du boss** (`deathStar`, `stars.js`) : il ressemble à l'Étoile de la mort, une marque protégée. Renommer aussi dans le code.
 - [ ] **Publier sur itch.io** : l'archive se construit (`python tools/build_itch.py`, voir [docs/deploiement.md](docs/deploiement.md#itchio)). Reste à autoriser l'origine d'itch.io dans `ALLOWED_ORIGINS` du backend (dépôt d'infra), à déposer l'archive, puis à tester le classement depuis la page itch.io.
 - [ ] **Supprimer de faux scores à distance** : une commande d'administration protégée, au lieu d'une requête SQL à la main sur le serveur.
-- [ ] **Compléter le kit presse** (`frontend/press/`) : une capture du boss une fois son décor redessiné (`npm run presskit` dans `e2e/`), une adresse de contact, la date de sortie, les liens des plateformes ; éventuellement la vidéo en MP4 ou en GIF.
+- [ ] **Compléter le kit presse** (`frontend/press/`, captures refaites par `npm run presskit` dans `e2e/`) : une adresse de contact, la date de sortie, les liens des plateformes ; éventuellement la vidéo en MP4 ou en GIF, ou sur YouTube pour la page itch.io.
 - [ ] **Documentation du dépôt en anglais et en français** (README, docs).
 
 ## Jeu

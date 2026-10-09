@@ -1,6 +1,7 @@
 // Fond spatial parallaxe multi-couches : étoiles lentes/rapides + planètes/
 // galaxies/trous noirs occasionnels.
 import { RES_W, RES_H, PALETTE } from "./config.js";
+import { buildSprites } from "./assets.js";
 
 // Deux couches discrètes seulement : une couche rapide et opaque gênerait la lecture des tirs.
 const LAYERS = [
@@ -75,29 +76,23 @@ function nextCelestialDelay() {
   return 2 + Math.random() * 3;
 }
 
-// Décor de boss "Étoile Noire" : fixe pendant le combat, s'échappe vers la
-// gauche à la victoire (triggerDeathStarLeave) — vitesse élevée pour avoir
-// quitté l'écran avant la vague suivante (voir DIFFICULTY.bossWaveBreakDuration).
-const DEATH_STAR_LEAVE_SPEED = 70;
+// Décor de boss : le vaisseau-mère de la flotte ennemie, une très grande
+// silhouette sombre derrière le combat. Immobile pendant le combat, il s'échappe
+// vers la gauche à la victoire (triggerBossBackdropLeave), assez vite pour avoir
+// quitté l'écran avant la vague suivante (DIFFICULTY.bossWaveBreakDuration).
+const BOSS_BACKDROP_LEAVE_SPEED = 90;
 
-export function spawnDeathStarBackdrop(field) {
-  field.deathStar = {
-    x: RES_W * 0.78,
-    y: RES_H * 0.38,
-    radius: 40 + Math.random() * 14,
+export function spawnBossBackdrop(field) {
+  field.bossBackdrop = {
+    x: RES_W * (0.74 + Math.random() * 0.08),
+    y: RES_H * (0.3 + Math.random() * 0.12),
+    scale: 4 + Math.random(), // fois la taille de la coque du boss ; varie à chaque combat
     leaving: false,
-    // Varie à chaque boss (teinte désaturée, tranchée optionnelle, cratère
-    // déplacé) pour ne pas être identique à chaque combat.
-    hue: Math.random() * 360,
-    hasTrench: Math.random() < 0.6,
-    trenchTilt: (Math.random() - 0.5) * 0.3,
-    craterAngle: Math.random() * Math.PI * 2,
-    craterDist: 0.3 + Math.random() * 0.25,
   };
 }
 
-export function triggerDeathStarLeave(field) {
-  if (field.deathStar) field.deathStar.leaving = true;
+export function triggerBossBackdropLeave(field) {
+  if (field.bossBackdrop) field.bossBackdrop.leaving = true;
 }
 
 export function createStarfield() {
@@ -105,7 +100,7 @@ export function createStarfield() {
     ...layer,
     stars: Array.from({ length: layer.count }, () => makeStar(layer, true)),
   }));
-  return { layers, celestial: null, celestialTimer: nextCelestialDelay(), deathStar: null };
+  return { layers, celestial: null, celestialTimer: nextCelestialDelay(), bossBackdrop: null };
 }
 
 // allowBlackhole : false pour ne jamais en tirer un nouveau (menu principal,
@@ -128,10 +123,10 @@ export function updateStarfield(field, dt, warp, allowBlackhole = true) {
     field.celestialTimer -= dt;
     if (field.celestialTimer <= 0) field.celestial = makeCelestial(allowBlackhole);
   }
-  if (field.deathStar) {
-    if (field.deathStar.leaving) {
-      field.deathStar.x -= DEATH_STAR_LEAVE_SPEED * warp * dt;
-      if (field.deathStar.x < -field.deathStar.radius * 2) field.deathStar = null;
+  if (field.bossBackdrop) {
+    if (field.bossBackdrop.leaving) {
+      field.bossBackdrop.x -= BOSS_BACKDROP_LEAVE_SPEED * warp * dt;
+      if (field.bossBackdrop.x < -RES_W / 2) field.bossBackdrop = null;
     }
     // Sinon : immobile pendant le combat (dériver distrairait plus qu'autre chose).
   }
@@ -239,47 +234,23 @@ function drawCelestial(ctx, c) {
 // Silhouette dessinée au canvas (pas un sprite), cohérent avec planètes/
 // galaxies ci-dessus. Teintes grises très désaturées (S=12%, même principe
 // que drawCelestial : jamais assez vif pour rivaliser avec le gameplay).
-function drawDeathStar(ctx, ds) {
-  const r = ds.radius;
-  // Fondu seulement en sortie (fuite) : apparaît déjà "installé" au début du combat.
-  const alpha = ds.leaving ? Math.max(0, Math.min(1, (ds.x + r * 1.5) / (r * 1.5))) : 1;
-  if (alpha <= 0.01) return;
+// La coque du boss (sprite d'assets.js), agrandie et presque éteinte : assez
+// terne pour rester un décor, jamais confondue avec le boss ni avec un tir.
+function drawBossBackdrop(ctx, backdrop) {
+  const hull = buildSprites().bossHull;
+  const w = hull.width * backdrop.scale;
+  const h = hull.height * backdrop.scale;
+  // Fondu seulement en sortie : il est déjà là au début du combat.
+  const fade = backdrop.leaving ? Math.max(0, Math.min(1, (backdrop.x + w / 2) / w)) : 1;
   ctx.save();
-  ctx.globalAlpha = alpha * 0.9;
-  // Désaturée (S=12%) pour rester "métallique", teinte différente à chaque boss (ds.hue).
-  const grad = ctx.createRadialGradient(ds.x - r * 0.3, ds.y - r * 0.3, r * 0.15, ds.x, ds.y, r);
-  grad.addColorStop(0, `hsl(${ds.hue}, 12%, 42%)`);
-  grad.addColorStop(0.6, `hsl(${ds.hue}, 12%, 23%)`);
-  grad.addColorStop(1, `hsl(${ds.hue}, 12%, 9%)`);
-  ctx.fillStyle = grad;
-  ctx.beginPath();
-  ctx.arc(ds.x, ds.y, r, 0, Math.PI * 2);
-  ctx.fill();
-  // Tranchée équatoriale, optionnelle et légèrement inclinée (ds.hasTrench/trenchTilt).
-  if (ds.hasTrench) {
-    ctx.strokeStyle = `hsla(${ds.hue}, 10%, 4%, 0.75)`;
-    ctx.lineWidth = Math.max(1, r * 0.045);
-    ctx.beginPath();
-    ctx.moveTo(ds.x - r, ds.y + r * (0.12 - ds.trenchTilt));
-    ctx.lineTo(ds.x + r, ds.y + r * (0.12 + ds.trenchTilt));
-    ctx.stroke();
-  }
-  // Cratère, position variable autour du centre (ds.craterAngle/craterDist).
-  const cx = ds.x + Math.cos(ds.craterAngle) * r * ds.craterDist;
-  const cy = ds.y + Math.sin(ds.craterAngle) * r * ds.craterDist;
-  ctx.fillStyle = `hsla(${ds.hue}, 10%, 6%, 0.85)`;
-  ctx.beginPath();
-  ctx.arc(cx, cy, r * 0.2, 0, Math.PI * 2);
-  ctx.fill();
-  ctx.strokeStyle = `hsla(${ds.hue}, 15%, 40%, 0.5)`;
-  ctx.lineWidth = 1;
-  ctx.stroke();
+  ctx.globalAlpha = 0.22 * fade;
+  ctx.drawImage(hull, backdrop.x - w / 2, backdrop.y - h / 2, w, h);
   ctx.restore();
 }
 
 export function drawStarfield(ctx, field, warp) {
   ctx.save();
-  if (field.deathStar) drawDeathStar(ctx, field.deathStar);
+  if (field.bossBackdrop) drawBossBackdrop(ctx, field.bossBackdrop);
   if (field.celestial) drawCelestial(ctx, field.celestial);
   ctx.fillStyle = PALETTE.star;
   for (const layer of field.layers) {

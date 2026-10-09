@@ -62,7 +62,7 @@ export function spawnBoss(waveNumber) {
     arrived: false,
     spiralAngle: 0,
     sizeScale,
-    hueShift: Math.random() * 360,
+    hull: tintedHull(hull, Math.random() * 360), // coque à la teinte de ce combat
     fireTimer: 0.3, // délai avant le 1er tir, une fois arrivé (boss.arrived)
     elapsed: 0, // secondes depuis l'arrivée, pour le flottement vertical
     weakPoints: points,
@@ -177,31 +177,42 @@ export function bossHealthFraction(boss) {
   return remaining / total;
 }
 
-// Dessine la coque à sa taille/teinte propres à ce combat (sizeScale/hueShift)
-// — mode composite "hue" : change juste la teinte, garde le gris-métal du sprite.
-function drawHullSprite(ctx, boss, hull, alpha = 1) {
+// Copie de la coque, teintée : le mode "hue" change la teinte en gardant le
+// gris-métal du sprite. Faite une fois par boss, hors de l'écran, pour que la
+// teinte ne touche que la coque et pas le décor derrière elle.
+function tintedHull(hull, hue) {
+  const canvas = document.createElement("canvas");
+  canvas.width = hull.width;
+  canvas.height = hull.height;
+  const ctx = canvas.getContext("2d");
+  ctx.drawImage(hull, 0, 0);
+  ctx.globalCompositeOperation = "hue";
+  ctx.fillStyle = `hsl(${hue}, 60%, 50%)`;
+  ctx.fillRect(0, 0, hull.width, hull.height);
+  ctx.globalCompositeOperation = "destination-in"; // ne garde que les pixels de la coque
+  ctx.drawImage(hull, 0, 0);
+  return canvas;
+}
+
+// Dessine la coque à la taille de ce combat (sizeScale).
+function drawHullSprite(ctx, boss, alpha) {
   ctx.save();
   ctx.globalAlpha = alpha;
   ctx.translate(boss.x, boss.y);
   ctx.scale(boss.sizeScale, boss.sizeScale);
-  ctx.drawImage(hull, -hull.width / 2, -hull.height / 2);
-  ctx.globalCompositeOperation = "hue";
-  ctx.fillStyle = `hsl(${boss.hueShift}, 60%, 50%)`;
-  ctx.fillRect(-hull.width / 2, -hull.height / 2, hull.width, hull.height);
+  ctx.drawImage(boss.hull, -boss.hull.width / 2, -boss.hull.height / 2);
   ctx.restore();
 }
 
 export function drawBoss(ctx, boss) {
-  const hull = buildSprites().bossHull;
-
   if (boss.victory) {
     if (boss.victoryTimer >= VICTORY_FADE_DURATION) return; // coque entièrement dissipée
-    drawHullSprite(ctx, boss, hull, Math.max(0, 1 - boss.victoryTimer / VICTORY_FADE_DURATION));
+    drawHullSprite(ctx, boss, Math.max(0, 1 - boss.victoryTimer / VICTORY_FADE_DURATION));
     return;
   }
 
   ctx.save();
-  drawHullSprite(ctx, boss, hull);
+  drawHullSprite(ctx, boss, 1);
 
   for (const p of boss.weakPoints) {
     const wx = boss.x + p.ox;

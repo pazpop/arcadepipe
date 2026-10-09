@@ -35,6 +35,7 @@ Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/confi
 - Il est invulnérable pendant son entrée, puis tire aussitôt. Ses tirs s'intensifient à chaque point faible détruit.
 - Deux couleurs de tirs, selon la façon de les esquiver : bleu pour les éventails visés, blanc pour les spirales et les anneaux.
 - Foncer dans sa coque coûte une vie.
+- Derrière lui, en décor, la silhouette du vaisseau-mère de la flotte ennemie.
 - Le premier boss est adouci (moins de vie, tirs plus lents et moins nombreux).
 - Le vaincre rapporte un gros bonus de score et une vie (5 au maximum).
 

@@ -138,7 +138,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
       updateStarfield(starfield, dt, 1, g.mode !== MODE.MENU);
       // Le décor du boss ne suit pas le joueur hors de la partie (l'aide, elle,
       // peut s'ouvrir en plein combat).
-      if (g.mode !== MODE.HELP) starfield.deathStar = null;
+      if (g.mode !== MODE.HELP) starfield.bossBackdrop = null;
     }
 
     // Une touche non consommée par l'état courant ne doit pas fuiter vers

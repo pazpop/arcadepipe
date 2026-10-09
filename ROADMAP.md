@@ -4,7 +4,7 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 
 ## Avant la publication officielle
 
-- [ ] **Vérifier sur un vrai téléphone** les commandes dans les bandes noires en paysage (Pause, bouton ⚙, NOVA) et l'encoche ; la musique dès le menu ; le clavier virtuel à la saisie du pseudo.
+- [ ] **Vérifier sur un vrai téléphone** les commandes dans les bandes noires en paysage (Pause, bouton ⚙, NOVA) et l'encoche ; la musique dès le menu ; le clavier virtuel à la saisie du pseudo ; la fluidité en vague avancée (vague 10 et plus).
 - [ ] **Valider en jouant les réglages par défaut** : micro-gel à l'impact (`HIT_STOP`) et paliers sonores du frôlement (`GRAZE.milestones`), dans `config.js`.
 - [ ] **Faire relire l'anglais** (`frontend/js/i18n/en.js`).
 - [ ] **Cinquième morceau de mall-e** : l'ajouter à `AUDIO.tracks` (`config.js`) et au README.
@@ -23,7 +23,12 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 
 - [ ] **Télégraphe des tirs circulaires du boss** : un signal d'environ 0,2 s avant un anneau ou une spirale. Mesure : aucune mort « injuste » sur cinq combats.
 - [ ] **Cadence du boss** : elle accélère par deux mécanismes cumulés (`phaseSpeed` et l'intervalle dans `updateBoss`, `boss.js`), si bien que le plancher de 0,35 s n'en est pas un. N'en garder qu'un, puis régler en jouant.
-- [ ] **Messages de fin de partie variables** (« Presque le boss ! »), à partir de `getRunSummary()`.
+- [ ] **Record personnel local** : meilleur score gardé par `storage.js` (nouvelle clé dans `STORAGE_KEYS`), affiché au menu et à la fin de partie, avec un « NOUVEAU RECORD » quand il tombe. Dire aussi au joueur quand le classement est injoignable : l'échec est aujourd'hui silencieux (`endOfRun.js`).
+- [ ] **Un coup reçu casse la chaîne de frôlements** : elle ne retombe aujourd'hui qu'au changement de vague (`startWave`, `waves.js`). La remettre à zéro dans `onPlayerHit` (`playing.js`), puis valider en jouant.
+- [ ] **Arrivée du boss : son d'alerte et léger tremblement** : la bannière « ARME MASSIVE EN APPROCHE » est muette (`startWave`, `waves.js`). Ajouter un son, et un tremblement d'environ 2 px tant que `boss.arrived` est faux (1,5 s), par `triggerShake` (`playing.js`), qui respecte déjà « réduire les animations ». Mesure : la bannière reste lisible.
+- [ ] **Aide : deux règles manquantes** : foncer dans un ennemi le détruit au prix d'un coup ; tirs du boss bleus (éventails visés) et blancs (spirales et anneaux). Dans `i18n/fr.js` et `en.js`.
+- [ ] **Annoncer un nouveau type d'ennemi** dans la bannière de sa première vague (élite en 3, kamikaze en 4, gunner en 6).
+- [ ] **Messages de fin de partie variables** (« Presque le boss ! ») et meilleure chaîne de frôlements sur l'écran de fin, à partir de `getRunSummary()`.
 - [ ] **Menu Options** : y déplacer les réglages du panneau (filtre rétro, langue...), éventuellement une qualité d'affichage.
 - [ ] **Changer de langue sans recharger la page** (voir `nextLang`, `i18n.js`) et traduire les balises `<meta>` de `index.html` (titre et description des liens partagés, en français seulement).
 - [ ] **Distance parcourue au classement** (change le schéma de la base).
@@ -34,7 +39,12 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 - **Son à l'apparition d'un kamikaze** : sifflement descendant d'environ 0,15 s.
 - **Remplir l'écran des téléphones en paysage** : élargir la zone de jeu toucherait le HUD, les zones d'apparition et de tir des ennemis (`LEFT_BOUND`, `FIRE_MIN_X`, `enemies.js`) et l'équité du classement entre écrans.
 - **Rang dynamique** : la difficulté monte par tranche de frôlements sans dégât et redescend au coup encaissé. Le code est simple, le réglage long.
-- **Événement en cours de partie**, par exemple une formation ennemie en anneau.
+- **Formations ennemies** : en V, en colonne, élite escortée de kamikazes, anneau. Aujourd'hui chaque ennemi apparaît seul et au hasard (`spawnEnemy`, `enemies.js`). Le plus gros gain de variété, et le plus long à régler.
+- **Nouvelle attaque du boss par point faible détruit** : seule la cadence monte aujourd'hui (`phaseSpeed`, `boss.js`). À voir après la tâche « Cadence du boss ».
+- **Flash blanc d'une image sur un ennemi touché qui survit** (élite, gunner), en plus des étincelles et du sprite terni.
+- **Plusieurs vaisseaux au choix** : plus de rejouabilité, mais un équilibrage à faire et un classement à séparer par vaisseau pour rester équitable.
+- **Couleurs de vaisseau à débloquer** avec le record local (palette de `assets.js`), purement cosmétiques.
+- **Vérifier les couleurs au simulateur de daltonisme** : gunner bleu et ennemi normal vert ont la même silhouette ; kamikaze rouge sur ennemis verts.
 - **Mode attract** : le jeu se joue seul derrière le menu.
 - Manette (Gamepad API) · démarrage à la vague N par paramètre d'URL · PWA installable hors ligne · classement hebdomadaire · interrupteurs de debug (hitbox, FPS).
 

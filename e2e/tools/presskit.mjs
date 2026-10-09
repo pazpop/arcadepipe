@@ -2,7 +2,8 @@
 // Le jeu est joué pour de vrai dans un navigateur ; seuls quelques réglages sont
 // forcés pour atteindre vite chaque situation (vagues courtes, bonus garanti).
 //
-// Usage, depuis e2e/ :  npm run presskit
+// Usage, depuis e2e/ :  npm run presskit            (tout)
+//                        npm run presskit -- itch    (un seul groupe, voir `wants` plus bas)
 import { chromium } from "@playwright/test";
 import { spawn } from "child_process";
 import fs from "fs";
@@ -55,15 +56,20 @@ async function play(page, seconds) {
 
 const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png`) });
 
+// Sans argument, tout est refait. Avec un nom de groupe, seulement ce groupe :
+// "captures", "video" ou "itch" (images de la page itch.io, à partir des captures).
+const only = process.argv[2];
+const wants = (group) => !only || only === group;
+
 // 1. Écran titre
-{
+if (wants("captures")) {
   const { context, page } = await openGame();
   await shot(page, "screenshot-title");
   await context.close();
 }
 
 // 2. En partie, vers la vague 4 (vagues raccourcies pour y arriver vite)
-{
+if (wants("captures")) {
   const { context, page } = await openGame();
   await setConfig(page, { DIFFICULTY: { baseWaveKills: 3, waveKillsStep: 1 }, PLAYER: { startingLives: 5 } });
   await play(page, 24);
@@ -72,7 +78,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png
 }
 
 // 3. Le bonus Chevrotine (drop garanti)
-{
+if (wants("captures")) {
   const { context, page } = await openGame();
   await setConfig(page, {
     POWERUP: { dropChanceNormal: 1, fallSpeed: 60, typeWeights: { power: 0, rapid: 0, shotgun: 1, shield: 0 } },
@@ -97,7 +103,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png
 }
 
 // 4. Le niveau bonus (vagues vides jusqu'à la 10e)
-{
+if (wants("captures")) {
   const { context, page } = await openGame();
   await setConfig(page, {
     DIFFICULTY: { baseWaveKills: 0, waveKillsStep: 0, waveBreakDuration: 0.3, bossWaveEvery: 999 },
@@ -112,7 +118,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png
 }
 
 // 5. Un combat de boss (dès la vague 2, après un seul ennemi)
-{
+if (wants("captures")) {
   const { context, page } = await openGame();
   await setConfig(page, { DIFFICULTY: { bossWaveEvery: 2, baseWaveKills: 1, waveKillsStep: 0 }, PLAYER: { startingLives: 5 } });
   await page.mouse.click(...at(240, 150));
@@ -131,7 +137,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png
 }
 
 // 6. Vidéo : vingt secondes de jeu, depuis le début d'une partie
-{
+if (wants("video")) {
   const videoDir = path.join(OUT, "video-tmp");
   const { context, page } = await openGame({ recordVideo: { dir: videoDir, size: SIZE } });
   await setConfig(page, { DIFFICULTY: { baseWaveKills: 4, waveKillsStep: 1 }, PLAYER: { startingLives: 5 } });
@@ -143,7 +149,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png
 }
 
 // 7. Couverture pour itch.io (630x500) : le titre du jeu sur la capture du boss
-{
+if (wants("itch")) {
   const { context, page } = await openGame({ viewport: { width: 1200, height: 675 } });
   const title = await page.screenshot({ clip: { x: 300, y: 96, width: 600, height: 170 } }); // titre et sous-titre
   const dataUrl = (png) => `data:image/png;base64,${png.toString("base64")}`;
@@ -162,7 +168,7 @@ const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png
 }
 
 // 8. Bannière pour itch.io (960x220) : le titre seul, sur la capture de partie
-{
+if (wants("itch")) {
   const { context, page } = await openGame({ viewport: { width: 1200, height: 675 } });
   const title = await page.screenshot({ clip: { x: 300, y: 96, width: 600, height: 170 } }); // titre et sous-titre
   const dataUrl = (png) => `data:image/png;base64,${png.toString("base64")}`;
@@ -176,6 +182,39 @@ const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png
   </body>`);
   await page.waitForTimeout(300);
   await page.screenshot({ path: path.join(OUT, "itch-banner.png") });
+  await context.close();
+}
+
+// 9. Autres images de la page itch.io : couverture large (21:9), logo sur fond
+// transparent, icône carrée
+if (wants("itch")) {
+  const { context, page } = await openGame({ viewport: { width: 1200, height: 675 } });
+  const title = await page.screenshot({ clip: { x: 300, y: 96, width: 600, height: 170 } }); // titre et sous-titre
+  const dataUrl = (png) => `data:image/png;base64,${png.toString("base64")}`;
+  const boss = fs.readFileSync(path.join(OUT, "screenshot-boss.png"));
+  const fade = "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent), linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent)";
+
+  await page.setViewportSize({ width: 1260, height: 540 });
+  await page.setContent(`<body style="margin:0;width:1260px;height:540px;background:#05060f;overflow:hidden;position:relative">
+    <img src="${dataUrl(boss)}" style="position:absolute;left:300px;top:-90px;width:1260px;image-rendering:pixelated">
+    <div style="position:absolute;inset:0;background:linear-gradient(to right, rgba(5,6,15,.97) 38%, rgba(5,6,15,0) 70%)"></div>
+    <img src="${dataUrl(title)}" style="position:absolute;left:30px;top:170px;width:640px;mix-blend-mode:screen;-webkit-mask-image:${fade};-webkit-mask-composite:source-in;mask-image:${fade};mask-composite:intersect">
+  </body>`);
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: path.join(OUT, "itch-wide-cover.png") });
+
+  // Logo : le titre écrit comme dans le jeu, sans fond.
+  await page.setViewportSize({ width: 900, height: 260 });
+  await page.setContent(`<body style="margin:0;background:transparent;font-family:monospace;text-align:center">
+    <div style="font-size:150px;line-height:170px;color:#ffe66d;text-shadow:0 0 18px #ffe66d">ARCADEPIPE</div>
+    <div style="font-size:56px;line-height:70px;color:#4ee1ff;text-shadow:0 0 12px #4ee1ff">STARFIGHTER</div>
+  </body>`);
+  await page.screenshot({ path: path.join(OUT, "itch-logo.png"), omitBackground: true });
+
+  // Icône : le vaisseau de favicon.svg, en PNG carré.
+  await page.setViewportSize({ width: 256, height: 256 });
+  await page.goto(`http://localhost:${PORT}/favicon.svg`);
+  await page.screenshot({ path: path.join(OUT, "itch-favicon.png") });
   await context.close();
 }
 

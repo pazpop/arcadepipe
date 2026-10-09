@@ -29,9 +29,13 @@ ARG GA_MEASUREMENT_ID=""
 RUN printf '{ "gaMeasurementId": "%s" }\n' "$GA_MEASUREMENT_ID" > /usr/share/caddy/site-config.json
 
 # Numéro de version affiché dans le jeu : calculé par la CI (nombre de commits,
-# voir .github/workflows/deploy.yml). Sans lui, le jeu affiche "dev".
+# voir .github/workflows/deploy.yml). Sans lui, le jeu affiche "dev". Le grep
+# fait échouer la construction si la ligne VERSION de config.js n'a pas été trouvée.
 ARG APP_VERSION=""
-RUN if [ -n "$APP_VERSION" ]; then       sed -i "s/^export const VERSION = .*/export const VERSION = \"$APP_VERSION\";/" /usr/share/caddy/js/config.js;     fi
+RUN if [ -n "$APP_VERSION" ]; then \
+      sed -i "s/^export const VERSION = .*/export const VERSION = \"$APP_VERSION\";/" /usr/share/caddy/js/config.js \
+      && grep -q "^export const VERSION = \"$APP_VERSION\";" /usr/share/caddy/js/config.js; \
+    fi
 
 # Utilisateur dédié plutôt que root — même raisonnement que backend/Dockerfile :
 # si Caddy est un jour compromis, l'attaquant hérite des droits de cet

@@ -13,17 +13,17 @@ npm test                   # ou : npx playwright test --headed
 
 ## Ce qui est couvert (`tests/`)
 
-- `menu-pause` — menu, pause (scène figée), confirmation de sortie, aide (bienvenue, menu, pause, bouton du panneau), clavier et focus, filtre rétro
-- `gameplay` — tir manuel et automatique, choix de piste, fin de vague, fin de partie (REJOUER, saisie du pseudo)
+- `menu-pause` — menu, pause (scène figée), confirmation de sortie, aide (bienvenue, menu, pause, bouton du panneau), clavier et focus, panneau replié, plein écran, filtre rétro
+- `gameplay` — tir manuel et automatique, choix de piste, fin de vague, fin de partie sans serveur
 - `powerups-boss` — bonus (arme, bouclier, les deux ensemble), premier boss, vie perdue, boss vaincu
 - `graze-nova` — frôlements, jauge NOVA, bouton tactile
 - `bonus-level` — le niveau bonus se déclenche, se termine, puis la partie reprend
 - `music-retry` — un 429 sur les pistes ne déclenche pas de rafale de requêtes
 - `music-end` — une fin de piste enchaîne sur une autre piste, qui joue réellement
-- `consent` — mesure d'audience désactivée par défaut ; activée, Google Analytics jamais chargé avant « Accepter », bouton Cookies (changer ou retirer son choix) ; bouton Plein écran
+- `consent` — mesure d'audience désactivée par défaut ; activée, Google Analytics jamais chargé avant « Accepter », bouton Cookies (changer ou retirer son choix)
 - `i18n` — langue du navigateur par défaut, changement de langue mémorisé
-- `mobile` — téléphone en paysage : commandes dans les bandes noires, jeu au doigt
-- `leaderboard` — avec le vrai backend : scores du serveur triés, pseudo saisi puis score inscrit
+- `mobile` — téléphone en paysage : commandes dans les bandes noires, le vaisseau suit le doigt et tire
+- `leaderboard` — avec le vrai backend : scores du serveur triés, pseudo saisi puis score inscrit, REJOUER
 - `pages` — page de confidentialité et kit presse
 - `share-qr` — le QR de la carte de partage se décode après recompression JPEG ; contraste vérifié au pixel
 
@@ -38,7 +38,7 @@ await waitForMode(page, "paused");   // modes : js/states/mode.js
 await expect.poll(async () => (await gameState(page)).wave).toBe(2);
 ```
 
-Les clics sont traités aussitôt (`handleTap`), les touches à la frame suivante : après une touche, toujours attendre l'état voulu. Un délai fixe reste légitime seulement quand la **durée elle-même** est ce qu'on vérifie (aucune requête ni aucun tir pendant N secondes, laisser tomber un bonus).
+Les clics sont traités aussitôt (`handleTap`), les touches à la frame suivante : après une touche, toujours attendre l'état voulu. Un délai fixe reste légitime seulement quand la **durée elle-même** est ce qu'on vérifie (aucune requête ni aucun tir pendant N secondes), ou comme pause entre deux essais d'une boucle bornée qui relit l'état du jeu.
 
 ## Forcer une constante le temps d'un test
 

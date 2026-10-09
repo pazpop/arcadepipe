@@ -29,10 +29,13 @@ function drawBackdrop(ctx) {
   ctx.globalAlpha = 1;
 }
 
-// QR code vers le jeu. Noir sur blanc avec sa marge : stylisé aux couleurs du
-// jeu, un téléphone ne le lirait plus. typeNumber 0 = taille automatique,
-// correction "M" = compromis standard entre taille et tolérance aux dégâts.
-function drawQrCode(ctx, x, y, size) {
+// QR code vers le jeu, centré sur centerX et large de maxSize au plus. Noir sur
+// blanc avec sa marge : stylisé aux couleurs du jeu, un téléphone ne le lirait
+// plus. typeNumber 0 = taille automatique, correction "M" = compromis standard
+// entre taille et tolérance aux dégâts.
+const QR_MARGIN_CELLS = 4; // marge blanche demandée par la norme, en modules
+
+function drawQrCode(ctx, centerX, y, maxSize) {
   // Sans ombre : la lueur du texte précédent teinterait les modules du QR.
   ctx.save();
   ctx.shadowBlur = 0;
@@ -41,12 +44,13 @@ function drawQrCode(ctx, x, y, size) {
   qr.addData(`https://${SHARE_HOST}`);
   qr.make();
   const count = qr.getModuleCount();
-  const margin = size * 0.08;
   // Cellules de taille entière (pas de fines lignes claires entre modules) ; le fond blanc suit.
-  const cell = Math.ceil((size - margin * 2) / count);
-  const actualSize = cell * count + margin * 2;
+  const cell = Math.floor(maxSize / (count + QR_MARGIN_CELLS * 2));
+  const margin = cell * QR_MARGIN_CELLS;
+  const size = cell * count + margin * 2;
+  const x = centerX - size / 2;
   ctx.fillStyle = "#ffffff";
-  ctx.fillRect(x, y, actualSize, actualSize);
+  ctx.fillRect(x, y, size, size);
   ctx.fillStyle = "#000000";
   for (let r = 0; r < count; r++) {
     for (let c = 0; c < count; c++) {
@@ -94,8 +98,7 @@ function drawShareCard(ctx, stats) {
   text(ctx, t("card.challenge"), SIZE / 2, 760, { size: 22, align: "center", color: PALETTE.hud });
   text(ctx, SHARE_HOST, SIZE / 2, 800, { size: 30, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
 
-  const qrSize = 200;
-  drawQrCode(ctx, (SIZE - qrSize) / 2, 840, qrSize);
+  drawQrCode(ctx, SIZE / 2, 835, 225);
 
   text(ctx, `v${VERSION}`, SIZE - 20, SIZE - 18, { size: 14, align: "right", color: PALETTE.hud });
 }

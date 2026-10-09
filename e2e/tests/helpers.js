@@ -2,14 +2,7 @@
 // (480x270, voir frontend/js/config.js) quelle que soit la taille du canvas :
 // les clics passent par ces conversions, jamais par des coordonnées écran.
 //
-// Forcer une constante (taux de drop, difficulté...) pour un test : un import
-// dynamique depuis page.evaluate() renvoie le module déjà chargé par la page,
-// pas une copie. Aucun point d'accès de debug n'est exposé côté jeu.
-//
-//   await page.evaluate(async () => {
-//     const { DIFFICULTY } = await import("/js/config.js");
-//     DIFFICULTY.baseWaveKills = 1;
-//   });
+// Forcer une constante (taux de drop, difficulté...) pour un test : voir e2e/README.md.
 import { expect } from "@playwright/test";
 
 const RES_W = 480;
@@ -68,6 +61,7 @@ export function gameState(page) {
     const { game } = await import("/js/main.js");
     return {
       mode: game.mode,
+      player: game.playerPosition,
       playerBullets: game.playerBulletsOnScreen,
       lives: game.lives,
       scores: game.scores,

@@ -1,12 +1,12 @@
 // Téléphone en paysage (écran plus large que le 16:9 du jeu) : les commandes
 // tactiles se rangent dans les bandes noires, sans recouvrir le jeu.
 import { test, expect } from "@playwright/test";
-import { canvasHelpers, skipHints, waitForMode } from "./helpers.js";
+import { canvasHelpers, gameState, skipHints, waitForMode } from "./helpers.js";
 
 // storageState vide : le panneau garde son état par défaut (replié).
 test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, storageState: { cookies: [], origins: [] } });
 
-test("téléphone en paysage : panneau replié, Pause et NOVA dans les bandes, jouable au doigt", async ({ page }) => {
+test("téléphone en paysage : panneau replié, Pause et NOVA dans les bandes, le vaisseau suit le doigt", async ({ page }) => {
   await page.goto("/");
   await skipHints(page);
 
@@ -34,11 +34,17 @@ test("téléphone en paysage : panneau replié, Pause et NOVA dans les bandes, j
   });
   expect(novaLeft).toBeGreaterThanOrEqual(canvas.x + canvas.width);
 
-  // Une partie se lance d'un tap, et le bouton Pause la met en pause.
+  // Une partie se lance d'un tap ; le vaisseau rejoint le doigt, décalé vers
+  // l'avant (INPUT.touchXOffset), et tire. Le bouton Pause met en pause.
   const { toPage } = canvasHelpers(page);
   const play = await toPage(240, 150);
   await page.touchscreen.tap(play.x, play.y);
   await waitForMode(page, "playing");
+  const finger = await toPage(150, 60);
+  await page.touchscreen.tap(finger.x, finger.y);
+  await expect.poll(async () => Math.round((await gameState(page)).player.y), { timeout: 8000 }).toBe(60);
+  expect((await gameState(page)).player.x).toBeGreaterThan(150);
+  await expect.poll(async () => (await gameState(page)).playerBullets).toBeGreaterThan(0);
   await page.locator("#pause-btn").tap();
   await waitForMode(page, "paused");
 

@@ -115,3 +115,16 @@ def test_games_et_scores_sont_independants(client):
     client.post("/api/scores", json={"player_name": "TEST", "score": 1})
     assert client.get("/api/games/count").json() == {"count": 1}
     assert len(client.get("/api/scores").json()) == 1
+
+
+def test_score_envoye_autrement_qu_en_json_rejete(client):
+    # C'est ce qui oblige un navigateur à demander la permission (CORS) avant d'envoyer un score.
+    r = client.post("/api/scores", content="player_name=TEST&score=1", headers={"Content-Type": "text/plain"})
+    assert r.status_code == 422
+
+
+def test_cors_autorise_seulement_les_origines_declarees(client):
+    autorisee = client.get("/api/scores", headers={"Origin": "http://localhost:5500"})
+    assert autorisee.headers["access-control-allow-origin"] == "http://localhost:5500"
+    inconnue = client.get("/api/scores", headers={"Origin": "https://exemple.test"})
+    assert "access-control-allow-origin" not in inconnue.headers

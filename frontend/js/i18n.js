@@ -30,8 +30,8 @@ export function t(key, params = {}) {
 }
 
 // La page est rechargée au changement de langue (la partie en cours
-// est perdue) — beaucoup de textes sont évalués une seule fois au chargement
-// des modules. Les rendre dynamiques si changer de langue en jeu devient utile.
+// est perdue) : beaucoup de textes sont évalués une seule fois, au chargement
+// des modules.
 export function nextLang() {
   saveItem(STORAGE_KEYS.lang, nextLangCode);
   window.location.reload();

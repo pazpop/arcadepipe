@@ -57,21 +57,35 @@ export class MusicPlayer {
     this._fadeTo(0);
     const file = AUDIO.tracks[this.trackIndex];
     setTimeout(() => {
+      // Arrêtée ou passée en arrière-plan pendant le fondu : la piste sera chargée à la reprise.
+      if (this.paused || document.hidden) {
+        this._pendingTrack = true;
+        return;
+      }
       this.audio.src = file;
-      this.audio.play().catch(() => {}); // refus ou interruption : "error" gère les vrais échecs
+      // Lecture refusée faute de geste du joueur : le prochain geste relancera
+      // start(). Les échecs de chargement, eux, passent par l'événement "error".
+      this.audio.play().catch((e) => {
+        if (e.name === "NotAllowedError") this.started = false;
+      });
     }, FADE_S * 1000);
+  }
+
+  // Reprise après un arrêt ou un passage en arrière-plan.
+  _resume() {
+    if (this._pendingTrack) {
+      this._pendingTrack = false;
+      this._load();
+    } else {
+      this.audio.play().catch(() => {});
+    }
   }
 
   _retryLater() {
     if (this._retryTimer) return;
     this._retries += 1;
     const delay = Math.min(RETRY_MAX_DELAY_MS, 2000 * this._retries);
-    this._retryTimer = setTimeout(() => {
-      this._retryTimer = null;
-      // Musique arrêtée par le joueur entre-temps : la piste sera chargée à la reprise.
-      if (this.paused) this._pendingTrack = true;
-      else this._load();
-    }, delay);
+    this._retryTimer = setTimeout(() => this._load(), delay);
   }
 
   start() {
@@ -105,14 +119,8 @@ export class MusicPlayer {
   toggleStop() {
     if (!this.started) return;
     this.paused = !this.paused;
-    if (this.paused) {
-      this.audio.pause();
-    } else if (this._pendingTrack) {
-      this._pendingTrack = false;
-      this._load();
-    } else {
-      this.audio.play().catch(() => {});
-    }
+    if (this.paused) this.audio.pause();
+    else this._resume();
   }
 
   // Onglet en arrière-plan : la musique s'interrompt, et reprend au retour si
@@ -120,7 +128,7 @@ export class MusicPlayer {
   setInBackground(hidden) {
     if (!this.started || this.paused) return;
     if (hidden) this.audio.pause();
-    else this.audio.play().catch(() => {});
+    else this._resume();
   }
 
   setMuted(muted) {

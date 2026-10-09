@@ -14,7 +14,6 @@ const GAME_URL = "https://arcadepipe.pazpop.net";
 
 test("le QR de la carte de partage se décode, y compris après recompression JPEG", async ({ page }) => {
   const errors = collectErrors(page);
-  await page.route(/googletagmanager\.com/, (r) => r.fulfill({ status: 200, body: "" }));
   await page.goto("/");
   await page.addScriptTag({ content: JSQR_SRC });
 

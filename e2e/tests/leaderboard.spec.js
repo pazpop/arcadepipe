@@ -18,7 +18,10 @@ const names = async (page) => ((await gameState(page)).scores || []).map((s) => 
 
 test("le classement affiche les scores du serveur, du meilleur au moins bon", async ({ page, request }) => {
   for (const [player_name, score] of [["ALPHA", 500], ["BETA", 900]]) {
-    expect((await request.post(`${API}/api/scores`, { data: { player_name, score } })).status()).toBe(201);
+    // Autre adresse IP que celle du jeu : ces deux envois ne comptent pas dans
+    // son quota de cinq scores par minute, que le test suivant utilise en entier.
+    const headers = { "X-Forwarded-For": "203.0.113.9" };
+    expect((await request.post(`${API}/api/scores`, { data: { player_name, score }, headers })).status()).toBe(201);
   }
   await page.goto("/");
   const { clickLogical } = canvasHelpers(page);

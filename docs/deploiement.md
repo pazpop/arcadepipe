@@ -2,7 +2,7 @@
 
 ## Docker (autonome)
 
-`docker-compose.yml`, à la racine, fait tourner tout le jeu (backend + frontend) sans dépendance externe : il publie le port 80 et garde les protections de sécurité (non-root, rootfs read-only, `cap_drop: ALL`, rate limiting, CORS). Caddy (frontend) route lui-même `/api/*` vers le backend.
+`docker-compose.yml`, à la racine, est le seul fichier de déploiement Docker de ce repo (celui qui ajoute Traefik et TLS pour l'instance publique vit dans le repo d'infra). Il fait tourner tout le jeu (backend + frontend) sans dépendance externe, publie le port 80 et garde les protections de sécurité (non-root, rootfs read-only, `cap_drop: ALL`, rate limiting, CORS). Caddy (frontend) route lui-même `/api/*` vers le backend.
 
 ```bash
 docker compose up --build -d
@@ -13,7 +13,7 @@ Port 80 déjà pris ? Changer le mapping `"80:80"` du service `frontend` (ex. `"
 
 ### Mesure d'audience (désactivée par défaut)
 
-Le jeu peut charger Google Analytics, mais aucun identifiant n'est écrit dans le code : sans réglage, il n'y a ni script, ni cookie, ni bandeau de consentement. L'identifiant de mesure (`G-XXXXXXXXXX`) est donné à la construction de l'image du frontend, qui l'écrit dans `site-config.json`, lu par le jeu au chargement (`js/consent.js`). Le script n'est chargé qu'après un « Accepter » du visiteur.
+Le jeu peut charger Google Analytics, mais aucun identifiant n'est écrit dans le code : sans réglage, il n'y a ni script, ni cookie, ni bandeau de consentement. L'identifiant de mesure (`G-XXXXXXXXXX`) est donné à la construction de l'image du frontend, qui l'écrit dans `site-config.json`, lu par le jeu au chargement (`js/siteConfig.js`). Le script n'est chargé qu'après un « Accepter » du visiteur.
 
 - **Instance publique** : variable `GA_MEASUREMENT_ID` du dépôt GitHub (*Settings > Secrets and variables > Actions > Variables*), passée à la construction par `.github/workflows/deploy.yml`. Pour désactiver la mesure, supprimer la variable : la prochaine image sera construite sans. Un fork n'a pas cette variable, donc pas de mesure.
 - **Docker autonome** : `docker compose build --build-arg GA_MEASUREMENT_ID=G-XXXXXXXXXX frontend`, puis `docker compose up -d`.
@@ -23,13 +23,11 @@ Le reverse-proxy doit autoriser `googletagmanager.com` et `google-analytics.com`
 
 ## itch.io
 
-itch.io héberge les fichiers du jeu chez lui ; le classement, lui, reste sur le site. `python tools/build_itch.py` construit `dist/arcadepipe-itch.zip` : le frontend tel quel, avec l'adresse complète de l'API dans `site-config.json` (`apiBase`) et le numéro de version. Il n'y a pas de mesure d'audience dans cette archive.
+itch.io héberge les fichiers du jeu chez lui ; le classement, lui, reste sur le site. `python tools/build_itch.py` construit `dist/arcadepipe-itch.zip` : les fichiers du jeu, avec l'adresse complète de l'API dans `site-config.json` (`apiBase`) et le numéro de version. Il n'y a pas de mesure d'audience dans cette archive.
 
 1. Sur itch.io, créer un projet de type *HTML*, y déposer l'archive et cocher *This file will be played in the browser*.
 2. Dimensions de l'affichage : 960 × 540 (le jeu est en 16:9), avec le bouton plein écran.
-3. Autoriser l'adresse d'itch.io à appeler l'API : ajouter son origine, `https://html-classic.itch.zone` (vérifiée sur la page du jeu), à `ALLOWED_ORIGINS` du backend, à côté de celle du site. Sans cela, le jeu fonctionne mais affiche « Classement indisponible » et n'enregistre aucun score.
-
-C'est le seul fichier de déploiement Docker de ce repo. Celui qui ajoute Traefik et TLS pour l'instance publique vit dans le repo d'infra séparé.
+3. Autoriser l'adresse d'itch.io à appeler l'API : ajouter son origine, `https://html-classic.itch.zone`, à `ALLOWED_ORIGINS` du backend, à côté de celle du site. Sans cela, le jeu fonctionne mais affiche « Classement indisponible » et n'enregistre aucun score. Cette origine est commune à tous les jeux d'itch.io : voir [sécurité](securite.md).
 
 ## CI/CD
 
@@ -46,13 +44,10 @@ flowchart TD
     infra --> prod["arcadepipe.pazpop.net"]
 ```
 
-Une pull request s'arrête après les vérifications : seul un push sur `main` construit et déploie.
-
-`.github/workflows/deploy.yml` : sur chaque PR et chaque push vers `main`, lint backend (`ruff`), audit des dépendances (`pip-audit`), lint frontend (`eslint`), tests backend (`pytest`), frontend (`node --test`) et bout-en-bout (Playwright), puis, sur `main` seulement, build et push des images vers GHCR (`:latest` et `:<sha>`, public). Les PR de Dependabot sont donc testées avant fusion.
+Tout est dans `.github/workflows/deploy.yml`. Une pull request (celles de Dependabot comprises) s'arrête après les vérifications : seul un push sur `main` construit et déploie.
 
 - Actions GitHub épinglées par SHA de commit, images de base épinglées par digest : un tag peut être redéplacé, un SHA ou un digest non.
 - [Dependabot](../.github/dependabot.yml) ouvre une PR à chaque mise à jour (`pip`, `npm`, `github-actions`, `docker`).
-- Un test en échec bloque le build, donc le déploiement.
 
 Ce repo ne connaît ni VPS ni serveur cible. L'instance `arcadepipe.pazpop.net` est déployée par [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner), notifié par un événement `repository_dispatch` une fois les images publiées. Un fork n'a pas ce déclenchement (secret absent) et n'en a pas besoin : voir la section Docker ci-dessus.
 

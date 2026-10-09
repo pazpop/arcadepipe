@@ -22,6 +22,8 @@ JS vanilla (modules ES6) + Canvas 2D, sans étape de build : les fichiers sont s
 | `js/api.js`, `consent.js`, `analytics.js`, `shareCard.js` | classement en ligne, mesure d'audience et consentement, image de partage |
 | `js/siteConfig.js`, `site-config.json` | réglages du déploiement : identifiant de mesure d'audience, adresse de l'API (vides par défaut) |
 | `js/renderer.js`, `input.js`, `storage.js` | canvas à la résolution de l'écran, entrées clavier/souris/tactile, préférences |
+| `js/pool.js`, `color.js`, `states/navHelpers.js` | petites fonctions partagées |
+| `lib/qrcode.js` | bibliothèque tierce (QR code), copiée telle quelle : à ne pas modifier |
 
 ## Architecture
 
@@ -38,7 +40,7 @@ flowchart LR
 Deux objets, créés une fois par `createGame()`, circulent partout :
 
 - **`g`** : l'état du jeu (écran courant, score, vague, jauge NOVA...), dans un seul objet.
-- **`engine`** : ce dont un écran a besoin (`input`, `audio`, `music`, le joueur, les ennemis, les projectiles...), plus `engine.actions`, des fonctions pour passer à un autre écran sans import circulaire.
+- **`engine`** : ce dont un écran a besoin (`input`, `audio`, `music`, le joueur, les ennemis, les projectiles...), plus `engine.actions.startRun`, qui lance une partie sans import circulaire.
 
 Un écran expose jusqu'à trois fonctions : `update` (fait avancer l'écran d'une image), `draw` (le dessine) et `handleTap` (traite un clic ou un tap). `endOfRun.js` regroupe deux écrans (game over et saisie du pseudo) et nomme donc ses fonctions `updateGameOver`, `drawNameEntry`, etc.
 
@@ -54,7 +56,7 @@ Le classement n'apparaît que si le [backend](../backend/README.md) tourne aussi
 
 ## Tests et lint
 
-Node 20 ou plus récent. Chaque commande part de la racine du dépôt :
+Node 22 ou plus récent. Chaque commande part de la racine du dépôt :
 
 ```bash
 cd frontend/js && node --test                # logique pure : collisions, frôlement, bonus, ennemis, traductions, cache de l'API

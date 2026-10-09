@@ -1,8 +1,8 @@
 // English — same keys as fr.js (the reference file), checked by i18n.test.js.
 // {name} is replaced by a value at display time: keep it as is.
 export default {
-  // Drapeaux du bouton qui propose de passer à cette langue : un nom par
-  // drapeau, dessiné par la classe .flag-<nom> de css/style.css.
+  // Flags of the button that offers this language: one name per flag, drawn
+  // by the .flag-<name> class in css/style.css.
   "lang.flags": "us gb",
 
   // --- Settings panel (HTML, bottom left) ---
@@ -28,7 +28,7 @@ export default {
   "nova.title": "Trigger NOVA (Space)",
   "share.button": "📤 Share",
   "share.title": "Generate an image to share",
-  "share.done": "✅ Copied + downloaded",
+  "share.done": "✅ Image downloaded",
 
   // --- Consent banner ---
   "cookie.aria": "Cookie consent",
@@ -112,7 +112,7 @@ export default {
   "gameover.replay": "PLAY AGAIN",
   "gameover.enterName": "ENTER MY NAME",
   "gameover.top": "YOU MADE THE TOP {size}!",
-  "name.title": "NEW HIGH SCORE!",
+  "name.title": "YOU MADE THE LEADERBOARD!",
   "name.prompt": "ENTER YOUR NAME (8 CHARS MAX)",
   "name.validate": "▶ CONFIRM",
 
@@ -128,7 +128,7 @@ export default {
   "board.back": "ESC / TAP — BACK",
 
   // --- Credits ---
-  "credits.by": "A GAME DEVELOPED BY PAZPOP",
+  "credits.by": "A GAME BY PAZPOP",
   "credits.source": "SOURCE CODE",
   "credits.music": "MUSIC",
   "credits.thanks": "SPECIAL THANKS",

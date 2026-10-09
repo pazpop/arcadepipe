@@ -73,12 +73,10 @@ class ScoreIn(BaseModel):
 
 
 class ScoreOut(BaseModel):
-    id: int
     player_name: str
     score: int
     wave: int
     kills: int
-    created_at: str
 
 
 class GamesCountOut(BaseModel):
@@ -96,8 +94,10 @@ def list_scores(request: Request, limit: int = Query(default=10, ge=1, le=databa
     return database.get_top_scores(limit=limit)
 
 
+# La limite par jour protège les vrais scores d'un effacement par de faux
+# scores envoyés en masse (voir docs/securite.md).
 @app.post("/api/scores", response_model=ScoreOut, status_code=201)
-@limiter.limit("5/minute")
+@limiter.limit("5/minute;50/day")
 def create_score(request: Request, payload: ScoreIn):
     return database.insert_score(payload.player_name, payload.score, payload.wave, payload.kills)
 

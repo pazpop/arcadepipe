@@ -1,7 +1,7 @@
-// État "classement" : révèle les scores un par un (effet de liste qui se déroule) une fois chargés,
-// retour à g.leaderboardReturnTo.
+// État "classement" : révèle les scores un par un (effet de liste qui se déroule) une fois chargés ;
+// on en sort toujours vers le menu.
 import { consumeJustPressed } from "../input.js";
-import { fetchTopScores, fetchGamesPlayedCount, TOP_SIZE } from "../api.js";
+import { fetchTopScores, fetchGamesPlayedCount } from "../api.js";
 import * as hud from "../hud.js";
 import { MODE } from "./mode.js";
 
@@ -9,17 +9,16 @@ import { MODE } from "./mode.js";
 // plus récente (double tap) est ignorée.
 let token = 0;
 
-export async function open(g, returnTo) {
+export async function open(g) {
   const myToken = ++token;
   g.mode = MODE.LEADERBOARD;
-  g.leaderboardReturnTo = returnTo;
   g.scores = null;
   g.scoresFailed = false;
   g.scoresRevealCount = 0;
   g.scoresRevealTimer = 0;
   let scores = null;
   try {
-    scores = await fetchTopScores(TOP_SIZE);
+    scores = await fetchTopScores();
   } catch {
     /* scores reste null : "classement indisponible" */
   }
@@ -43,7 +42,7 @@ export function update(g, engine, dt) {
     g.scoresRevealTimer = 0.15;
   }
   if (consumeJustPressed(engine.input, "Escape") || consumeJustPressed(engine.input, "Enter")) {
-    g.mode = g.leaderboardReturnTo;
+    g.mode = MODE.MENU;
   }
 }
 
@@ -52,5 +51,5 @@ export function draw(c2d, g) {
 }
 
 export function handleTap(g) {
-  g.mode = g.leaderboardReturnTo;
+  g.mode = MODE.MENU;
 }

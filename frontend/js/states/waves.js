@@ -19,7 +19,6 @@ export function startWave(g, engine, wave) {
   g.intactBlink = 0;
   g.grazeChain = 0;
   g.novaMax = novaMaxForWave(wave);
-  g.novaStock = Math.min(g.novaStock, g.novaMax);
   g.waveKillTarget = DIFFICULTY.baseWaveKills + (wave - 1) * DIFFICULTY.waveKillsStep;
   g.spawnInterval = Math.max(
     DIFFICULTY.minSpawnInterval,

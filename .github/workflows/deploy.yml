@@ -7,6 +7,12 @@ on:
   pull_request:
     branches: [main]
 
+# Deux pushs rapprochés : le second attend la fin du premier, pour que le
+# dernier commit soit bien le dernier déployé.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 env:
   REGISTRY: ghcr.io
   IMAGE_BACKEND: ${{ github.repository }}-backend

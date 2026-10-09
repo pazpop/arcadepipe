@@ -22,8 +22,7 @@ import * as endOfRunState from "./endOfRun.js";
 import { t } from "../i18n.js";
 
 // Accessibilité : ni tremblement d'écran ni micro-gel pour les joueurs sensibles au mouvement (réglage système).
-const REDUCED_MOTION =
-  typeof window.matchMedia === "function" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const REDUCED_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 // Vibration mobile : no-op silencieux si indisponible ou refusée.
 function vibrate(pattern) {
@@ -32,14 +31,6 @@ function vibrate(pattern) {
   } catch {
     /* ignoré */
   }
-}
-
-// Aide vue une fois par navigateur (revoir via le bouton "Aide" ensuite).
-function hasSeenHint(key) {
-  return loadItem(key) === "1";
-}
-function markHintSeen(key) {
-  saveItem(key, "1");
 }
 
 // Entrée en douceur du vaisseau (startRun/updateShipIntro) : glisse depuis la
@@ -111,8 +102,9 @@ export function startRun(g, engine) {
   player.y = RES_H / 2;
   g.spawnTimer = SHIP_INTRO_DURATION;
 
-  if (!hasSeenHint(STORAGE_KEYS.seenIntro)) {
-    markHintSeen(STORAGE_KEYS.seenIntro);
+  // Aide de bienvenue : une seule fois par navigateur (ensuite, bouton "Aide").
+  if (loadItem(STORAGE_KEYS.seenIntro) !== "1") {
+    saveItem(STORAGE_KEYS.seenIntro, "1");
     helpState.open(g, MODE.PLAYING);
   }
 }
@@ -199,9 +191,10 @@ function resolveCollisions(g, engine) {
     }
   }
 
-  // Corps des ennemis vs joueur
+  // Corps des ennemis vs joueur. Invulnérable (il vient d'encaisser un coup),
+  // le vaisseau les traverse : il ne doit pas les détruire sans rien perdre.
   for (const en of enemies.items) {
-    if (!en.active) continue;
+    if (!en.active || player.invuln > 0) continue;
     if (circlesOverlap(en.x, en.y, en.radius, player.x, player.y, PLAYER.hitboxRadius)) {
       en.active = false;
       spawnExplosion(particles, en.x, en.y, 8, enemyGlowColor(en));

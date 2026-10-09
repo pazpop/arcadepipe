@@ -2,6 +2,17 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.142] - 2026-10-09
+- **Classement mieux protégé** : 50 envois de scores par jour et par adresse IP, en plus de 5 par minute.
+- **Fin de partie** : REJOUER et la seconde option ne se figent plus quand le serveur du classement est lent.
+- **Panneau replié** : ses réglages ne se parcourent plus au clavier, et il ne décale plus les boutons ⏸ et ⚙ sur le jeu.
+- **Clavier** : sur une page qui embarque le jeu (itch.io), il répond sans clic préalable, et Espace ou les flèches ne font pas défiler la page.
+- **Téléphone** : la musique démarre dès le premier toucher, toucher l'écran rouvre le clavier à la saisie du pseudo, et le classement fonctionne sur les iPhone d'avant 2022.
+- Un vaisseau invulnérable (il vient d'encaisser un coup) traverse les ennemis au lieu de les détruire.
+- Image de partage : marge blanche du QR code portée à la taille demandée par la norme. Le bouton Partager confirme toujours le téléchargement.
+- L'API ne renvoie plus l'identifiant ni la date des scores, dont le jeu ne se sert pas.
+- Kit presse et page de confidentialité : le jeu ne se pilote pas au clavier ; anglais corrigé.
+
 ## [2.140] - 2026-10-09
 - **Panneau de réglages replié par défaut**, derrière un bouton ⚙ : ouvert, il cachait le bord gauche du jeu, dont les noms du classement.
 
@@ -89,7 +100,7 @@ Corrections issues d'une relecture complète du dépôt.
 - Panneau de gauche : barres de volume musique et bruitages alignées, libellé « MUSIQUE (by Mall-E) ».
 
 ## [2.113] - 2026-10-07
-- **Quatrième morceau** de [mall-e](https://mall-e.bandcamp.com/) dans la playlist (`fourth.mp3`, en ligne depuis le 2026-10-07 sous le numéro 2.107).
+- **Quatrième morceau** de [mall-e](https://mall-e.bandcamp.com/) dans la playlist (`fourth.mp3`, en ligne depuis le 2026-10-07).
 - Backend : Python 3.13 (image Docker, CI et cible de ruff) et FastAPI 0.142.2.
 
 ## [2.107] - 2026-09-30

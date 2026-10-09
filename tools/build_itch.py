@@ -1,7 +1,7 @@
 """Construit l'archive du jeu pour itch.io : dist/arcadepipe-itch.zip.
 
-itch.io héberge les fichiers du jeu chez lui. L'archive contient donc le
-frontend tel quel, avec deux réglages : l'adresse complète de l'API du
+itch.io héberge les fichiers du jeu chez lui. L'archive contient donc les
+fichiers du jeu, avec deux réglages : l'adresse complète de l'API du
 classement (qui reste sur le site), et le numéro de version.
 
 Usage, depuis la racine du dépôt :  python tools/build_itch.py
@@ -19,8 +19,9 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 FRONTEND = ROOT / "frontend"
 OUTPUT = ROOT / "dist" / "arcadepipe-itch.zip"
 
-# Ce qui est servi aux joueurs : les mêmes fichiers que frontend/Dockerfile.
-FILES = ["index.html", "privacy.html", "favicon.svg", "og-image.png"]
+# Ce dont le jeu a besoin pour tourner. Le site sert en plus l'image d'aperçu
+# des liens, robots.txt et le kit presse (frontend/Dockerfile).
+FILES = ["index.html", "privacy.html", "favicon.svg"]
 FOLDERS = ["css", "js", "lib", "music"]
 EXCLUDED = (".test.js", "package.json", ".md", ".wav")
 

@@ -47,17 +47,14 @@ html, body {
   mix-blend-mode: multiply;
 }
 
-/* Champ caché servant uniquement à ouvrir le clavier virtuel mobile pour la
-   saisie du nom (game over) — jamais visible, le rendu du texte tapé se
-   fait dans le canvas via js/hud.js. */
+/* Champ hors de l'écran qui reçoit la frappe du pseudo (et ouvre le clavier
+   virtuel sur mobile) — le texte tapé est dessiné dans le canvas par js/hud.js. */
 #name-input {
   position: absolute;
   top: -1000px;
   left: -1000px;
   width: 1px;
   height: 1px;
-  opacity: 0;
-  pointer-events: none;
   font-size: 16px; /* évite le zoom auto de Safari iOS au focus d'un input */
 }
 
@@ -93,17 +90,23 @@ html, body {
   /* Replié par max-width (pas transform) : le panneau perd sa place dans la
      ligne, et #mc-tabs glisse jusqu'au bord gauche. */
   max-width: 200px;
-  /* Jamais plus haut que l'écran (téléphone en paysage) : il défile au besoin. */
+  /* Jamais plus haut que l'écran (téléphone en paysage) : il défile au besoin.
+     dvh : la hauteur réellement visible sur mobile, barre d'adresse déduite. */
   max-height: calc(100vh - 16px);
+  max-height: calc(100dvh - 16px);
   overflow: hidden auto;
-  transition: max-width 0.25s ease, opacity 0.2s ease, margin-left 0.25s ease;
+  transition: max-width 0.25s ease, opacity 0.2s ease, margin-left 0.25s ease, padding 0.25s ease, visibility 0.25s;
 }
 
+/* visibility: hidden retire aussi les contrôles du parcours au clavier (Tab). */
 #mc-wrap.collapsed #music-controls {
   max-width: 0;
   margin-left: 0;
+  padding-left: 0;
+  padding-right: 0;
+  border-width: 0;
   opacity: 0;
-  pointer-events: none;
+  visibility: hidden;
 }
 
 /* Pause et onglet du panneau, l'un au-dessus de l'autre, assez grands pour un doigt. */
@@ -160,7 +163,7 @@ html, body {
   cursor: pointer;
 }
 
-/* Boutons avec un libellé (Pause, Aide, Plein écran...), sur toute la largeur. */
+/* Boutons avec un libellé (Aide, Plein écran...), sur toute la largeur. */
 #music-controls .mc-btn {
   width: 100%;
   font-size: 11px;

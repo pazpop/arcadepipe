@@ -16,13 +16,16 @@ function lastPlayerName() {
   return loadItem(STORAGE_KEYS.lastPlayerName) || DEFAULT_NAME;
 }
 
-// Une requête de fin de partie est en cours : les clics et touches suivants
-// sont ignorés jusqu'à sa réponse (pas de double envoi de score).
+// L'envoi du score est en cours : une seconde validation du pseudo est ignorée.
 let busy = false;
 
 // Numéro de la fin de partie en cours : une réponse du serveur arrivée après
 // qu'une autre partie s'est terminée est ignorée.
 let opened = 0;
+
+// Le score de la partie terminée entre-t-il dans le top ? Demandé une seule
+// fois au serveur, à l'ouverture de l'écran ; les deux options attendent cette réponse.
+let qualifies = Promise.resolve(false);
 
 // Appelée par states/playing.js à la fin du ralenti de mort. La partie est
 // comptée ici, quel que soit le choix du joueur ensuite ; un échec réseau est
@@ -33,8 +36,9 @@ export function open(g) {
   g.scoreQualifies = false;
   recordGamePlayed().catch(() => {});
   const current = ++opened;
-  qualifiesForTop(g.score).then((qualifies) => {
-    if (current === opened) g.scoreQualifies = qualifies;
+  qualifies = qualifiesForTop(g.score);
+  qualifies.then((yes) => {
+    if (current === opened) g.scoreQualifies = yes;
   });
 }
 
@@ -53,32 +57,29 @@ async function qualifiesForTop(score) {
 // valeurs sont lues avant startRun, qui les remet à zéro.
 function replay(g, engine) {
   const { score, wave, enemiesKilled } = g;
-  qualifiesForTop(score)
-    .then((qualifies) => qualifies && submitScore(lastPlayerName(), score, wave, enemiesKilled))
-    .catch(() => {});
+  qualifies.then((yes) => yes && submitScore(lastPlayerName(), score, wave, enemiesKilled)).catch(() => {});
   engine.actions.startRun();
 }
 
 // Seconde option : saisie du pseudo si le score entre dans le top, sinon le classement directement.
 async function goToLeaderboard(g, engine) {
-  busy = true;
-  const qualifies = await qualifiesForTop(g.score);
-  busy = false;
-  if (!qualifies) {
-    leaderboardScreen.open(g, MODE.MENU);
+  const yes = await qualifies;
+  // Serveur lent : le joueur a pu rejouer, ou choisir une seconde fois, avant la réponse.
+  if (g.mode !== MODE.GAME_OVER) return;
+  if (!yes) {
+    leaderboardScreen.open(g);
     return;
   }
   g.mode = MODE.NAME_ENTRY;
   g.nameEntry = lastPlayerName();
   // Hors du geste du joueur (après un await), la plupart des mobiles refusent
   // d'ouvrir le clavier : le pseudo est pré-rempli, le bouton VALIDER suffit,
-  // et un tap ailleurs rouvre le clavier (clic sur #game-container, main.js).
+  // et un tap ailleurs rouvre le clavier (handleTapNameEntry).
   engine.nameInputEl.value = g.nameEntry;
   engine.nameInputEl.focus();
 }
 
 function selectGameOverOption(g, engine, index) {
-  if (busy) return;
   if (index === 0) replay(g, engine);
   else goToLeaderboard(g, engine);
 }
@@ -97,7 +98,7 @@ export async function confirmNameEntry(g, engine) {
   engine.nameInputEl.blur();
   // L'Entrée qui vient de valider ne doit pas aussi refermer le classement.
   clearJustPressed(engine.input);
-  leaderboardScreen.open(g, MODE.MENU);
+  leaderboardScreen.open(g);
 }
 
 // Garde les seuls caractères permis et renvoie le pseudo obtenu.
@@ -134,4 +135,5 @@ export function handleTapGameOver(g, engine, x, y) {
 
 export function handleTapNameEntry(g, engine, x, y) {
   if (hud.hitTestNameEntryValidate(x, y)) confirmNameEntry(g, engine);
+  else engine.nameInputEl.focus(); // rouvre le clavier virtuel s'il s'est refermé
 }

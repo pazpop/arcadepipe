@@ -4,9 +4,9 @@
 // frôlement/jauge généreux via import dynamique de config.js (voir helpers.js
 // et powerups-boss.spec.js pour le même principe).
 import { test, expect } from "@playwright/test";
-import { canvasHelpers, collectErrors, skipHints } from "./helpers.js";
+import { canvasHelpers, collectErrors, gameState, skipHints } from "./helpers.js";
 
-test("graze : la jauge NOVA se remplit et le bouton tactile apparaît", async ({ page }) => {
+test("graze : la jauge NOVA se remplit, le bouton tactile apparaît et NOVA efface les tirs", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);
@@ -24,8 +24,18 @@ test("graze : la jauge NOVA se remplit et le bouton tactile apparaît", async ({
   const novaBtn = page.locator("#nova-btn");
   await expect(novaBtn).not.toHaveClass(/hidden/, { timeout: 8000 });
 
-  // Déclenchement : le stock repasse à 0 (baseMaxStock=1), le bouton redevient masqué.
+  // La jauge ne doit plus se recharger : sinon la salve suivante du boss
+  // rendrait la charge (et le bouton) aussitôt.
+  await page.evaluate(async () => {
+    const { GRAZE } = await import("/js/config.js");
+    GRAZE.grazePerCharge = 1000;
+  });
+  await expect.poll(async () => (await gameState(page)).bossBullets).toBeGreaterThan(0);
+
+  // Déclenchement : les tirs du boss disparaissent (regardé à chaque image,
+  // avant sa salve suivante), le stock repasse à 0 et le bouton est masqué.
   await novaBtn.click();
+  await page.waitForFunction(async () => (await import("/js/main.js")).game.bossBulletsOnScreen === 0, null, { timeout: 2000 });
   await expect(novaBtn).toHaveClass(/hidden/, { timeout: 2000 });
 
   expect(errors).toEqual([]);

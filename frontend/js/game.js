@@ -41,7 +41,6 @@ export function createGame({ input, audio, music, nameInputEl }) {
     powerups,
     actions: {
       startRun: () => playingState.startRun(g, engine),
-      goToLeaderboard: (returnTo) => leaderboardScreen.open(g, returnTo),
     },
   };
 
@@ -57,7 +56,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     gameOverSelected: 0, // REJOUER par défaut — remis à 0 à chaque mort (states/endOfRun.js)
     scoreQualifies: false, // le score de la partie terminée entre dans le classement (states/endOfRun.js)
     pauseStage: "menu", // "menu" | "confirmQuit"
-    confirmQuitSelected: 1, // par défaut sur NON — un Entrée accidentel ne doit pas faire perdre la partie
+    confirmQuitSelected: 1, // NON par défaut (voir states/paused.js)
     helpReturnTo: MODE.MENU, // où revenir en fermant l'aide (MODE.MENU, MODE.PAUSED ou MODE.PLAYING)
     helpPage: 0, // page courante de l'écran Aide — voir states/help.js
 
@@ -98,7 +97,6 @@ export function createGame({ input, audio, music, nameInputEl }) {
     scoresFailed: false,
     scoresRevealCount: 0,
     scoresRevealTimer: 0,
-    leaderboardReturnTo: MODE.MENU,
     gamesPlayed: null, // total global (toutes parties) — voir states/leaderboardScreen.js
 
     // Crédits
@@ -219,7 +217,10 @@ export function createGame({ input, audio, music, nameInputEl }) {
     get inBonusLevel() {
       return g.bonusLevel !== null;
     },
-    // Vies, scores du classement, tirs du joueur, bonus actif, bouclier, bonus au sol, boss et ses tirs : lus par la suite e2e (e2e/tests/helpers.js).
+    // Position du vaisseau, vies, scores du classement, tirs du joueur, bonus actif, bouclier, bonus au sol, boss et ses tirs : lus par la suite e2e (e2e/tests/helpers.js).
+    get playerPosition() {
+      return { x: player.x, y: player.y };
+    },
     get lives() {
       return player.lives;
     },

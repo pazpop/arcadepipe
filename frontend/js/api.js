@@ -7,6 +7,14 @@ import { siteConfig } from "./siteConfig.js";
 const DEFAULT_API_BASE = window.location.port === "5500" ? "http://localhost:8000" : "";
 const FETCH_TIMEOUT_MS = 5000;
 
+// Abandonne la requête après FETCH_TIMEOUT_MS (AbortSignal.timeout ferait de
+// même, mais n'existe pas sur les iPhone d'avant 2022).
+function timeoutSignal() {
+  const controller = new AbortController();
+  setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  return controller.signal;
+}
+
 async function apiUrl(path) {
   return `${(await siteConfig).apiBase || DEFAULT_API_BASE}${path}`;
 }
@@ -21,7 +29,7 @@ async function getJson(path) {
   const hit = cache.get(path);
   if (hit && performance.now() - hit.at < CACHE_TTL_MS) return hit.data;
   const res = await fetch(await apiUrl(path), {
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    signal: timeoutSignal(),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   const data = await res.json();
@@ -47,7 +55,7 @@ export async function submitScore(playerName, score, wave, kills) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ player_name: playerName, score, wave, kills }),
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    signal: timeoutSignal(),
   });
   invalidate("/api/scores"); // le classement vient (peut-être) de changer
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -58,7 +66,7 @@ export async function submitScore(playerName, score, wave, kills) {
 export async function recordGamePlayed() {
   await fetch(await apiUrl("/api/games"), {
     method: "POST",
-    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    signal: timeoutSignal(),
   });
   invalidate("/api/games/count");
 }

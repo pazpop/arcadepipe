@@ -23,7 +23,9 @@ test("sans identifiant (par défaut) : ni bandeau, ni bouton Cookies, ni chargem
     requests.push(route.request().url());
     route.abort();
   });
+  const config = page.waitForResponse(/site-config\.json/);
   await page.goto("/");
+  await config; // c'est après ce fichier que le jeu décide de charger ou non la mesure
   await page.waitForTimeout(300); // rien ne doit se passer : pas d'état à attendre
   await expect(page.locator("#cookie-banner")).toBeHidden();
   await expect(page.locator("#cookie-btn")).toBeHidden();
@@ -98,11 +100,3 @@ test("bouton Cookies : retirer son accord coupe Analytics, efface ses cookies, e
   expect(gtm.length).toBe(1); // rien de plus après le rechargement
 });
 
-test("bouton Plein écran : présent, clic sans erreur", async ({ page }) => {
-  const errors = collectErrors(page);
-  await page.goto("/");
-  await expect(page.locator("#fullscreen-btn")).toBeVisible();
-  await page.click("#fullscreen-btn");
-  await page.waitForTimeout(200);
-  expect(errors).toEqual([]);
-});

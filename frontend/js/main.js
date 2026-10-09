@@ -20,6 +20,7 @@ const nameInputEl = $("name-input");
 const input = createInput(canvas);
 const audio = new AudioEngine();
 const music = new MusicPlayer(audio.ctx); // même AudioContext que les bruitages — voir audio/music.js
+audio.setMuted(music.muted); // "son coupé" est mémorisé par le lecteur de musique
 const game = createGame({ input, audio, music, nameInputEl });
 
 // Pour la suite e2e : un test peut faire `await import("/js/main.js")` et
@@ -39,17 +40,19 @@ for (const flag of LANGS[nextLangCode]["lang.flags"].split(" ")) {
 }
 langBtn.addEventListener("click", nextLang);
 initConsent();
+// Dans une page qui embarque le jeu (itch.io), le clavier ne lui parvient qu'une fois le focus pris.
+window.focus();
 
 // --- Audio : repris à chaque geste, pas seulement au premier. Le navigateur
 // n'accepte resume() que depuis un vrai geste et peut suspendre le contexte en
 // cours de partie. ensure() et start() sont sans effet s'il n'y a rien à faire.
+// pointerup en plus de pointerdown : au doigt, seul le relâchement compte
+// comme un geste.
 function beginAudio() {
   audio.ensure();
-  audio.setMuted(music.muted);
   music.start();
 }
-window.addEventListener("pointerdown", beginAudio);
-window.addEventListener("keydown", beginAudio);
+for (const type of ["pointerdown", "pointerup", "keydown"]) window.addEventListener(type, beginAudio);
 
 // --- Tap ou clic dans le jeu (menus), en coordonnées logiques. Il doit avoir
 // commencé sur l'écran courant : relâcher le tir à l'apparition de GAME OVER
@@ -167,13 +170,13 @@ shareBtn.addEventListener("click", async () => {
   link.click();
   // Libérée après un délai : révoquée tout de suite, certains navigateurs annulent le téléchargement.
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+  shareBtn.textContent = t("share.done");
+  setTimeout(() => (shareBtn.textContent = t("share.button")), 2000);
 
   try {
     await navigator.clipboard.write([new ClipboardItem({ "image/png": blob })]);
-    shareBtn.textContent = t("share.done");
-    setTimeout(() => (shareBtn.textContent = t("share.button")), 2000);
   } catch {
-    /* copie d'image indisponible sur ce navigateur : le téléchargement a déjà eu lieu */
+    /* copie d'image indisponible ou refusée : le téléchargement a déjà eu lieu */
   }
 });
 
@@ -232,7 +235,7 @@ const MAX_STEP = 1 / 60;
 let lastTime = 0;
 function loop(timestamp) {
   // Temps écoulé borné à 50 ms : après un onglet gelé, le jeu ne fait pas un bond.
-  const dt = Math.min(0.05, (timestamp - lastTime) / 1000 || 0);
+  const dt = Math.min(0.05, (timestamp - lastTime) / 1000);
   lastTime = timestamp;
   // Avancé par pas de 1/60 s au plus : d'un seul grand pas (vitesse x2, image
   // en retard), un tir sauterait par-dessus un ennemi sans le toucher.

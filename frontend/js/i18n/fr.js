@@ -29,7 +29,7 @@ export default {
   "nova.title": "Déclencher NOVA (Espace)",
   "share.button": "📤 Partager",
   "share.title": "Générer une image à partager",
-  "share.done": "✅ Copiée + téléchargée",
+  "share.done": "✅ Image téléchargée",
 
   // --- Bandeau de consentement ---
   "cookie.aria": "Consentement aux cookies",
@@ -102,8 +102,8 @@ export default {
   "help.next": "SUIV. ▶",
   "help.continue": "▶ CONTINUER",
   "enemy.normal": "FACILE — 1 PV, pas de tir, ligne droite",
-  "enemy.gunner": "MOYEN — 2 PV, tire visé (vague 5+)",
-  "enemy.elite": "ÉLITE — 3 PV, tire visé, ondule (vague 3+)",
+  "enemy.gunner": "MOYEN — 2 PV, tir visé (vague 5+)",
+  "enemy.elite": "ÉLITE — 3 PV, tir visé, ondule (vague 3+)",
   "enemy.kamikaze": "KAMIKAZE — 1 PV, fonce sur toi (vague 4+)",
 
   // --- Fin de partie ---
@@ -113,7 +113,7 @@ export default {
   "gameover.replay": "REJOUER",
   "gameover.enterName": "ENTRER MON PSEUDO",
   "gameover.top": "TU ENTRES DANS LE TOP {size} !",
-  "name.title": "NOUVEAU MEILLEUR SCORE !",
+  "name.title": "TU ENTRES DANS LE CLASSEMENT !",
   "name.prompt": "ENTRE TON NOM (8 CAR. MAX)",
   "name.validate": "▶ VALIDER",
 

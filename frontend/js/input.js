@@ -16,6 +16,8 @@ export function canvasToLogical(canvas, clientX, clientY) {
   };
 }
 
+const SCROLL_KEYS = ["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+
 export function createInput(canvas) {
   const input = {
     x: PLAYER.restX,
@@ -26,8 +28,11 @@ export function createInput(canvas) {
     justPressed: new Set(), // vidé à chaque frame par game.js
   };
 
+  // Espace et les flèches feraient aussi défiler la page autour du jeu
+  // (itch.io) : empêché, sauf dans un champ ou sur un curseur du panneau.
   // e.repeat : une touche maintenue ne compte qu'une fois.
   window.addEventListener("keydown", (e) => {
+    if (e.target === document.body && SCROLL_KEYS.includes(e.code)) e.preventDefault();
     if (!e.repeat) input.justPressed.add(e.code);
   });
 

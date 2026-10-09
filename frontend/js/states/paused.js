@@ -13,19 +13,14 @@ function selectPauseOption(g, index) {
   } else if (index === 1) {
     helpState.open(g, MODE.PAUSED);
   } else {
-    // Quitter perd la progression — confirmation demandée plutôt qu'un simple clic/Entrée.
     g.pauseStage = "confirmQuit";
-    g.confirmQuitSelected = 1; // par défaut sur NON — un Entrée accidentel ne doit pas faire perdre la partie
+    g.confirmQuitSelected = 1; // NON par défaut
   }
 }
 
 function selectConfirmQuitOption(g, index) {
-  if (index === 0) {
-    g.pauseStage = "menu";
-    g.mode = MODE.MENU;
-  } else {
-    g.pauseStage = "menu";
-  }
+  g.pauseStage = "menu";
+  if (index === 0) g.mode = MODE.MENU;
 }
 
 export function update(g, engine) {

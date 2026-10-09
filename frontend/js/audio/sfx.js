@@ -36,7 +36,7 @@ export class AudioEngine {
 
   // Enveloppe de volume d'une note : montée, tenue, descente. `start` permet
   // de programmer une note qui démarre plus tard (mélodies).
-  _envGain(duration, peak = 1, attack = 0.005, release = 0.01, start = this.ctx.currentTime) {
+  _envGain(duration, peak, attack, release, start = this.ctx.currentTime) {
     const g = this.ctx.createGain();
     g.gain.setValueAtTime(0, start);
     g.gain.linearRampToValueAtTime(peak, start + attack);
@@ -69,7 +69,7 @@ export class AudioEngine {
   }
 
   // `delay` (secondes) et `release` : pour enchaîner plusieurs notes.
-  _tone({ type = "square", startFreq, endFreq = startFreq, duration = 0.1, gain = 0.15, delay = 0, release = 0.01 }) {
+  _tone({ type = "square", startFreq, endFreq = startFreq, duration, gain = 0.15, delay = 0, release = 0.01 }) {
     const now = this.ctx.currentTime + delay;
     const osc = this.ctx.createOscillator();
     const g = this._envGain(duration, gain, 0.005, release, now);
@@ -83,15 +83,14 @@ export class AudioEngine {
   }
 
   // Tir joueur : "pew" glissé vers le grave. À cette cadence (plusieurs
-  // tirs/s), on varie aussi le timbre et l'amplitude du glissando — la
-  // hauteur seule restait trop répétitive.
+  // tirs/s), le timbre, la hauteur et l'amplitude du glissando varient d'un tir à l'autre.
   playPlayerShot(colorKey = "normal") {
     const waveforms = ["square", "triangle", "sawtooth"];
     const type = waveforms[Math.floor(Math.random() * waveforms.length)];
     const baseStart = { normal: 800, power: 620, rapid: 980 }[colorKey] ?? 800;
     const baseEnd = { normal: 400, power: 260, rapid: 560 }[colorKey] ?? 400;
     const pitchVariance = 0.8 + Math.random() * 0.4; // ±20%
-    const sweepVariance = 0.7 + Math.random() * 0.5; // amplitude du glissando, ±30%
+    const sweepVariance = 0.7 + Math.random() * 0.5; // amplitude du glissando, de -30 % à +20 %
     this._tone({
       type,
       startFreq: baseStart * pitchVariance,

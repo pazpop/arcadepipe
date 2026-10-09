@@ -16,12 +16,9 @@ En local, l'API écoute sur http://localhost:8000 : http://localhost:8000/api/he
 
 ## Lancer en local
 
-```bash
-python -m venv venv && source venv/bin/activate  # Windows: venv\Scripts\activate
-pip install -r requirements.txt && python seed.py && uvicorn main:app --reload
-```
+Les commandes sont dans le [README principal](../README.md#lancer-en-local). `seed.py` ajoute quelques scores de départ si la base est vide.
 
-`seed.py` ajoute quelques scores de départ si la base est vide.
+Retirer un score (demande d'un joueur, faux score) se fait à la main dans la base : `sqlite3 arcadepipe.db "DELETE FROM scores WHERE player_name = 'PSEUDO';"`.
 
 ## Tests
 

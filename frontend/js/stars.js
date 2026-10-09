@@ -231,9 +231,6 @@ function drawCelestial(ctx, c) {
   ctx.restore();
 }
 
-// Silhouette dessinée au canvas (pas un sprite), cohérent avec planètes/
-// galaxies ci-dessus. Teintes grises très désaturées (S=12%, même principe
-// que drawCelestial : jamais assez vif pour rivaliser avec le gameplay).
 // Silhouette du vaisseau-mère : la coque du boss (sprite d'assets.js), assombrie
 // jusqu'à n'être presque plus qu'une ombre, mais opaque pour cacher ce qui
 // passe derrière. Préparée une fois, hors de l'écran.

@@ -38,8 +38,7 @@ export function spawnBoss(waveNumber) {
   const hp = firstBoss ? Math.max(1, Math.round(BOSS.weakPointHp * BOSS.firstBossHpMul)) : BOSS.weakPointHp;
   const hull = buildSprites().bossHull;
   // Variabilité minime d'un combat à l'autre : taille (sizeScale, pris en
-  // compte par hitsBossHull) et teinte (mode composite "hue" dans drawBoss,
-  // garde le gris-métal).
+  // compte par hitsBossHull) et teinte (tintedHull, qui garde le gris-métal).
   const sizeScale = 0.92 + Math.random() * 0.16;
   const points = [];
   for (let i = 0; i < count; i++) {

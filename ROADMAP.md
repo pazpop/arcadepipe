@@ -4,17 +4,17 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 
 ## Avant la publication officielle
 
-- [ ] **Vérifier sur un vrai téléphone** les commandes dans les bandes noires en paysage (Pause, onglet du panneau, NOVA) et l'encoche.
+- [ ] **Vérifier sur un vrai téléphone** les commandes dans les bandes noires en paysage (Pause, bouton ⚙, NOVA) et l'encoche ; la musique dès le menu ; le clavier virtuel à la saisie du pseudo.
 - [ ] **Valider en jouant les réglages par défaut** : micro-gel à l'impact (`HIT_STOP`) et paliers sonores du frôlement (`GRAZE.milestones`), dans `config.js`.
 - [ ] **Faire relire l'anglais** (`frontend/js/i18n/en.js`).
 - [ ] **Cinquième morceau de mall-e** : l'ajouter à `AUDIO.tracks` (`config.js`) et au README.
-- [ ] **Tester le partage d'un score en conditions réelles** : partager l'image d'une partie et vérifier que le QR code se lit avec un téléphone. (L'aperçu du lien du jeu et l'image de score s'affichent bien sur Discord.)
+- [ ] **Tester le partage d'un score en conditions réelles** : partager l'image d'une partie et vérifier que le QR code se lit avec un téléphone.
 - [ ] **Première minute** : mesurer le délai avant le premier bonus sur dix parties ; s'il dépasse 30 s, augmenter les chances de drop en vague 1.
 
 ## Avant de publier sur des plateformes (itch.io...)
 
-- [ ] **Accord de mall-e** pour diffuser sa musique ailleurs que sur le site : donné par message (Signal, à conserver) ; garder aussi sa réponse par courriel quand elle arrivera.
-- [ ] **Publier sur itch.io** : la page est prête en brouillon et le classement y fonctionne. Reste à y déposer la dernière archive (`python tools/build_itch.py`, voir [docs/deploiement.md](docs/deploiement.md#itchio)), puis à passer la page en public.
+- [ ] **Accord de mall-e** pour diffuser sa musique ailleurs que sur le site : conserver son message et sa réponse par courriel.
+- [ ] **Publier sur itch.io** : déposer la dernière archive (`python tools/build_itch.py`, voir [docs/deploiement.md](docs/deploiement.md#itchio)), puis passer la page en public.
 - [ ] **Supprimer de faux scores à distance** : une commande d'administration protégée, au lieu d'une requête SQL à la main sur le serveur.
 - [ ] **Compléter le kit presse** (`frontend/press/`, captures refaites par `npm run presskit` dans `e2e/`) : une adresse de contact, la date de sortie, les liens des plateformes ; éventuellement la vidéo en MP4 ou en GIF, ou sur YouTube pour la page itch.io.
 - [ ] **Documentation du dépôt en anglais et en français** (README, docs).
@@ -42,7 +42,7 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 
 - [ ] **Score authentifié** : jeton signé émis au début de la partie, exigé à l'envoi. Le score non authentifié est un risque assumé (voir [docs/securite.md](docs/securite.md)).
 - [ ] **Rate limiting en IPv6** : compter par préfixe /64 plutôt que par adresse (`get_client_ip`, `backend/main.py`), si l'instance publique est joignable en IPv6.
-- [ ] **Tests e2e** : les réglages du panneau (volumes, vitesse), le bouton Partager ; Firefox et WebKit en plus de Chromium (`e2e/playwright.config.js`).
+- [ ] **Tests e2e** : le score (un kill le fait monter, bonus INTACT, valeurs envoyées au classement), un tir ennemi encaissé et le bouclier qui absorbe trois coups, la pause quand l'onglet passe en arrière-plan ; les réglages du panneau (volumes, vitesse), le bouton Partager ; Firefox et WebKit en plus de Chromium (`e2e/playwright.config.js`).
 - [ ] **Dépendances de développement épinglées** (`backend/requirements-dev.txt`, et `ruff`, `pip-audit` dans la CI).
 - [ ] **Scan des images construites** ([Trivy](https://trivy.dev/)) en CI : `pip-audit` ne couvre pas les paquets système de l'image.
 - [ ] **Infra** (Traefik ou Caddy, copie distante et alertes des sauvegardes) : suivi dans le README de [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner).

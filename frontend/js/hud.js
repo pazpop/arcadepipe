@@ -70,8 +70,8 @@ function drawOptionList(ctx, rects, selected, size = 11) {
 export function drawGameHud(ctx, s, lives) {
   text(ctx, t("hud.score", { score: s.score }), 8, 10, { size: 8, align: "left" });
   // Compteur de kills/objectif à côté de la vague — masqué en vague de boss
-  // (victoire = coque, pas un total de kills). Même ligne que "VAGUE" pour
-  // ne pas empiéter sur l'indicateur de buff/bouclier.
+  // (on le bat par ses points faibles, pas par un total de kills). Même ligne
+  // que "VAGUE" pour ne pas empiéter sur l'indicateur de buff/bouclier.
   if (s.bonusLevel) {
     text(ctx, t("hud.bonusLevel", { passed: s.bonusLevel.passedCount, total: BONUS_LEVEL.ringCount }), RES_W / 2, 10, {
       size: 8,
@@ -104,12 +104,9 @@ export function drawGameHud(ctx, s, lives) {
   }
 }
 
-// Jauge NOVA : charges dispo / max (ex. "NOVA 1/2" — le max lui-même monte
-// à 2 après le 2e combat de boss, voir novaMaxForWave dans graze.js, d'où
-// l'intérêt de toujours l'afficher plutôt qu'un simple compteur) + une fine
-// barre de progression vers la prochaine charge — en haut à gauche, sous le
-// score, symétrique des vies (haut à droite). Jaune pâle à 0 charge, jaune
-// vif (avec glow) dès qu'au moins une est prête à être utilisée.
+// Jauge NOVA, sous le score : charges disponibles / maximum ("NOVA 1/2", le
+// maximum monte en cours de partie, voir novaMaxForWave dans graze.js) et une
+// fine barre de progression vers la prochaine charge. Pâle sans charge, vive dès qu'une est prête.
 export function drawNovaGauge(ctx, stock, max, progress) {
   if (max <= 0) return;
   const color = NOVA.color;
@@ -253,7 +250,6 @@ export function hitTestMenu(x, y) {
 const LORE_LINES = t("menu.lore").split("\n");
 
 export function drawTitleScreen(ctx, elapsed, selected) {
-  ctx.save();
   const float = Math.sin(elapsed * 1.6) * 4;
   text(ctx, "ARCADEPIPE", RES_W / 2, RES_H * 0.26 + float, {
     size: 30,
@@ -277,7 +273,6 @@ export function drawTitleScreen(ctx, elapsed, selected) {
   });
 
   drawOptionList(ctx, menuOptionRects(), selected, 12);
-  ctx.restore();
 }
 
 // --- Écran classement ---
@@ -364,14 +359,9 @@ export const CREDITS_LINES = [
 ];
 
 export function drawCreditsScreen(ctx, scrollY) {
-  ctx.save();
-  ctx.beginPath();
-  ctx.rect(0, 0, RES_W, RES_H);
-  ctx.clip();
-  const lineH = 16;
   CREDITS_LINES.forEach((line, i) => {
-    const y = RES_H - scrollY + i * lineH;
-    if (y < -lineH || y > RES_H + lineH) return;
+    const y = RES_H - scrollY + i * CREDITS_LINE_HEIGHT;
+    if (y < -CREDITS_LINE_HEIGHT || y > RES_H + CREDITS_LINE_HEIGHT) return;
     text(ctx, line, RES_W / 2, y, {
       size: i === 0 ? 14 : i === 1 ? 9 : 8,
       align: "center",
@@ -379,7 +369,6 @@ export function drawCreditsScreen(ctx, scrollY) {
       glow: i === 0 ? PALETTE.bulletPlayer : i === 1 ? PALETTE.player : null,
     });
   });
-  ctx.restore();
 }
 
 // --- Pause ---
@@ -545,15 +534,13 @@ export function drawInfoScreen(ctx, content, page, pageCount) {
     });
   }
 
-  {
-    const prevR = infoPrevRect();
-    const nextR = infoNextRect();
-    // Grisée plutôt que masquée aux extrémités : la position du bouton reste
-    // stable, seule son opacité indique qu'il n'y a rien de plus dans ce sens.
-    text(ctx, t("help.prev"), prevR.x, prevR.y, { size: 9, align: "center", alpha: page > 0 ? 1 : 0.3 });
-    text(ctx, `${page + 1}/${pageCount}`, RES_W / 2, prevR.y, { size: 9, align: "center", color: PALETTE.hud });
-    text(ctx, t("help.next"), nextR.x, nextR.y, { size: 9, align: "center", alpha: page < pageCount - 1 ? 1 : 0.3 });
-  }
+  const prevR = infoPrevRect();
+  const nextR = infoNextRect();
+  // Grisée plutôt que masquée aux extrémités : la position du bouton reste
+  // stable, seule son opacité indique qu'il n'y a rien de plus dans ce sens.
+  text(ctx, t("help.prev"), prevR.x, prevR.y, { size: 9, align: "center", alpha: page > 0 ? 1 : 0.3 });
+  text(ctx, `${page + 1}/${pageCount}`, RES_W / 2, prevR.y, { size: 9, align: "center", color: PALETTE.hud });
+  text(ctx, t("help.next"), nextR.x, nextR.y, { size: 9, align: "center", alpha: page < pageCount - 1 ? 1 : 0.3 });
 
   const r = infoContinueRect();
   text(ctx, t("help.continue"), r.x, r.y, {

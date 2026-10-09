@@ -1,8 +1,7 @@
 [tool.ruff]
 target-version = "py313"
-# 110 plutôt que le défaut 88 (façon black) : quelques commentaires en
-# français dépassent 88 sans que ce soit un vrai problème de lisibilité —
-# évite un reformatage massif sans valeur ajoutée.
+# 110 plutôt que le défaut 88 (façon black) : les commentaires en français
+# dépassent vite 88 sans que la lisibilité en souffre.
 line-length = 110
 
 [tool.ruff.lint]

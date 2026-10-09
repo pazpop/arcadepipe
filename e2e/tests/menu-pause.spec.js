@@ -44,14 +44,14 @@ test("quitter depuis la pause demande confirmation avant de perdre la partie", a
   await clickLogical(240, 172); // MENU PRINCIPAL depuis la pause -> doit ouvrir la confirmation
   await canvas.screenshot({ path: "test-results/confirm-quit.png" });
 
-  // "NON, CONTINUER" ramène à la pause.
+  // "NON, CONTINUER" ramène au menu de pause : son option REPRENDRE répond de
+  // nouveau (à cet endroit, l'écran de confirmation n'a aucune option).
   await clickLogical(240, 178);
-  await waitForMode(page, "paused");
   await canvas.screenshot({ path: "test-results/confirm-quit-cancelled.png" });
-
-  // Reprendre, puis refaire le chemin en confirmant cette fois.
-  await page.keyboard.press("Escape");
+  await clickLogical(240, 132); // REPRENDRE
   await waitForMode(page, "playing");
+
+  // Refaire le chemin en confirmant cette fois.
   await page.keyboard.press("KeyP");
   await waitForMode(page, "paused");
   await clickLogical(240, 172); // MENU PRINCIPAL
@@ -149,7 +149,8 @@ test("en pause, la scène est figée : deux captures identiques", async ({ page 
   await skipHints(page);
   const { canvas, startRun } = canvasHelpers(page);
   await startRun();
-  await page.waitForTimeout(2500); // le temps que des ennemis soient à l'écran
+  // Des tirs à l'écran : s'ils avançaient encore en pause, les captures différeraient.
+  await expect.poll(async () => (await gameState(page)).playerBullets).toBeGreaterThan(0);
   await page.keyboard.press("KeyP");
   await waitForMode(page, "paused");
   const first = await canvas.screenshot();
@@ -163,8 +164,25 @@ test("la souris immobile sur une option n'empêche pas de choisir au clavier", a
   const { moveLogical } = canvasHelpers(page);
   await moveLogical(240, 151.2); // sur JOUER
   await page.keyboard.press("ArrowDown"); // CLASSEMENT
+  await page.waitForTimeout(200); // plusieurs images : le survol ne doit pas ramener la sélection sur JOUER
   await page.keyboard.press("Enter");
   await waitForMode(page, "leaderboard");
+});
+
+test("panneau replié : ses réglages ne se parcourent plus au clavier", async ({ page }) => {
+  await page.goto("/");
+  await page.click("#mc-toggle"); // replie le panneau (ouvert par la configuration des tests)
+  await expect(page.locator("#music-volume")).toBeHidden();
+  for (let i = 0; i < 4; i++) {
+    await page.keyboard.press("Tab");
+    expect(await page.evaluate(() => document.activeElement.closest("#music-controls"))).toBeNull();
+  }
+});
+
+test("bouton Plein écran : le jeu passe en plein écran", async ({ page }) => {
+  await page.goto("/");
+  await page.click("#fullscreen-btn");
+  await expect.poll(() => page.evaluate(() => document.fullscreenElement?.id)).toBe("game-container");
 });
 
 test("un réglage cliqué ne garde pas le focus : Espace ne le rebascule pas", async ({ page }) => {

@@ -1,18 +1,18 @@
 """Test isolé du rate limiting (slowapi) : POST /api/scores (5/minute) et POST /api/games (10/minute).
 
-Séparé de test_api.py, dont la fixture désactive le limiter.
+Séparé de test_api.py, dont la fixture désactive le limiter. La limite de
+50 scores par jour n'est pas testée : il faudrait avancer l'horloge.
 """
 import pytest
 from fastapi.testclient import TestClient
 
 import database
-from main import app, limiter
+from main import app
 
 
 @pytest.fixture
 def client(tmp_path, monkeypatch):
     monkeypatch.setattr(database, "DB_PATH", str(tmp_path / "test_ratelimit.db"))
-    monkeypatch.setattr(limiter, "enabled", True)
     with TestClient(app) as c:
         yield c
 

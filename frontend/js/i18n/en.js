@@ -95,6 +95,8 @@ export default {
   "help.boss.detail": "Aim for the YELLOW weak points, avoid its hull — defeating it grants +1 life. Its BLUE shots are aimed at you, in a fan; the WHITE ones come in spirals or rings",
   "help.ram": "COLLISION",
   "help.ram.detail": "Ramming an enemy destroys it but costs you a hit: one shield point, or a life",
+  "help.music": "MUSIC",
+  "help.music.detail": "Shuffled playlist, adjustable in the settings panel (⚙ button, bottom left)",
   "help.keys": "KEYBOARD SHORTCUTS",
   "help.keys.detail": "Esc/P: pause · Space: NOVA · M: mute",
   "help.prev": "◀ PREV.",

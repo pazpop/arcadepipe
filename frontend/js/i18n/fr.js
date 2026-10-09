@@ -96,6 +96,8 @@ export default {
   "help.boss.detail": "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie. Ses tirs BLEUS te visent, en éventail ; les BLANCS partent en spirale ou en anneau",
   "help.ram": "COLLISION",
   "help.ram.detail": "Foncer dans un ennemi le détruit, mais te coûte un coup : un point de bouclier, ou une vie",
+  "help.music": "MUSIQUE",
+  "help.music.detail": "Playlist aléatoire, réglable dans le panneau de réglages (bouton ⚙, en bas à gauche)",
   "help.keys": "RACCOURCIS CLAVIER",
   "help.keys.detail": "Échap/P : pause · Espace : NOVA · M : son",
   "help.prev": "◀ PRÉC.",

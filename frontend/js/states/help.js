@@ -1,6 +1,6 @@
 // État "aide" : ouvert depuis le menu, la pause, le bouton du panneau, ou
 // automatiquement à la première partie (startRun, states/playing.js).
-// g.helpReturnTo mémorise où revenir en le fermant. Quatre pages (g.helpPage),
+// g.helpReturnTo mémorise où revenir en le fermant. Cinq pages (g.helpPage),
 // chacune du texte ou une légende, jamais les deux (drawInfoScreen, hud.js).
 import { consumeJustPressed } from "../input.js";
 import * as hud from "../hud.js";
@@ -21,6 +21,12 @@ const HELP_PAGES = [
     sections: [
       { heading: t("help.boss"), detail: t("help.boss.detail") },
       { heading: t("help.ram"), detail: t("help.ram.detail") },
+    ],
+  },
+  {
+    title: t("help.title"),
+    sections: [
+      { heading: t("help.music"), detail: t("help.music.detail") },
       { heading: t("help.keys"), detail: t("help.keys.detail") },
     ],
   },

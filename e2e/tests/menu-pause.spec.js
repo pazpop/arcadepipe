@@ -110,7 +110,7 @@ test("toutes les pages de l'aide et les crédits s'affichent", async ({ page }) 
 
   await clickLogical(240, 151.2 + 2 * 22); // AIDE
   await waitForMode(page, "help");
-  for (let pageNumber = 2; pageNumber <= 4; pageNumber++) {
+  for (let pageNumber = 2; pageNumber <= 5; pageNumber++) {
     await clickLogical(326, 210); // SUIV.
     expect((await gameState(page)).helpPage).toBe(pageNumber - 1); // helpPage compte à partir de 0
     await canvas.screenshot({ path: `test-results/help-page-${pageNumber}.png` });

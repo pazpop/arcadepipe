@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : le résultat de `git rev-list --count HEAD`, plus un. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.152] - 2026-10-09
+- Aide : cinq pages, la musique y retrouve sa section (avec les raccourcis clavier).
+
 ## [2.151] - 2026-10-09
 - **Record personnel** : le meilleur score est gardé sur l'appareil, affiché au menu, et l'écran de fin annonce un nouveau record.
 - **Formation ennemie** : à partir de la vague 2, une vague sur deux environ voit passer trois ennemis normaux en flèche (une formation par vague au plus).

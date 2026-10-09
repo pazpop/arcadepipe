@@ -14,7 +14,7 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 ## Avant de publier sur des plateformes (itch.io...)
 
 - [ ] **Accord de mall-e** pour diffuser sa musique ailleurs que sur le site : donné par message (Signal, à conserver) ; garder aussi sa réponse par courriel quand elle arrivera.
-- [ ] **Publier sur itch.io** : l'archive se construit (`python tools/build_itch.py`, voir [docs/deploiement.md](docs/deploiement.md#itchio)). Reste à autoriser l'origine d'itch.io dans `ALLOWED_ORIGINS` du backend (dépôt d'infra), à déposer l'archive, puis à tester le classement depuis la page itch.io.
+- [ ] **Publier sur itch.io** : la page est prête en brouillon et le classement y fonctionne. Reste à y déposer la dernière archive (`python tools/build_itch.py`, voir [docs/deploiement.md](docs/deploiement.md#itchio)), puis à passer la page en public.
 - [ ] **Supprimer de faux scores à distance** : une commande d'administration protégée, au lieu d'une requête SQL à la main sur le serveur.
 - [ ] **Compléter le kit presse** (`frontend/press/`, captures refaites par `npm run presskit` dans `e2e/`) : une adresse de contact, la date de sortie, les liens des plateformes ; éventuellement la vidéo en MP4 ou en GIF, ou sur YouTube pour la page itch.io.
 - [ ] **Documentation du dépôt en anglais et en français** (README, docs).

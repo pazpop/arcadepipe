@@ -35,6 +35,12 @@ export default defineConfig({
     // Français (langue de référence) : le jeu suit la langue du navigateur,
     // anglaise par défaut sous Playwright (voir i18n.spec.js pour l'anglais).
     locale: "fr-FR",
+    // Panneau de réglages ouvert (il est replié par défaut) : la plupart des
+    // tests y cliquent. mobile.spec.js vérifie l'état par défaut.
+    storageState: {
+      cookies: [],
+      origins: [{ origin: "http://localhost:5500", localStorage: [{ name: "arcadepipe_panel_collapsed", value: "0" }] }],
+    },
   },
   // Démarre/arrête automatiquement le serveur statique du frontend (même
   // commande que la section "Lancer en local" du README) — pas besoin de le

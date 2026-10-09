@@ -3,7 +3,8 @@
 import { test, expect } from "@playwright/test";
 import { canvasHelpers, skipHints, waitForMode } from "./helpers.js";
 
-test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true });
+// storageState vide : le panneau garde son état par défaut (replié).
+test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, storageState: { cookies: [], origins: [] } });
 
 test("téléphone en paysage : panneau replié, Pause et NOVA dans les bandes, jouable au doigt", async ({ page }) => {
   await page.goto("/");
@@ -41,7 +42,7 @@ test("téléphone en paysage : panneau replié, Pause et NOVA dans les bandes, j
   await page.locator("#pause-btn").tap();
   await waitForMode(page, "paused");
 
-  // L'onglet ouvre le panneau, qui tient dans la hauteur de l'écran.
+  // Le bouton ⚙ ouvre le panneau, qui tient dans la hauteur de l'écran.
   await page.locator("#mc-toggle").tap();
   await expect(page.locator("#mc-wrap")).not.toHaveClass(/collapsed/);
   const panel = await page.locator("#music-controls").boundingBox();

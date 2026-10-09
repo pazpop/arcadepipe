@@ -73,15 +73,14 @@ $("game-container").addEventListener("click", (e) => {
 });
 
 // --- Panneau de réglages (bas gauche), rétractable ; #mc-toggle reste visible.
-// Sans préférence mémorisée, il est replié sur un écran bas (téléphone en
-// paysage), où il recouvrirait le jeu.
+// Replié tant que le joueur ne l'a pas ouvert : ouvert, il recouvre le bord
+// gauche du jeu (les noms du classement, par exemple).
 const mcWrap = $("mc-wrap");
 const mcToggle = $("mc-toggle");
-const storedCollapsed = loadItem(STORAGE_KEYS.panelCollapsed);
-let panelCollapsed = storedCollapsed === null ? window.innerHeight < 500 : storedCollapsed === "1";
+let panelCollapsed = loadItem(STORAGE_KEYS.panelCollapsed) !== "0";
 function applyPanelState() {
   mcWrap.classList.toggle("collapsed", panelCollapsed);
-  mcToggle.textContent = panelCollapsed ? "▶" : "◀";
+  mcToggle.textContent = panelCollapsed ? "⚙" : "◀";
 }
 applyPanelState();
 mcToggle.addEventListener("click", () => {

@@ -25,7 +25,7 @@ export default {
   "panel.cookies.title": "Changer mon choix de cookies",
   "panel.lang.title": "Changer de langue",
   "panel.privacy": "Confidentialité",
-  "panel.toggle.title": "Afficher/masquer le menu",
+  "panel.toggle.title": "Réglages",
   "nova.title": "Déclencher NOVA (Espace)",
   "share.button": "📤 Partager",
   "share.title": "Générer une image à partager",

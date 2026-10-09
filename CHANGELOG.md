@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.140] - 2026-10-09
+- **Panneau de réglages replié par défaut**, derrière un bouton ⚙ : ouvert, il cachait le bord gauche du jeu, dont les noms du classement.
+
 ## [2.138] - 2026-10-09
 - **Fin de partie** : quand le score entre dans le top 10, l'écran GAME OVER l'annonce et la seconde option devient « ENTRER MON PSEUDO » (elle reste « CLASSEMENT » sinon).
 - Si le serveur du classement ne répond pas, le jeu ne propose plus de saisir un pseudo pour un score qu'il ne pourrait pas envoyer.

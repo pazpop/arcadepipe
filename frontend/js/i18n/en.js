@@ -24,7 +24,7 @@ export default {
   "panel.cookies.title": "Change my cookie preferences",
   "panel.lang.title": "Change language",
   "panel.privacy": "Privacy",
-  "panel.toggle.title": "Show/hide the menu",
+  "panel.toggle.title": "Settings",
   "nova.title": "Trigger NOVA (Space)",
   "share.button": "📤 Share",
   "share.title": "Generate an image to share",

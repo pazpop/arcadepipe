@@ -2,7 +2,7 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
-## [2.142] - 2026-10-09
+## [2.144] - 2026-10-09
 - **Classement mieux protégé** : 50 envois de scores par jour et par adresse IP, en plus de 5 par minute.
 - **Fin de partie** : REJOUER et la seconde option ne se figent plus quand le serveur du classement est lent.
 - **Panneau replié** : ses réglages ne se parcourent plus au clavier, et il ne décale plus les boutons ⏸ et ⚙ sur le jeu.

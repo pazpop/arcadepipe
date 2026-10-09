@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.146] - 2026-10-09
+- Image du frontend allégée de 48 Mo (les fichiers n'y sont plus copiés deux fois).
+
 ## [2.145] - 2026-10-09
 - **Boss** : ses tirs en éventail ne tournent plus en rond sans jamais quitter l'écran (ils s'accumulaient au fil du combat et ralentissaient le jeu). La courbe dure une seconde, puis le tir file droit.
 - **Téléphone** : NOVA et Pause répondent pendant qu'un doigt pilote le vaisseau ; un pouce posé hors du jeu ne détourne plus le vaisseau ; la saisie du pseudo tient dans la moitié haute de l'écran, au-dessus du clavier ; le son revient après un appel.

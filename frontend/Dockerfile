@@ -39,11 +39,9 @@ RUN if [ -n "$APP_VERSION" ]; then \
 
 # Utilisateur dédié plutôt que root — même raisonnement que backend/Dockerfile :
 # si Caddy est un jour compromis, l'attaquant hérite des droits de cet
-# utilisateur, pas de root dans le conteneur. /config et /data (autosave de
-# config, cache Caddy) sont montés en tmpfs par docker-compose.yml, pas
-# besoin de les chown ici — Caddy ne sert que du HTTP, sans certificat.
-RUN adduser -D -u 1000 caddyuser \
-    && chown -R caddyuser:caddyuser /etc/caddy /usr/share/caddy
+# utilisateur, pas de root dans le conteneur. Les fichiers servis restent à
+# root : lisibles par tous, modifiables par personne d'autre.
+RUN adduser -D -u 1000 caddyuser
 USER caddyuser
 
 EXPOSE 80

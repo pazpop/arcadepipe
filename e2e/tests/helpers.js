@@ -80,6 +80,7 @@ export function gameState(page) {
       lives: game.lives,
       scores: game.scores,
       scoreQualifies: game.scoreQualifies,
+      leaderboardDown: game.leaderboardDown,
       kills: game.getRunSummary().kills,
       wave: game.getRunSummary().wave,
       inBonusLevel: game.inBonusLevel,

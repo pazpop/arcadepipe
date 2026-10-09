@@ -43,6 +43,7 @@ export default {
   "menu.leaderboard": "LEADERBOARD",
   "menu.help": "HELP",
   "menu.credits": "CREDITS",
+  "menu.record": "BEST {score}",
 
   // --- In-game HUD ---
   "hud.score": "SCORE {score}",
@@ -91,9 +92,9 @@ export default {
   "help.nova.detail":
     "Graze (without touching) an enemy shot or an enemy ship — not the boss — to charge the NOVA gauge at the top left: take risks! Once full, SPACE (or the touch button at the bottom right) destroys every enemy on screen and their shots, never the boss. Up to 2 charges in reserve from the 2nd boss fight on (only 1 before that). Use them whenever you like.",
   "help.boss": "BOSS",
-  "help.boss.detail": "Aim for the YELLOW weak points, avoid its hull — defeating it grants +1 life",
-  "help.music": "MUSIC",
-  "help.music.detail": "Shuffled playlist, adjustable at the bottom left",
+  "help.boss.detail": "Aim for the YELLOW weak points, avoid its hull — defeating it grants +1 life. Its BLUE shots are aimed at you, in a fan; the WHITE ones come in spirals or rings",
+  "help.ram": "COLLISION",
+  "help.ram.detail": "Ramming an enemy destroys it but costs you a hit: one shield point, or a life",
   "help.keys": "KEYBOARD SHORTCUTS",
   "help.keys.detail": "Esc/P: pause · Space: NOVA · M: mute",
   "help.prev": "◀ PREV.",
@@ -111,6 +112,8 @@ export default {
   "gameover.replay": "PLAY AGAIN",
   "gameover.enterName": "ENTER YOUR NAME",
   "gameover.top": "YOU MADE THE TOP {size}!",
+  "gameover.newRecord": "NEW PERSONAL BEST!",
+  "gameover.offline": "LEADERBOARD UNREACHABLE",
   "name.title": "YOU MADE THE LEADERBOARD!",
   "name.prompt": "ENTER YOUR NAME (8 CHARS MAX)",
   "name.validate": "▶ CONFIRM",
@@ -123,6 +126,7 @@ export default {
   "board.wave": "WAVE",
   "board.kills": "KILLS",
   "board.empty": "No scores yet.",
+  "board.loading": "Loading…",
   "board.error": "Leaderboard unavailable right now.",
   "board.back": "ESC / TAP — BACK",
 

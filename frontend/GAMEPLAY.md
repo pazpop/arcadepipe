@@ -19,6 +19,7 @@ Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/confi
 | Gunner (bleu) | 2 | un ennemi normal qui tire, plus lentement qu'une élite | vague 6 |
 
 - Ils apparaissent dans le tiers droit de l'écran, puis se déplacent librement.
+- À partir de la vague 2, une vague sur deux environ voit passer une formation : trois ennemis normaux en flèche, qui entrent ensemble par la droite. Une par vague au plus.
 - Un ennemi ne tire que si le joueur est devant lui, et jamais depuis le tiers gauche de l'écran.
 - Un ennemi touché mais pas détruit passe à une version ternie de son sprite : il n'y a pas de jauge de PV.
 - Foncer dans un ennemi le détruit, sans rapporter de points, au prix d'un coup (un point de bouclier, ou une vie).
@@ -55,7 +56,8 @@ Les trois armes durent 20 secondes ; le décompte est en pause pendant un saut s
 
 ## Frôlement et NOVA
 
-- **Frôler** un tir ennemi ou le corps d'un ennemi (sans se faire toucher) rapporte des points, multipliés par la longueur de la chaîne de frôlements de la vague. Un son marque les chaînes de 5, 10 et 15.
+- **Frôler** un tir ennemi ou le corps d'un ennemi (sans se faire toucher) rapporte des points, multipliés par la longueur de la chaîne de frôlements en cours, jusqu'à 20. Un son marque les chaînes de 5, 10 et 15.
+- La chaîne repart de zéro à chaque vague et à chaque coup encaissé (pas un coup absorbé par le bouclier).
 - Un tir ne compte qu'une fois ; un ennemi peut être frôlé de nouveau après un délai. La coque du boss ne compte pas.
 - Chaque frôlement charge la jauge **NOVA** (en haut à gauche) : 12 frôlements pour une charge. Une charge en réserve au maximum, deux à partir du deuxième boss.
 - NOVA (Espace, ou le bouton tactile) détruit tous les ennemis à l'écran et leurs tirs. Le boss y est insensible, mais ses tirs disparaissent.
@@ -71,6 +73,7 @@ Les trois armes durent 20 secondes ; le décompte est en pause pendant un saut s
 - À la dernière vie perdue, l'écran GAME OVER propose **REJOUER** (une nouvelle partie aussitôt) ou **CLASSEMENT**.
 - Si le score entre dans le top 10, l'écran l'annonce et la seconde option devient **ENTRER MON PSEUDO** (8 caractères). Le score est enregistré dans les deux cas : en rejouant, c'est sous le dernier pseudo saisi, ou « AAA ».
 - Si le serveur du classement ne répond pas, le score n'est pas enregistré.
+- Le meilleur score est gardé sur l'appareil : le menu l'affiche, et l'écran de fin annonce un nouveau record personnel. Si le serveur du classement ne répond pas, l'écran de fin le dit.
 - Le bouton Partager crée une image du résultat (score, vague, ennemis abattus, meilleure chaîne, distance) avec un QR code vers le jeu.
 
 ## Réglages et accessibilité

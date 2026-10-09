@@ -69,7 +69,7 @@ test("fin de vague : la vague 2 démarre après le saut spatial, sans erreur", a
   expect(errors).toEqual([]);
 });
 
-test("fin de partie sans serveur : rien n'annonce le top, la seconde option mène au classement", async ({ page }) => {
+test("fin de partie sans serveur : classement annoncé injoignable, record personnel gardé, la seconde option mène au classement", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);
@@ -90,12 +90,16 @@ test("fin de partie sans serveur : rien n'annonce le top, la seconde option mèn
   // Foncer dans la coque du boss : partie terminée, comptée, top consulté.
   await reachBoss(page, 2); // un kill avant le boss : un score nul n'interroge pas le classement
   await page.mouse.up();
-  const { toPage, clickLogical } = canvasHelpers(page);
+  const { canvas, toPage, clickLogical } = canvasHelpers(page);
   const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
   await page.mouse.move(hull.x, hull.y);
   await waitForMode(page, "game_over", 15000);
   await expect.poll(() => [...apiCalls].sort()).toEqual(["GET /api/scores", "POST /api/games"]);
   expect((await gameState(page)).scoreQualifies).toBe(false);
+  await expect.poll(async () => (await gameState(page)).leaderboardDown).toBe(true); // l'écran l'annonce
+  // Premier score de ce navigateur : c'est le record personnel, gardé sur l'appareil.
+  expect(Number(await page.evaluate(() => localStorage.getItem("arcadepipe_best_score")))).toBeGreaterThan(0);
+  await canvas.screenshot({ path: "test-results/game-over-offline.png" });
 
   // Seconde option : pas de saisie de pseudo, le classement directement.
   await clickLogical(240, 187.4);

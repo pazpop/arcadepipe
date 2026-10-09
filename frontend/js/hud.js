@@ -243,7 +243,8 @@ export function hitTestMenu(x, y) {
 // avec le titre) pour ne jamais empiéter dessous.
 const LORE_LINES = t("menu.lore").split("\n");
 
-export function drawTitleScreen(ctx, elapsed, selected) {
+export function drawTitleScreen(ctx, elapsed, selected, bestScore) {
+  if (bestScore > 0) text(ctx, t("menu.record", { score: bestScore }), RES_W - 8, 10, { align: "right", alpha: 0.75 });
   const float = Math.sin(elapsed * 1.6) * 4;
   text(ctx, "ARCADEPIPE", RES_W / 2, RES_H * 0.26 + float, {
     size: 30,
@@ -297,7 +298,8 @@ export function drawLeaderboardScreen(ctx, scores, failed, revealCount, gamesPla
   text(ctx, t("board.kills"), COL.kills, 42, { size: 7, align: "right", alpha: 0.7 });
 
   if (failed) text(ctx, t("board.error"), RES_W / 2, RES_H / 2, { size: 9, align: "center" });
-  else if (scores && scores.length === 0) text(ctx, t("board.empty"), RES_W / 2, RES_H / 2, { size: 9, align: "center" });
+  else if (!scores) text(ctx, t("board.loading"), RES_W / 2, RES_H / 2, { size: 9, align: "center", alpha: 0.7 });
+  else if (scores.length === 0) text(ctx, t("board.empty"), RES_W / 2, RES_H / 2, { size: 9, align: "center" });
 
   const rowH = 16;
   const startY = 58;
@@ -553,31 +555,40 @@ function drawGameOverScreen(ctx, score, wave, kills, distance) {
 }
 
 // La seconde option mène à la saisie du pseudo quand le score entre dans le
-// classement (qualifies), sinon au classement.
-function gameOverOptionRects(qualifies) {
-  const labels = [t("gameover.replay"), t(qualifies ? "gameover.enterName" : "menu.leaderboard")];
-  return verticalOptionRects(labels, RES_H * 0.62, 20, 200, 18);
+// classement (qualifies), sinon au classement. waiting : elle a été choisie
+// et la réponse du serveur se fait attendre.
+function gameOverOptionRects(qualifies, waiting) {
+  const second = t(qualifies ? "gameover.enterName" : "menu.leaderboard") + (waiting ? " …" : "");
+  return verticalOptionRects([t("gameover.replay"), second], RES_H * 0.62, 20, 200, 18);
 }
 
 export function hitTestGameOver(x, y) {
-  return hitTestRects(x, y, gameOverOptionRects(false));
+  return hitTestRects(x, y, gameOverOptionRects(false, false));
 }
 
+// g : l'état du jeu (score de la partie, record, réponse du classement).
 // topSize : la taille du classement si le score y entre (pour l'annoncer), 0 sinon.
-export function drawDeathScreen(ctx, score, wave, kills, distance, selected, topSize) {
+export function drawDeathScreen(ctx, g, topSize) {
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.55)";
   ctx.fillRect(0, 0, RES_W, RES_H);
-  drawGameOverScreen(ctx, score, wave, kills, distance);
+  drawGameOverScreen(ctx, g.score, g.wave, g.enemiesKilled, g.distanceTraveled);
+  if (g.newRecord) {
+    text(ctx, t("gameover.newRecord"), RES_W / 2, RES_H * 0.45, { align: "center", color: PALETTE.gold, glow: PALETTE.gold });
+  } else if (g.bestScore > 0) {
+    text(ctx, t("menu.record", { score: g.bestScore }), RES_W / 2, RES_H * 0.45, { align: "center", alpha: 0.75 });
+  }
   if (topSize) {
-    text(ctx, t("gameover.top", { size: topSize }), RES_W / 2, RES_H * 0.51, {
+    text(ctx, t("gameover.top", { size: topSize }), RES_W / 2, RES_H * 0.52, {
       size: 10,
       align: "center",
       color: PALETTE.bulletPlayer,
       glow: PALETTE.bulletPlayer,
     });
+  } else if (g.leaderboardDown) {
+    text(ctx, t("gameover.offline"), RES_W / 2, RES_H * 0.52, { align: "center", alpha: 0.75 });
   }
-  drawOptionList(ctx, gameOverOptionRects(topSize > 0), selected, 12);
+  drawOptionList(ctx, gameOverOptionRects(topSize > 0, g.gameOverWaiting), g.gameOverSelected, 12);
   ctx.restore();
 }
 

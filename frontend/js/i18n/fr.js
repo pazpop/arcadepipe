@@ -44,6 +44,7 @@ export default {
   "menu.leaderboard": "CLASSEMENT",
   "menu.help": "AIDE",
   "menu.credits": "CRÉDITS",
+  "menu.record": "RECORD {score}",
 
   // --- HUD en partie ---
   "hud.score": "SCORE {score}",
@@ -92,9 +93,9 @@ export default {
   "help.nova.detail":
     "Frôle (sans le toucher) un tir ennemi ou un vaisseau ennemi — pas le boss — pour charger la jauge NOVA en haut à gauche : prends des risques ! Une fois pleine, ESPACE (ou le bouton tactile en bas à droite) détruit tous les ennemis à l'écran et leurs tirs, jamais le boss. Jusqu'à 2 charges en réserve dès le 2e combat de boss (1 seule avant), à déclencher quand tu veux.",
   "help.boss": "BOSS",
-  "help.boss.detail": "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie",
-  "help.music": "MUSIQUE",
-  "help.music.detail": "Playlist aléatoire, réglable en bas à gauche",
+  "help.boss.detail": "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie. Ses tirs BLEUS te visent, en éventail ; les BLANCS partent en spirale ou en anneau",
+  "help.ram": "COLLISION",
+  "help.ram.detail": "Foncer dans un ennemi le détruit, mais te coûte un coup : un point de bouclier, ou une vie",
   "help.keys": "RACCOURCIS CLAVIER",
   "help.keys.detail": "Échap/P : pause · Espace : NOVA · M : son",
   "help.prev": "◀ PRÉC.",
@@ -112,6 +113,8 @@ export default {
   "gameover.replay": "REJOUER",
   "gameover.enterName": "ENTRER MON PSEUDO",
   "gameover.top": "TU ENTRES DANS LE TOP {size} !",
+  "gameover.newRecord": "NOUVEAU RECORD PERSONNEL !",
+  "gameover.offline": "CLASSEMENT INJOIGNABLE",
   "name.title": "TU ENTRES DANS LE CLASSEMENT !",
   "name.prompt": "ENTRE TON PSEUDO (8 CAR. MAX)",
   "name.validate": "▶ VALIDER",
@@ -124,6 +127,7 @@ export default {
   "board.wave": "VAGUE",
   "board.kills": "TUÉS",
   "board.empty": "Aucun score pour l'instant.",
+  "board.loading": "Chargement…",
   "board.error": "Classement indisponible pour le moment.",
   "board.back": "ÉCHAP / TAP — RETOUR",
 

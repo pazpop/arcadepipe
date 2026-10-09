@@ -7,7 +7,7 @@ import { updateStarfield, triggerBossBackdropLeave } from "../stars.js";
 import { resetPlayer, updatePlayer, moveToward, hitPlayer, drawPlayer, applyPowerup, applyShield, canReceivePowerup } from "../player.js";
 import { updateProjectiles, drawProjectiles } from "../projectiles.js";
 import { updateParticles, drawParticles, spawnExplosion, spawnFlashBurst, spawnSpark } from "../particles.js";
-import { spawnEnemy, updateEnemies, damageEnemy, pointsFor, drawEnemies, enemyGlowColor } from "../enemies.js";
+import { spawnEnemy, spawnFormation, updateEnemies, damageEnemy, pointsFor, drawEnemies, enemyGlowColor } from "../enemies.js";
 import { updateBoss, hitBossWeakPoint, hitsBossHull, drawBoss } from "../boss.js";
 import { spawnPowerup, updatePowerups, drawPowerups } from "../powerups.js";
 import { updateGraze } from "../graze.js";
@@ -263,6 +263,7 @@ function onPlayerHit(g, engine) {
   const { audio, particles, player } = engine;
   if (!g.tookDamageThisWave) g.intactBlink = 1; // le rappel "INTACT" du HUD clignote 1 s avant de disparaître
   g.tookDamageThisWave = true; // casse l'éligibilité au bonus DIFFICULTY.noDamageWaveBonus — un coup absorbé par le bouclier (onShieldHit) ne compte pas, lui
+  g.grazeChain = 0; // un coup encaissé casse aussi la chaîne de frôlements
   triggerShake(g, 10);
   triggerHitStop(g, HIT_STOP.playerHit);
   vibrate(40);
@@ -407,7 +408,9 @@ export function update(g, engine, dt) {
   } else if (g.waveBreak <= 0 && !g.bonusLevel) {
     g.spawnTimer -= dt;
     if (g.spawnTimer <= 0) {
-      spawnEnemy(enemies, g.wave);
+      if (g.formationCountdown === 0) spawnFormation(enemies);
+      else spawnEnemy(enemies, g.wave);
+      g.formationCountdown -= 1;
       g.spawnTimer = Math.max(0.12, g.spawnInterval + (Math.random() - 0.5) * 0.15);
     }
   }

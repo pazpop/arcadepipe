@@ -20,7 +20,7 @@ const HELP_PAGES = [
     title: t("help.title"),
     sections: [
       { heading: t("help.boss"), detail: t("help.boss.detail") },
-      { heading: t("help.music"), detail: t("help.music.detail") },
+      { heading: t("help.ram"), detail: t("help.ram.detail") },
       { heading: t("help.keys"), detail: t("help.keys.detail") },
     ],
   },

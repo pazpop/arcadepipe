@@ -35,23 +35,33 @@ export function open(g) {
   g.flash = 0; // le flash ne décroît qu'en partie : il resterait figé sur la scène
   g.gameOverSelected = 0;
   g.scoreQualifies = false;
+  g.leaderboardDown = false;
+  g.gameOverWaiting = false;
+  g.newRecord = g.score > g.bestScore;
+  if (g.newRecord) {
+    g.bestScore = g.score;
+    saveItem(STORAGE_KEYS.bestScore, g.score);
+  }
   recordGamePlayed().catch(() => {});
   const current = ++opened;
   qualifies = qualifiesForTop(g.score);
   qualifies.then((yes) => {
-    if (current === opened) g.scoreQualifies = yes;
+    if (current !== opened) return;
+    g.scoreQualifies = yes === true;
+    g.leaderboardDown = yes === null;
   });
 }
 
-// Le score entre-t-il dans le top ? Jamais un score nul. Serveur injoignable :
-// non, il ne pourrait pas y être envoyé.
+// Le score entre-t-il dans le top ? true ou false ; jamais un score nul.
+// null : serveur injoignable (traité comme un non, il ne pourrait pas y être
+// envoyé, mais l'écran le dit au joueur).
 async function qualifiesForTop(score) {
   if (score <= 0) return false;
   try {
     const top = await fetchTopScores();
     return top.length < TOP_SIZE || score > Math.min(...top.map((s) => s.score));
   } catch {
-    return false;
+    return null;
   }
 }
 
@@ -66,7 +76,9 @@ function replay(g, engine) {
 
 // Seconde option : saisie du pseudo si le score entre dans le top, sinon le classement directement.
 async function goToLeaderboard(g, engine) {
+  g.gameOverWaiting = true; // l'écran affiche "…" à côté de l'option (hud.js)
   const yes = await qualifies;
+  g.gameOverWaiting = false;
   // Serveur lent : le joueur a pu rejouer, ou choisir une seconde fois, avant la réponse.
   if (g.mode !== MODE.GAME_OVER) return;
   if (!yes) {
@@ -123,7 +135,7 @@ export function updateGameOver(g, engine) {
 // Dessiné par-dessus la scène de jeu figée (voir game.js, draw) ; l'écran de
 // saisie du nom, lui, a son propre fond.
 export function drawGameOverOverlay(c2d, g) {
-  hud.drawDeathScreen(c2d, g.score, g.wave, g.enemiesKilled, g.distanceTraveled, g.gameOverSelected, g.scoreQualifies ? TOP_SIZE : 0);
+  hud.drawDeathScreen(c2d, g, g.scoreQualifies ? TOP_SIZE : 0);
 }
 
 export function drawNameEntry(c2d, g) {

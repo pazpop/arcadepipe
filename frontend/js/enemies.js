@@ -154,6 +154,30 @@ export function spawnEnemy(pool, waveNumber) {
   spawnOne(pool, type, x, y, vx, vy, isGunner);
 }
 
+// Formation : trois ennemis normaux en pointe de flèche, qui entrent ensemble
+// par la droite. Une par vague au plus, à partir de FORMATION_MIN_WAVE, et pas
+// à chaque vague (FORMATION_CHANCE).
+const FORMATION_MIN_WAVE = 2;
+const FORMATION_CHANCE = 0.6;
+const FORMATION_SPACING = 14; // écart entre le meneur et ses deux ailiers, en x et en y
+
+// Nombre d'apparitions ordinaires avant la formation de cette vague (tiré au
+// hasard, pour qu'elle ne tombe pas toujours au même moment) ; -1 : pas de
+// formation dans cette vague.
+export function formationCountdownForWave(wave) {
+  if (wave < FORMATION_MIN_WAVE || Math.random() >= FORMATION_CHANCE) return -1;
+  return 2 + Math.floor(Math.random() * 5);
+}
+
+export function spawnFormation(pool) {
+  const speed = TYPE_STATS.normal.speed;
+  const x = RES_W + 4;
+  const y = 40 + Math.random() * (RES_H - 80);
+  spawnOne(pool, "normal", x, y, -speed, 0);
+  spawnOne(pool, "normal", x + FORMATION_SPACING, y - FORMATION_SPACING, -speed, 0);
+  spawnOne(pool, "normal", x + FORMATION_SPACING, y + FORMATION_SPACING, -speed, 0);
+}
+
 // Vitesse de base des ennemis en fuite (avant le warp, x10 max — voir
 // updateWaveTransition dans states/waves.js) : assez rapide pour quitter l'écran bien
 // avant la fin du saut spatial.

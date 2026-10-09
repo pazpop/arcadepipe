@@ -1,7 +1,8 @@
 // Machine à états du jeu : menu, partie, pause, saisie du nom, classement,
 // crédits — chaque écran vit dans states/, ce fichier les relie (état partagé
 // `g`, bundle `engine`, dispatch update/draw/handleTap).
-import { RES_W, RES_H, PALETTE, DIFFICULTY } from "./config.js";
+import { RES_W, RES_H, PALETTE, DIFFICULTY, STORAGE_KEYS } from "./config.js";
+import { loadItem } from "./storage.js";
 import { createStarfield, updateStarfield, drawStarfield, createTwinkleStars } from "./stars.js";
 import { createPlayer } from "./player.js";
 import { createProjectiles } from "./projectiles.js";
@@ -55,6 +56,10 @@ export function createGame({ input, audio, music, nameInputEl }) {
     pauseSelected: 0,
     gameOverSelected: 0, // REJOUER par défaut — remis à 0 à chaque mort (states/endOfRun.js)
     scoreQualifies: false, // le score de la partie terminée entre dans le classement (states/endOfRun.js)
+    leaderboardDown: false, // le serveur du classement n'a pas répondu à la fin de la partie
+    gameOverWaiting: false, // seconde option choisie, réponse du serveur attendue
+    bestScore: Number(loadItem(STORAGE_KEYS.bestScore)) || 0, // record personnel, gardé sur l'appareil
+    newRecord: false, // la partie terminée a battu ce record
     pauseStage: "menu", // "menu" | "confirmQuit"
     confirmQuitSelected: 1, // NON par défaut (voir states/paused.js)
     helpReturnTo: MODE.MENU, // où revenir en fermant l'aide (MODE.MENU, MODE.PAUSED ou MODE.PLAYING)
@@ -75,6 +80,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     novaGrazes: 0, // frôlements acquis pour la prochaine charge (voir addNovaGrazes, graze.js)
     novaMax: 1, // recalculé dans startWave (novaMaxForWave)
     spawnTimer: 0,
+    formationCountdown: -1, // apparitions avant la formation de la vague, -1 : aucune (enemies.js)
     spawnInterval: DIFFICULTY.baseSpawnInterval,
     waveBreak: 0,
     waveBreakDuration: DIFFICULTY.waveBreakDuration, // mémorisé au déclenchement (normal ou bossWaveBreakDuration) pour calculer la courbe de warp
@@ -232,6 +238,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
     },
     get scoreQualifies() {
       return g.scoreQualifies;
+    },
+    get leaderboardDown() {
+      return g.leaderboardDown;
     },
     get playerBulletsOnScreen() {
       return projectiles.player.items.filter((b) => b.active).length;

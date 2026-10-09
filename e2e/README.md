@@ -14,7 +14,7 @@ npm test                   # ou : npx playwright test --headed
 ## Ce qui est couvert (`tests/`)
 
 - `menu-pause` — menu, pause (scène figée, bouton Pause au clavier), confirmation de sortie, aide (bienvenue, toutes ses pages, menu, pause, bouton du panneau), crédits, clavier et focus, panneau replié, plein écran, filtre rétro
-- `gameplay` — tir manuel et automatique, choix de piste, fin de vague, fin de partie sans serveur
+- `gameplay` — tir manuel et automatique, choix de piste, fin de vague, fin de partie sans serveur (classement annoncé injoignable, record personnel gardé)
 - `powerups-boss` — bonus (arme, bouclier, les deux ensemble), boss invulnérable à son entrée, vie perdue contre sa coque, boss vaincu
 - `graze-nova` — frôlements, jauge NOVA, bouton tactile (efface les tirs du boss), Espace (détruit les ennemis)
 - `bonus-level` — le niveau bonus se déclenche, se termine, puis la partie reprend

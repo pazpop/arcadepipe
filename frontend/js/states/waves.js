@@ -5,7 +5,7 @@ import { spawnBossBackdrop } from "../stars.js";
 import { spawnBoss } from "../boss.js";
 import { novaMaxForWave, addNovaGrazes } from "../graze.js";
 import { createBonusLevel, updateBonusLevel, bonusLevelRewardFraction } from "../bonusLevel.js";
-import { setEnemiesLeaving } from "../enemies.js";
+import { setEnemiesLeaving, formationCountdownForWave } from "../enemies.js";
 import { deactivateAll } from "../pool.js";
 import { t } from "../i18n.js";
 
@@ -19,6 +19,7 @@ export function startWave(g, engine, wave) {
   g.tookDamageThisWave = false;
   g.intactBlink = 0;
   g.grazeChain = 0;
+  g.formationCountdown = formationCountdownForWave(wave);
   g.novaMax = novaMaxForWave(wave);
   g.waveKillTarget = DIFFICULTY.baseWaveKills + (wave - 1) * DIFFICULTY.waveKillsStep;
   g.spawnInterval = Math.max(

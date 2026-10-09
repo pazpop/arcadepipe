@@ -74,8 +74,10 @@ function destroyedCount(boss) {
   return boss.weakPoints.filter((p) => p.destroyed).length;
 }
 
-function phaseSpeed(boss) {
-  return Math.pow(BOSS.phaseSpeedupFactor, destroyedCount(boss));
+// Secondes entre deux salves : l'intervalle raccourcit à chaque point faible détruit.
+export function bossFireInterval(destroyed, firstBoss) {
+  const interval = BOSS.fireInterval * Math.pow(BOSS.fireIntervalFactor, destroyed);
+  return firstBoss ? interval * BOSS.firstBossFireIntervalMul : interval;
 }
 
 // Durée du fondu de la coque après la victoire — courte pour ne pas "flotter"
@@ -100,7 +102,7 @@ export function updateBoss(boss, dt, projectiles, target) {
 
   for (const p of boss.weakPoints) p.blink += dt * 6;
 
-  boss.fireTimer -= dt * phaseSpeed(boss);
+  boss.fireTimer -= dt;
   if (boss.fireTimer <= 0) {
     const firstBoss = isFirstBoss(boss.wave);
     const speed = BOSS.bulletSpeed * bulletSpeedFactor(boss.wave) * (firstBoss ? BOSS.firstBossSpeedMul : 1);
@@ -118,7 +120,7 @@ export function updateBoss(boss, dt, projectiles, target) {
       boss.spiralAngle += 0.4;
       patternRing(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.8, Math.max(6, Math.round((10 + destroyed * 2) * countMul)), 0.5);
     }
-    boss.fireTimer = Math.max(0.35, 1.2 - destroyed * 0.12) * (firstBoss ? BOSS.firstBossFireIntervalMul : 1);
+    boss.fireTimer = bossFireInterval(destroyed, firstBoss);
   }
 }
 

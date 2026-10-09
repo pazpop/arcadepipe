@@ -2,6 +2,14 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : le résultat de `git rev-list --count HEAD`, plus un. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.151] - 2026-10-09
+- **Record personnel** : le meilleur score est gardé sur l'appareil, affiché au menu, et l'écran de fin annonce un nouveau record.
+- **Formation ennemie** : à partir de la vague 2, une vague sur deux environ voit passer trois ennemis normaux en flèche (une formation par vague au plus).
+- **Un coup encaissé casse la chaîne de frôlements** (elle ne retombait qu'au changement de vague).
+- **Fin de partie** : l'écran dit quand le classement est injoignable, et affiche « … » pendant qu'il attend le serveur ; le classement affiche « Chargement… » au lieu d'un tableau vide.
+- **Aide** : deux règles en plus (couleurs des tirs du boss, foncer dans un ennemi), à la place de la section Musique.
+- Cadence du boss : un seul réglage (`BOSS.fireInterval`, `fireIntervalFactor`) au lieu de deux mécanismes cumulés ; le rythme reste le même à 5 % près.
+
 ## [2.150] - 2026-10-09
 - **Niveau bonus** : chaque anneau a sa propre nuance, tirée au hasard entre le vert d'eau et le bleu.
 - Charge NOVA comptée en frôlements entiers : elle arrive exactement au nombre prévu, quel que soit le réglage.

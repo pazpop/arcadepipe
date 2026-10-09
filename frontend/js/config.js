@@ -120,7 +120,8 @@ export const BOSS = {
   weakPointHp: 5,
   weakPointScore: 300, // autant qu'un ennemi élite
   victoryScore: 1000, // nettement au-dessus d'un point faible, pour marquer l'accomplissement
-  phaseSpeedupFactor: 1.35, // patterns plus denses par point faible détruit
+  fireInterval: 1.2, // secondes entre deux salves, boss intact
+  fireIntervalFactor: 0.645, // multiplié par ce facteur à chaque point faible détruit (0,13 s au cinquième)
   bulletSpeed: 90,
   // 1er combat de boss (isFirstBoss() dans boss.js) volontairement plus
   // clément — le joueur n'a pas encore le rythme. Boss suivants non
@@ -150,6 +151,7 @@ export const STORAGE_KEYS = {
   gameSpeed: "arcadepipe_game_speed",
   analyticsConsent: "arcadepipe_analytics_consent",
   lang: "arcadepipe_lang",
+  bestScore: "arcadepipe_best_score",
 };
 
 // Multiplicateurs de vitesse de jeu proposés par le bouton "VITESSE DU JEU" (panneau

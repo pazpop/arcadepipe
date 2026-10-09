@@ -35,7 +35,7 @@ export function update(g, engine, dt) {
 
 export function draw(c2d, g) {
   drawTwinkleStars(c2d, g.menuTwinkleStars, g.elapsed);
-  hud.drawTitleScreen(c2d, g.elapsed, g.menuSelected);
+  hud.drawTitleScreen(c2d, g.elapsed, g.menuSelected, g.bestScore);
 }
 
 export function handleTap(g, engine, x, y) {

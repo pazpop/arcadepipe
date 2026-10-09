@@ -11,6 +11,16 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 - [ ] **Tester le partage en conditions réelles** (Twitter, Discord) : coller l'adresse du jeu et vérifier que l'image d'aperçu s'affiche ; partager une image de score et vérifier que le QR code se lit.
 - [ ] **Première minute** : mesurer le délai avant le premier bonus sur dix parties ; s'il dépasse 30 s, augmenter les chances de drop en vague 1.
 
+## Avant de publier sur des plateformes (itch.io...)
+
+- [ ] **Accord écrit de mall-e** pour diffuser sa musique ailleurs que sur le site : elle n'est pas couverte par la licence du code.
+- [ ] **Redessiner le décor du boss** (`deathStar`, `stars.js`) : il ressemble à l'Étoile de la mort, une marque protégée. Renommer aussi dans le code.
+- [ ] **Faire marcher le jeu hors du site** : adresse de l'API réglable (`API_BASE`, `js/api.js`) et origine de la plateforme autorisée (`ALLOWED_ORIGINS`), ou bien le site affiché dans un cadre par la plateforme. À tester sur itch.io.
+- [ ] **Supprimer de faux scores à distance** : une commande d'administration protégée, au lieu d'une requête SQL à la main sur le serveur.
+- [ ] **Page de confidentialité dans le jeu**, en français et en anglais (le lien du bandeau pointe vers un fichier GitHub en français).
+- [ ] **Kit presse**, une fois le reste prêt : résumé du jeu dans les deux langues, fiche technique, crédits, captures d'écran, courte vidéo, contact.
+- [ ] **Documentation du dépôt en anglais et en français** (README, docs).
+
 ## Jeu
 
 - [ ] **Télégraphe des tirs circulaires du boss** : un signal d'environ 0,2 s avant un anneau ou une spirale. Mesure : aucune mort « injuste » sur cinq combats.

@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : le résultat de `git rev-list --count HEAD`, plus un. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.157] - 2026-10-09
+- Kit presse : la page des descriptions n'annonce plus une sélection au clic, que la politique de sécurité du site bloquait.
+
 ## [2.154] - 2026-10-09
 - **Classement** : frôler un vaisseau ennemi charge NOVA et allonge la chaîne, mais ne rapporte plus de points (seuls les tirs frôlés en donnent) : on ne peut plus marquer sans fin en longeant des ennemis qui ne tirent pas.
 - **Boss** : son éventail a toujours un tir au milieu, qui vise le vaisseau ; sa cadence monte aussi avec le temps (toutes les 30 s) ; chaque anneau passe là où le précédent laissait un couloir.

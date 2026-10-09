@@ -8,7 +8,7 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 - [ ] **Valider en jouant les réglages par défaut** : micro-gel à l'impact (`HIT_STOP`) et paliers sonores du frôlement (`GRAZE.milestones`), dans `config.js`.
 - [ ] **Faire relire l'anglais** (`frontend/js/i18n/en.js`).
 - [ ] **Cinquième morceau de mall-e** : l'ajouter à `AUDIO.tracks` (`config.js`) et au README.
-- [ ] **Tester le partage en conditions réelles** (Twitter, Discord) : coller l'adresse du jeu et vérifier que l'image d'aperçu s'affiche ; partager une image de score et vérifier que le QR code se lit.
+- [ ] **Tester le partage d'un score en conditions réelles** : partager l'image d'une partie et vérifier que le QR code se lit avec un téléphone. (L'aperçu du lien du jeu est vérifié sur Discord ; reste à le voir sur X.)
 - [ ] **Première minute** : mesurer le délai avant le premier bonus sur dix parties ; s'il dépasse 30 s, augmenter les chances de drop en vague 1.
 
 ## Avant de publier sur des plateformes (itch.io...)

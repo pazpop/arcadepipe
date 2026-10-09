@@ -1,4 +1,4 @@
-// Régénère les captures d'écran, la vidéo et la couverture itch.io du kit presse (frontend/press/).
+// Régénère les captures d'écran, la vidéo, la couverture et la bannière itch.io du kit presse (frontend/press/).
 // Le jeu est joué pour de vrai dans un navigateur ; seuls quelques réglages sont
 // forcés pour atteindre vite chaque situation (vagues courtes, bonus garanti).
 //
@@ -158,6 +158,24 @@ const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png
   </body>`);
   await page.waitForTimeout(300);
   await page.screenshot({ path: path.join(OUT, "itch-cover.png") });
+  await context.close();
+}
+
+// 8. Bannière pour itch.io (960x220) : le titre seul, sur la capture de partie
+{
+  const { context, page } = await openGame({ viewport: { width: 1200, height: 675 } });
+  const title = await page.screenshot({ clip: { x: 300, y: 96, width: 600, height: 170 } }); // titre et sous-titre
+  const dataUrl = (png) => `data:image/png;base64,${png.toString("base64")}`;
+  const gameplay = fs.readFileSync(path.join(OUT, "screenshot-gameplay.png"));
+  const fade = "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent), linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent)";
+  await page.setViewportSize({ width: 960, height: 220 });
+  await page.setContent(`<body style="margin:0;width:960px;height:220px;background:#05060f;overflow:hidden;position:relative">
+    <img src="${dataUrl(gameplay)}" style="position:absolute;left:0;top:-250px;width:960px;image-rendering:pixelated">
+    <div style="position:absolute;inset:0;background:radial-gradient(ellipse 45% 80% at center, rgba(5,6,15,.94) 40%, rgba(5,6,15,.2) 100%)"></div>
+    <img src="${dataUrl(title)}" style="position:absolute;left:180px;top:22px;width:600px;mix-blend-mode:screen;-webkit-mask-image:${fade};-webkit-mask-composite:source-in;mask-image:${fade};mask-composite:intersect">
+  </body>`);
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: path.join(OUT, "itch-banner.png") });
   await context.close();
 }
 

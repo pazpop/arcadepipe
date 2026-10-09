@@ -73,7 +73,7 @@ Les trois armes durent 20 secondes ; le décompte est en pause pendant un saut s
 - À la dernière vie perdue, l'écran GAME OVER propose **REJOUER** (une nouvelle partie aussitôt) ou **CLASSEMENT**.
 - Si le score entre dans le top 10, l'écran l'annonce et la seconde option devient **ENTRER MON PSEUDO** (8 caractères). Le score est enregistré dans les deux cas : en rejouant, c'est sous le dernier pseudo saisi, ou « AAA ».
 - Si le serveur du classement ne répond pas, le score n'est pas enregistré, et l'écran de fin le dit.
-- Le meilleur score est gardé sur l'appareil, à la fin de chaque partie : le menu l'affiche, et l'écran de fin annonce un nouveau record personnel.
+- Le meilleur score est gardé sur l'appareil quand la partie se termine par la destruction du vaisseau : le menu l'affiche, et l'écran de fin annonce un nouveau record personnel. Une partie quittée par le menu de pause ne compte pas, ni pour le record ni pour le classement.
 - Le bouton Partager crée une image du résultat (score, vague, ennemis abattus, meilleure chaîne, distance) avec un QR code vers le jeu.
 
 ## Réglages et accessibilité

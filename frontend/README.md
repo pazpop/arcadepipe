@@ -8,7 +8,7 @@ JS vanilla (modules ES6) + Canvas 2D, sans étape de build : les fichiers sont s
 | --- | --- |
 | `index.html`, `css/style.css` | la page : le canvas, le panneau de réglages, les boutons posés par-dessus |
 | `og-image.png` | image affichée quand un lien vers le jeu est partagé |
-| `privacy.html`, `press/` | page de confidentialité et kit presse, en français et en anglais (captures refaites par `npm run presskit`, dans `e2e/`) |
+| `privacy.html`, `press/` | page de confidentialité et kit presse, en français et en anglais (captures refaites par `npm run presskit`, dans `e2e/`) ; `press/descriptions.html` garde les textes des pages itch.io et YouTube, à copier |
 | `js/main.js` | point d'entrée : crée le jeu, branche boutons et touches, lance la boucle |
 | `js/game.js` | machine à états : appelle l'écran courant de `js/states/` |
 | `js/config.js` | toutes les constantes (couleurs, difficulté, bonus, boss...) |

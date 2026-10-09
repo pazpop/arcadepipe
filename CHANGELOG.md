@@ -12,6 +12,8 @@ Changements notables (gameplay, visuel, audio, infra), plus récent en premier. 
 - La bannière d'une vague ne reste plus figée sous GAME OVER ; le panneau de réglages ne clignote plus au chargement ; « … » à côté de VALIDER pendant l'envoi du score.
 - Tests e2e : ils lisent maintenant les textes affichés par le jeu, et couvrent le record personnel, le classement injoignable ou lent, la chaîne cassée par un coup et la récompense du niveau bonus.
 - Python 3.12 au minimum pour le backend ; une seule proposition Dependabot pour toutes les dépendances Python.
+- **Textes** relus dans les deux langues : l'aide situe la case « Tir automatique » dans le panneau de réglages ; « ENNEMIS {n} » et « KILLS {n} » en fin de partie (plus de « 1 ENNEMIS ») ; « mall-e » en minuscules, « par » au lieu de « by » en français ; colonne « ABATTUS » au classement ; en anglais, « fire rate » pour les bonus et le texte de la carte de partage.
+- Kit presse : page des descriptions itch.io et YouTube, à copier (`press/descriptions.html`).
 - Numéros corrigés dans ce fichier : 2.125 (noté 2.124) et 2.142 (noté 2.144) ; dates des 2.127, 2.128 et 2.131.
 
 ## [2.153] - 2026-10-09

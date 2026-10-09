@@ -8,7 +8,7 @@ export default {
 
   // --- Panneau de réglages (HTML, bas à gauche) ---
   "panel.pause.title": "Pause",
-  "panel.music": "MUSIQUE (by Mall-E)",
+  "panel.music": "MUSIQUE (par mall-e)",
   "panel.music.stop": "Stop / lecture",
   "panel.music.next": "Piste suivante",
   "panel.music.volume": "Volume musique",
@@ -88,7 +88,7 @@ export default {
   "help.move": "DÉPLACEMENT",
   "help.move.detail": "Souris ou doigt : dirige le vaisseau",
   "help.fire": "TIR",
-  "help.fire.detail": 'Automatique. Décoche "Tir automatique" (bas à gauche) pour tirer en maintenant le clic ou le doigt',
+  "help.fire.detail": "Automatique. Décoche « Tir automatique » dans le panneau de réglages (bouton ⚙, en bas à gauche) pour tirer en maintenant le clic ou le doigt",
   "help.nova": "NOVA",
   "help.nova.detail":
     "Frôle (sans le toucher) un tir ennemi ou un vaisseau ennemi — pas le boss — pour charger la jauge NOVA en haut à gauche : prends des risques ! Une fois pleine, ESPACE (ou le bouton tactile en bas à droite) détruit tous les ennemis à l'écran et leurs tirs, jamais le boss. Jusqu'à 2 charges en réserve dès le 2e combat de boss (1 seule avant), à déclencher quand tu veux.",
@@ -110,7 +110,7 @@ export default {
 
   // --- Fin de partie ---
   "gameover.title": "GAME OVER",
-  "gameover.stats": "SCORE {score}  ·  VAGUE {wave}  ·  {kills} ENNEMIS",
+  "gameover.stats": "SCORE {score}  ·  VAGUE {wave}  ·  ENNEMIS {kills}",
   "gameover.distance": "{distance} ANNÉES-LUMIÈRE PARCOURUES",
   "gameover.replay": "REJOUER",
   "gameover.enterName": "ENTRER MON PSEUDO",
@@ -127,7 +127,7 @@ export default {
   "board.name": "PSEUDO",
   "board.score": "SCORE",
   "board.wave": "VAGUE",
-  "board.kills": "TUÉS",
+  "board.kills": "ABATTUS",
   "board.empty": "Aucun score pour l'instant.",
   "board.loading": "Chargement…",
   "board.error": "Classement indisponible pour le moment.",

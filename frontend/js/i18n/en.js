@@ -7,7 +7,7 @@ export default {
 
   // --- Settings panel (HTML, bottom left) ---
   "panel.pause.title": "Pause",
-  "panel.music": "MUSIC (by Mall-E)",
+  "panel.music": "MUSIC (by mall-e)",
   "panel.music.stop": "Stop / play",
   "panel.music.next": "Next track",
   "panel.music.volume": "Music volume",
@@ -63,9 +63,9 @@ export default {
 
   // --- Power-ups ---
   "powerup.power": "POWER",
-  "powerup.power.effect": "more damage, slower fire",
+  "powerup.power.effect": "more damage, slower fire rate",
   "powerup.rapid": "RAPID FIRE",
-  "powerup.rapid.effect": "very fast fire, less damage",
+  "powerup.rapid.effect": "very fast fire rate, less damage",
   "powerup.shotgun": "SHOTGUN",
   "powerup.shotgun.effect": "cone of pellets, damage falls off with distance",
   "powerup.shield": "SHIELD",
@@ -87,7 +87,7 @@ export default {
   "help.move": "MOVEMENT",
   "help.move.detail": "Mouse or finger: steer the ship",
   "help.fire": "FIRE",
-  "help.fire.detail": 'Automatic. Uncheck "Auto-fire" (bottom left) to fire only while you hold the mouse button or keep a finger down',
+  "help.fire.detail": 'Automatic. Uncheck "Auto-fire" in the settings panel (⚙ button, bottom left) to fire only while you hold the mouse button or keep a finger down',
   "help.nova": "NOVA",
   "help.nova.detail":
     "Graze (without touching) an enemy shot or an enemy ship — not the boss — to charge the NOVA gauge at the top left: take risks! Once full, SPACE (or the touch button at the bottom right) destroys every enemy on screen and their shots, never the boss. Up to 2 charges in reserve from the 2nd boss fight on (only 1 before that). Use them whenever you like.",
@@ -99,7 +99,7 @@ export default {
   "help.music.detail": "Shuffled playlist, adjustable in the settings panel (⚙ button, bottom left)",
   "help.keys": "KEYBOARD SHORTCUTS",
   "help.keys.detail": "Esc/P: pause · Space: NOVA · M: mute",
-  "help.prev": "◀ PREV.",
+  "help.prev": "◀ PREV",
   "help.next": "NEXT ▶",
   "help.continue": "▶ CONTINUE",
   "enemy.normal": "EASY — 1 HP, no shots, straight line",
@@ -109,7 +109,7 @@ export default {
 
   // --- End of run ---
   "gameover.title": "GAME OVER",
-  "gameover.stats": "SCORE {score}  ·  WAVE {wave}  ·  {kills} KILLS",
+  "gameover.stats": "SCORE {score}  ·  WAVE {wave}  ·  KILLS {kills}",
   "gameover.distance": "{distance} LIGHT-YEARS TRAVELED",
   "gameover.replay": "PLAY AGAIN",
   "gameover.enterName": "ENTER YOUR NAME",
@@ -149,5 +149,5 @@ export default {
   "card.kills": "ENEMIES DESTROYED",
   "card.graze": "BEST GRAZE\nCHAIN",
   "card.distance": "LIGHT-YEARS\nTRAVELED",
-  "card.challenge": "Try to beat this score:",
+  "card.challenge": "Can you beat this score?",
 };

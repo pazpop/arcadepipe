@@ -1,5 +1,6 @@
-# Dépendances de développement/test uniquement — jamais dans l'image Docker
-# (voir requirements.txt pour les dépendances réellement nécessaires en prod).
+# Développement, tests et audit : jamais dans l'image Docker.
+-r requirements.txt
 pytest==9.1.1
 httpx2==2.13.1   # nécessaire pour fastapi.testclient.TestClient
 ruff==0.16.9
+pip-audit==2.10.1

@@ -32,6 +32,7 @@ let qualifies = Promise.resolve(false);
 // ignoré. L'écran annonce l'entrée dans le classement dès que le serveur a répondu.
 export function open(g) {
   g.mode = MODE.GAME_OVER;
+  g.flash = 0; // le flash ne décroît qu'en partie : il resterait figé sur la scène
   g.gameOverSelected = 0;
   g.scoreQualifies = false;
   recordGamePlayed().catch(() => {});
@@ -136,5 +137,10 @@ export function handleTapGameOver(g, engine, x, y) {
 
 export function handleTapNameEntry(g, engine, x, y) {
   if (hud.hitTestNameEntryValidate(x, y)) confirmNameEntry(g, engine);
-  else engine.nameInputEl.focus(); // rouvre le clavier virtuel s'il s'est refermé
+  else {
+    // Rouvre le clavier virtuel s'il s'est refermé : le champ a gardé le
+    // focus, il faut le lui retirer pour que le lui rendre ait un effet.
+    engine.nameInputEl.blur();
+    engine.nameInputEl.focus();
+  }
 }

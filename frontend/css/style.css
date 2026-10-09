@@ -342,7 +342,7 @@ html, body {
 
 @media (max-width: 480px) {
   #mc-wrap {
-    bottom: 4px;
+    bottom: calc(4px + env(safe-area-inset-bottom));
   }
   #music-controls {
     margin-left: 4px;

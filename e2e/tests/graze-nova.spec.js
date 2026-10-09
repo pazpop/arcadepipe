@@ -39,3 +39,29 @@ test("graze : la jauge NOVA se remplit, le bouton tactile apparaît et NOVA effa
 
   expect(errors).toEqual([]);
 });
+
+test("NOVA au clavier : Espace détruit les ennemis à l'écran", async ({ page }) => {
+  await page.goto("/");
+  await skipHints(page);
+  await page.evaluate(async () => {
+    localStorage.setItem("arcadepipe_autofire", "0"); // aucun tir : seuls NOVA peut abattre un ennemi
+    const { GRAZE } = await import("/js/config.js");
+    GRAZE.radius = 999; // le premier ennemi à l'écran est aussitôt "frôlé"
+    GRAZE.grazePerCharge = 1; // un frôlement = une charge
+  });
+  await page.reload();
+  await page.evaluate(async () => {
+    const { GRAZE } = await import("/js/config.js");
+    GRAZE.radius = 999;
+    GRAZE.grazePerCharge = 1;
+  });
+  const { startRun, moveLogical } = canvasHelpers(page);
+  await startRun();
+  await moveLogical(60, 135); // loin de la zone d'apparition des ennemis
+
+  await expect(page.locator("#nova-btn")).not.toHaveClass(/hidden/, { timeout: 10000 });
+  expect((await gameState(page)).kills).toBe(0);
+  await page.keyboard.press("Space");
+  await expect.poll(async () => (await gameState(page)).kills).toBeGreaterThan(0);
+  expect((await gameState(page)).playerBullets).toBe(0);
+});

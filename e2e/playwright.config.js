@@ -44,13 +44,14 @@ export default defineConfig({
       origins: [{ origin: "http://localhost:5500", localStorage: [{ name: "arcadepipe_panel_collapsed", value: "0" }] }],
     },
   },
-  // Démarre/arrête automatiquement le serveur statique du frontend (même
-  // commande que la section "Lancer en local" du README) — pas besoin de le
-  // lancer à la main avant de tester.
+  // Démarre/arrête automatiquement le serveur statique du frontend — pas besoin
+  // de le lancer à la main avant de tester. stderr ignoré : ce serveur y écrit
+  // une ligne par fichier servi, ce qui noierait le résultat des tests.
   webServer: [
     {
       command: "python -m http.server 5500 --directory ../frontend",
       url: "http://localhost:5500",
+      stderr: "ignore",
       reuseExistingServer: !process.env.CI,
       timeout: 10000,
     },

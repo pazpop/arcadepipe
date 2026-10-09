@@ -174,17 +174,21 @@ export function setEnemiesLeaving(pool) {
 // plafonnée (rad/s) plutôt qu'un demi-tour instantané — assez insistant pour
 // être une vraie menace, assez lent pour rester esquivable en bougeant.
 const KAMIKAZE_TURN_RATE = 2.6;
+// Durée de la poursuite, en secondes : ensuite il file tout droit et quitte
+// l'écran. Sans limite, il tournerait sans fin autour d'un joueur immobile,
+// trop près pour être atteint par un virage aussi large.
+const KAMIKAZE_CHASE_TIME = 6;
 
 const BULLET_SPEED = 70; // px/s en vague 1 ; accélère ensuite (bulletSpeedFactor)
 
-export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
+export function updateEnemies(pool, dt, projectiles, target, wave, warp) {
   const bulletSpeed = BULLET_SPEED * bulletSpeedFactor(wave);
   for (const en of pool.items) {
     if (!en.active) continue;
     en.elapsed += dt;
     // Re-vise le joueur avant de bouger, pour que ce soit bien vx/vy déjà à
     // jour qui déterminent le déplacement de cette frame ci-dessous.
-    if (en.type === "kamikaze" && !en.leaving) {
+    if (en.type === "kamikaze" && !en.leaving && en.elapsed < KAMIKAZE_CHASE_TIME) {
       const speed = Math.hypot(en.vx, en.vy);
       const current = Math.atan2(en.vy, en.vx);
       const desired = Math.atan2(target.y - en.y, target.x - en.x);

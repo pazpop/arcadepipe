@@ -61,6 +61,14 @@ test("Accepter : Google Analytics chargé une seule fois, choix mémorisé", asy
   await expect(page.locator("#cookie-banner")).toBeHidden();
   await expect.poll(() => gtm.length).toBe(1);
 
+  // Refuser puis accepter de nouveau, dans la même page : le script n'est pas rechargé.
+  await page.click("#cookie-btn");
+  await page.click("#cookie-decline");
+  await page.click("#cookie-btn");
+  await page.click("#cookie-accept");
+  await page.waitForTimeout(300); // rien ne doit se passer : pas d'état à attendre
+  expect(gtm.length).toBe(1);
+
   await page.reload();
   await expect(page.locator("#cookie-banner")).toBeHidden();
   await expect.poll(() => gtm.length).toBe(2); // 1 par chargement de page, jamais 2 dans la même page

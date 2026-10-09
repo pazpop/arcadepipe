@@ -27,7 +27,7 @@ itch.io héberge les fichiers du jeu chez lui ; le classement, lui, reste sur le
 
 1. Sur itch.io, créer un projet de type *HTML*, y déposer l'archive et cocher *This file will be played in the browser*.
 2. Dimensions de l'affichage : 960 × 540 (le jeu est en 16:9), avec le bouton plein écran.
-3. Autoriser l'adresse d'itch.io à appeler l'API : ajouter son origine, `https://html-classic.itch.zone`, à `ALLOWED_ORIGINS` du backend, à côté de celle du site (variable d'environnement du service `backend` : clé `environment:` dans `docker-compose.yml`). Sans cela, le jeu fonctionne mais affiche « Classement indisponible » et n'enregistre aucun score. Cette origine est commune à tous les jeux d'itch.io : voir [sécurité](securite.md).
+3. Autoriser l'adresse d'itch.io à appeler l'API : ajouter son origine, `https://html-classic.itch.zone`, à `ALLOWED_ORIGINS` du backend, à côté de celle du site (variable d'environnement du service `backend` : une clé `environment:` à ajouter dans `docker-compose.yml` ; pour l'instance publique, elle est dans le dépôt d'infra). Sans cela, le jeu fonctionne mais affiche « Classement indisponible » et n'enregistre aucun score. Cette origine est commune à tous les jeux d'itch.io : voir [sécurité](securite.md).
 
 ## CI/CD
 
@@ -44,11 +44,11 @@ flowchart TD
     infra --> prod["arcadepipe.pazpop.net"]
 ```
 
-Tout est dans `.github/workflows/deploy.yml`. Une pull request (celles de Dependabot comprises) s'arrête après les vérifications : seul un push sur `main` construit et déploie.
+Tout est dans `.github/workflows/deploy.yml`, hormis l'audit hebdomadaire. Une pull request (celles de Dependabot comprises) s'arrête après les vérifications : seul un push sur `main` construit et déploie.
 
 - Actions GitHub épinglées par SHA de commit, images de base épinglées par digest : un tag peut être redéplacé, un SHA ou un digest non.
 - [Dependabot](../.github/dependabot.yml) ouvre une PR à chaque mise à jour (`pip`, `npm`, `github-actions`, `docker`).
-- `.github/workflows/audit.yml` relance l'audit des dépendances (`pip-audit`, `npm audit`) chaque lundi : une faille publiée entre deux pushs fait échouer ce workflow, et GitHub prévient par courriel.
+- `.github/workflows/audit.yml` relance l'audit des dépendances (`pip-audit`, `npm audit`) chaque lundi : une faille publiée entre deux pushs dans une dépendance fait échouer ce workflow, et GitHub prévient par courriel. Il ne couvre pas les paquets système des images, et GitHub le suspend après 60 jours sans activité dans le dépôt.
 
 Ce repo ne connaît ni VPS ni serveur cible. L'instance `arcadepipe.pazpop.net` est déployée par [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner), notifié par un événement `repository_dispatch` une fois les images publiées. Un fork n'a pas ce déclenchement (l'étape ne s'exécute que dans ce dépôt) et n'en a pas besoin : voir la section Docker ci-dessus.
 

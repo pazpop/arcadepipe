@@ -11,7 +11,7 @@ function shotsFired(overrides, playerX) {
   const pool = createEnemyPool();
   const projectiles = createProjectiles();
   Object.assign(pool.items[0], { active: true, type: "elite", x: 300, y: 135, vx: -45, vy: 0, fireTimer: 0, ...overrides });
-  updateEnemies(pool, 0.016, projectiles, { x: playerX, y: 135 }, 5);
+  updateEnemies(pool, 0.016, projectiles, { x: playerX, y: 135 }, 5, 1);
   return projectiles.enemy.items.filter((b) => b.active);
 }
 
@@ -26,3 +26,12 @@ for (const [label, overrides] of [["élite", {}], ["gunner", { type: "normal", g
     assert.equal(shotsFired(overrides, 440).length, 0);
   });
 }
+
+test("kamikaze : cesse de poursuivre un joueur immobile et quitte l'écran", () => {
+  const pool = createEnemyPool();
+  const projectiles = createProjectiles();
+  // Lancé de côté, tout près du joueur : la position d'où il tournerait en rond.
+  Object.assign(pool.items[0], { active: true, type: "kamikaze", x: 100, y: 110, vx: -70, vy: 0, elapsed: 0 });
+  for (let t = 0; t < 30; t += 1 / 60) updateEnemies(pool, 1 / 60, projectiles, { x: 86, y: 135 }, 4, 1);
+  assert.equal(pool.items[0].active, false);
+});

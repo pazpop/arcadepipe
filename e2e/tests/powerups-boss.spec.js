@@ -21,7 +21,8 @@ async function fireUntilPicked(page, picked) {
 }
 
 // 100 % de drop, un seul type de bonus, chute rapide et longue durée de vie :
-// le bonus est au sol dès le premier kill et ne disparaît pas avant d'être ramassé.
+// le bonus est au sol dès le premier kill et ne disparaît pas avant d'être
+// ramassé, ni une fois ramassé.
 async function forceDrops(page, weights) {
   await page.evaluate(async (w) => {
     const { POWERUP } = await import("/js/config.js");
@@ -29,6 +30,7 @@ async function forceDrops(page, weights) {
     POWERUP.dropChanceElite = 1;
     POWERUP.fallSpeed = 60;
     POWERUP.lifetime = 60;
+    POWERUP.duration = 999; // le bonus ramassé dure tout le test
     POWERUP.typeWeights = w;
   }, weights);
 }

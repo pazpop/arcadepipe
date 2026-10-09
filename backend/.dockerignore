@@ -1,7 +1,7 @@
 venv/
 __pycache__/
 *.pyc
-arcadepipe.db
+arcadepipe.db*
 # Tests/lint/dev : utiles en dev, inutiles (et jamais exécutés) dans l'image.
 tests/
 requirements-dev.txt

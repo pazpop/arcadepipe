@@ -3,7 +3,10 @@ venv/
 __pycache__/
 *.pyc
 .pytest_cache/
-backend/arcadepipe.db
+backend/arcadepipe.db*
+
+# Notes de méthode de travail avec l'assistant IA (locales)
+methode.md
 
 # OS
 .DS_Store

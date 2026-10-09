@@ -117,9 +117,17 @@ def test_games_et_scores_sont_independants(client):
     assert len(client.get("/api/scores").json()) == 1
 
 
-def test_score_envoye_autrement_qu_en_json_rejete(client):
+@pytest.mark.parametrize("headers", [{"Content-Type": "text/plain"}, {}])
+def test_score_envoye_autrement_qu_en_json_rejete(client, headers):
     # C'est ce qui oblige un navigateur à demander la permission (CORS) avant d'envoyer un score.
-    r = client.post("/api/scores", content="player_name=TEST&score=1", headers={"Content-Type": "text/plain"})
+    r = client.post("/api/scores", content='{"player_name": "TEST", "score": 1}', headers=headers)
+    assert r.status_code == 422
+
+
+@pytest.mark.parametrize("score", ["1e400", "NaN", "Infinity"])
+def test_score_non_fini_rejete_proprement(client, score):
+    body = '{"player_name": "TEST", "score": ' + score + "}"
+    r = client.post("/api/scores", content=body, headers={"Content-Type": "application/json"})
     assert r.status_code == 422
 
 

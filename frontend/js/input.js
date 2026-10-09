@@ -42,7 +42,8 @@ export function createInput(canvas) {
     input.x = p.x;
     input.y = p.y;
   });
-  canvas.addEventListener("mousedown", () => {
+  canvas.addEventListener("mousedown", (e) => {
+    if (e.button !== 0) return; // bouton gauche seulement
     input.isTouch = false;
     input.fireHeld = true;
   });

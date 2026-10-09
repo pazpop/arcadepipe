@@ -33,7 +33,7 @@ Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/confi
 ## Le boss
 
 - Sa coque est indestructible : il faut détruire ses points faibles (4 à 6 selon la vague), qui passent du jaune à l'orange puis au rouge. Une barre de vie en bas de l'écran résume l'ensemble.
-- Il est invulnérable pendant son entrée, puis tire aussitôt. Ses tirs s'intensifient à chaque point faible détruit.
+- Il est invulnérable pendant son entrée, puis tire aussitôt. Sa façon de tirer change à chaque point faible détruit (éventail, spirale, anneau) et sa cadence accélère.
 - Deux couleurs de tirs, selon la façon de les esquiver : bleu pour les éventails visés, blanc pour les spirales et les anneaux.
 - Foncer dans sa coque coûte une vie.
 - Derrière lui, en décor, la silhouette du vaisseau-mère de la flotte ennemie.
@@ -62,7 +62,7 @@ Les trois armes durent 20 secondes ; le décompte est en pause pendant un saut s
 
 ## Le niveau bonus
 
-- Proposé avant les vagues 10, 20, 30... si le score atteint un seuil, qui monte à chaque fois.
+- Offert avant les vagues 10, 20, 30...
 - Dix anneaux à traverser : le vaisseau ne se déplace que de haut en bas, aucune vie ne peut être perdue.
 - Récompense : la jauge NOVA se remplit en proportion des anneaux réussis.
 

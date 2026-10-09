@@ -4,7 +4,9 @@ from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import FastAPI, Query, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field, StringConstraints
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -50,6 +52,14 @@ def get_client_ip(request: Request) -> str:
 limiter = Limiter(key_func=get_client_ip)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
+
+# Requête invalide : un refus sans détail. La réponse par défaut de FastAPI
+# recopie la valeur refusée, et plante (erreur 500) sur un nombre que JSON ne
+# sait pas écrire, comme 1e400 ou NaN.
+@app.exception_handler(RequestValidationError)
+async def invalid_request(request: Request, exc: RequestValidationError):
+    return JSONResponse({"detail": "invalid request"}, status_code=422)
 
 
 class ScoreIn(BaseModel):

@@ -3,15 +3,6 @@
 # Épinglé par digest (voir docs/deploiement.md) ; Dependabot propose les mises à jour.
 FROM caddy:2-alpine@sha256:6aeddd44c3078b0f9a35206472a11420648a79c184603ef95957d0a20044cb2b
 
-# setcap donne au binaire caddy la capacité de se lier au port 80 (<1024)
-# sans être root — indispensable puisqu'on abandonne root plus bas. libcap
-# ne sert qu'au moment du build (fournit la commande `setcap`) ; le droit
-# obtenu est porté par le binaire lui-même (xattr), pas par le paquet, donc
-# `apk del libcap` ensuite ne le retire pas.
-RUN apk add --no-cache libcap \
-    && setcap cap_net_bind_service=+ep /usr/bin/caddy \
-    && apk del libcap
-
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY index.html privacy.html /usr/share/caddy/
 COPY robots.txt /usr/share/caddy/

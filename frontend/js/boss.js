@@ -113,8 +113,10 @@ export function updateBoss(boss, dt, projectiles, target) {
       boss.spiralAngle += 0.4;
       patternSpiralStep(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.9, 3 + Math.min(3, destroyed));
     } else {
-      // curve modeste : l'anneau tourne légèrement en s'étendant ("pinwheel").
-      patternRing(projectiles, boss.x - 20, boss.y, speed * 0.8, Math.max(6, Math.round((10 + destroyed * 2) * countMul)), 0.5);
+      // Angle décalé à chaque salve, comme la spirale. curve modeste :
+      // l'anneau tourne légèrement en s'étendant ("pinwheel").
+      boss.spiralAngle += 0.4;
+      patternRing(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.8, Math.max(6, Math.round((10 + destroyed * 2) * countMul)), 0.5);
     }
     boss.fireTimer = Math.max(0.35, 1.2 - destroyed * 0.12) * (firstBoss ? BOSS.firstBossFireIntervalMul : 1);
   }
@@ -122,7 +124,7 @@ export function updateBoss(boss, dt, projectiles, target) {
 
 // true = point détruit (l'appelant doit vérifier la victoire), "hit" = touché
 // mais survit, false = aucun point touché.
-export function hitBossWeakPoint(boss, px, py, radius, particlePool, damage = 1) {
+export function hitBossWeakPoint(boss, px, py, radius, particlePool, damage) {
   // Invulnérable pendant l'entrée : sinon détruit avant même son premier tir.
   if (!boss.arrived) return false;
   for (const p of boss.weakPoints) {

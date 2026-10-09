@@ -9,9 +9,18 @@
 #
 # Port 80 déjà pris : modifier le mapping "80:80" ci-dessous (ex: "8080:80").
 # Mesure d'audience : désactivée ; pour l'activer, voir docs/deploiement.md.
+# Logs Docker plafonnés (10 Mo x 3 par conteneur) : par défaut ils grossissent
+# sans limite et peuvent remplir le disque.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
   backend:
     build: ./backend
+    logging: *default-logging
     volumes:
       - backend_data:/data
     restart: unless-stopped
@@ -27,6 +36,7 @@ services:
 
   frontend:
     build: ./frontend
+    logging: *default-logging
     ports:
       - "80:80"
     depends_on:
@@ -42,9 +52,8 @@ services:
       - /data:uid=1000,gid=1000
     cap_drop:
       - ALL
-    # NET_BIND_SERVICE : indispensable pour que le Caddy non-root (voir
-    # frontend/Dockerfile, USER caddyuser) puisse quand même se lier au
-    # port 80.
+    # NET_BIND_SERVICE : le binaire de Caddy porte cette capacité (pour se lier
+    # au port 80 sans être root) et ne démarre pas si le conteneur ne l'a pas.
     cap_add:
       - NET_BIND_SERVICE
     security_opt:

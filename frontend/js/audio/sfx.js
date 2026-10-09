@@ -106,6 +106,7 @@ export class AudioEngine {
   // Explosion : bruit blanc filtré passe-bas + glissement de fréquence de
   // coupure, enveloppe courte (Attack 0, Decay ~150ms, pas de Sustain).
   playExplosion() {
+    if (this.ctx.state !== "running") return; // voir _tone
     const now = this.ctx.currentTime;
     const duration = 0.3;
     const filter = this._noiseBurst(duration, 200, 20);
@@ -123,6 +124,7 @@ export class AudioEngine {
   // Transition "saut spatial" : glissement montant sur 2s avec légère
   // distorsion, synchronisé avec l'accélération visuelle (states/playing.js).
   playWarpTransition() {
+    if (this.ctx.state !== "running") return; // voir _tone
     const now = this.ctx.currentTime;
     const duration = 2;
     const osc = this.ctx.createOscillator();
@@ -151,6 +153,7 @@ export class AudioEngine {
   // le poids. L'écran tremble déjà fort (triggerShake dans states/playing.js), le son
   // doit suivre sinon l'effet paraît muet malgré l'écran qui vibre.
   playNovaBlast() {
+    if (this.ctx.state !== "running") return; // voir _tone
     const now = this.ctx.currentTime;
     const duration = 0.6;
     const filter = this._noiseBurst(duration, 500, 20);
@@ -183,6 +186,7 @@ export class AudioEngine {
   // bas) — le mélange donne un "poids" que ni l'un ni l'autre seul ne
   // rendrait, pour bien se distinguer du "pew" aigu du tir normal.
   playShotgunBlast() {
+    if (this.ctx.state !== "running") return; // voir _tone
     const now = this.ctx.currentTime;
 
     const duration = 0.15;

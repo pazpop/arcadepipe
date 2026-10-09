@@ -99,12 +99,8 @@ export function updateWaveTransition(g, engine, dt) {
     audio.playPowerup();
   }
 
-  // Niveau bonus avant la prochaine vague, si elle est éligible et le score suffisant.
-  const nextWave = g.wave + 1;
-  const bonusCycle = nextWave % BONUS_LEVEL.everyNWaves === 0 ? nextWave / BONUS_LEVEL.everyNWaves : 0;
-  const bonusRequiredScore =
-    bonusCycle === 1 ? BONUS_LEVEL.firstScoreThreshold : BONUS_LEVEL.scoreThreshold * bonusCycle;
-  if (bonusCycle > 0 && g.score >= bonusRequiredScore) {
+  // Niveau bonus avant les vagues 10, 20, 30...
+  if ((g.wave + 1) % BONUS_LEVEL.everyNWaves === 0) {
     g.bonusLevel = createBonusLevel();
     g.banner.timer = BONUS_LEVEL.introDuration;
     // Départ de la glissée d'entrée du vaisseau (updateBonusLevelShip, states/playing.js).

@@ -1,6 +1,6 @@
 // Constantes globales — résolution interne, vitesses, difficulté, sons.
-// Tout est regroupé ici pour éviter les valeurs magiques éparpillées dans
-// les autres modules.
+// Regroupées ici pour l'essentiel ; les valeurs propres aux ennemis et la
+// cadence du boss sont dans enemies.js et boss.js.
 
 export const RES_W = 480;
 export const RES_H = 270;
@@ -108,7 +108,7 @@ export const POWERUP = {
     // initial par plomb, pas le total du tir. Cadence plus lente que
     // "power" : un tir plus engageant, pas un simple "tire plus fort partout".
     shotgun: { fireCooldownMul: 1.35, damage: 2, color: "#d4a24c" },
-    shield: { color: "#5ec8ff" },
+    shield: { color: PALETTE.shield },
   },
   // Poids relatifs (pickPowerupType() dans states/playing.js).
   typeWeights: { power: 0.3, rapid: 0.3, shotgun: 0.2, shield: 0.2 },
@@ -188,7 +188,8 @@ export const GRAZE = {
   // qu'une fois pendant toute sa vie (voir `grazed` sur les projectiles dans
   // projectiles.js).
   bodyCooldown: 1.5,
-  baseScore: 15, // multiplié par la taille de la chaîne courante (voir graze.js)
+  baseScore: 15, // multiplié par la taille de la chaîne courante (voir graze.js)...
+  maxChainMultiplier: 20, // ...jusqu'à ce plafond
   grazePerCharge: 12, // nombre de grazes pour remplir une charge NOVA
 };
 
@@ -209,25 +210,17 @@ export const NOVA = {
 };
 
 // Niveau bonus (bonusLevel.js) : traverser des anneaux au lieu de combattre.
-// Offert avant les vagues 10, 20, 30... si le score atteint le seuil du cycle,
-// qui grimpe à chaque fois (scoreThreshold * numéro du cycle, sauf le premier).
-// Récompense : jauge NOVA, en proportion des anneaux réussis.
+// Offert avant les vagues 10, 20, 30... Récompense : jauge NOVA, en proportion
+// des anneaux réussis.
 export const BONUS_LEVEL = {
   everyNWaves: 10,
-  // Seuil du tout premier niveau bonus (vague 10), volontairement bas et
-  // indépendant de la formule des cycles suivants — sert de "vitrine" que la
-  // plupart des joueurs peuvent atteindre, pas juste les runs déjà excellentes.
-  firstScoreThreshold: 1500,
-  scoreThreshold: 4000,
   ringCount: 10,
   ringSpeed: 110,
   ringSpawnInterval: 1.3,
   ringOuterRadius: 22,
   ringInnerRadius: 13,
-  ringInnerRadiusMin: 7,
-  // Rétrécit légèrement à chaque anneau (jusqu'au plancher ci-dessus) — une
-  // petite montée en difficulté dans le niveau bonus lui-même, pas juste une
-  // suite de portes identiques.
+  // Rétrécit légèrement à chaque anneau — une petite montée en difficulté dans
+  // le niveau bonus lui-même, pas juste une suite de portes identiques.
   ringTighten: 0.6,
   // Entrée en douceur du vaisseau (glissée depuis la gauche, comme au tout
   // début d'une partie) + message explicatif — aucun anneau ne spawn avant

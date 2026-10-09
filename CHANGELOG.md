@@ -1,6 +1,17 @@
 # Changelog
 
-Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
+Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : le résultat de `git rev-list --count HEAD`, plus un. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
+
+## [2.148] - 2026-10-09
+- **Classement protégé d'un score sans effort** : les anneaux du boss partent d'un angle différent à chaque salve (leurs couloirs sûrs ne sont plus fixes), et le multiplicateur de frôlement est plafonné à 20.
+- **Niveau bonus toujours offert** avant les vagues 10, 20, 30... : le seuil de score, toujours atteint en pratique, est retiré. Son dernier anneau reste visible jusqu'à sa sortie de l'écran.
+- **Kamikaze** : il cesse sa poursuite après 6 secondes au lieu de tourner sans fin autour d'un joueur immobile.
+- **Bouton Pause** : il répond de nouveau au clavier et aux lecteurs d'écran ; le clic droit ne l'actionne plus.
+- Maintenir M ne fait plus clignoter le son ; le flash d'un NOVA ne reste plus figé derrière GAME OVER.
+- **API** : un score non fini (`1e400`, `NaN`) est refusé proprement au lieu de provoquer une erreur du serveur.
+- Toutes les dépendances Python de l'image sont épinglées, donc vérifiées par l'audit ; logs plafonnés dans le déploiement autonome.
+- Musique : accord écrit de mall-e pour la diffusion dans le jeu, sur le site et les plateformes.
+- Outils : `tools/check_unused.py` (code resté après une suppression, lancé par la CI) et `npm run smoke` (vérifie le jeu en ligne après un déploiement).
 
 ## [2.147] - 2026-10-09
 - Audit des dépendances relancé chaque lundi par un workflow dédié ; Caddy peut écrire dans ses dossiers temporaires (plus d'erreurs au démarrage).

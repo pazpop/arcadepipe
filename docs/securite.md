@@ -7,7 +7,7 @@
 - **Table des scores bornée** : seuls les 10 000 meilleurs sont gardés (100 au plus sont lisibles). La marge protège les vrais scores : de faux scores peuvent occuper le classement, mais il en faut 10 000 meilleurs qu'un vrai pour l'effacer, soit 200 jours d'envois depuis une même adresse IP. Un attaquant qui dispose de nombreuses adresses va plus vite (voir plus bas) : le recours est alors la sauvegarde quotidienne. Tant que les vrais scores sont en base, supprimer les faux les fait revenir.
 - **Aucune surface XSS** : le pseudo n'est jamais inséré dans du HTML (rendu Canvas côté client, JSON côté serveur).
 - **Rate limiting** (`slowapi`, par IP réelle via `X-Forwarded-For` derrière un reverse-proxy de confiance, compteurs en mémoire, remis à zéro à chaque redémarrage) : `POST /api/scores` 5/min et 50/jour, `POST /api/games` 10/min, `GET /api/scores` et `GET /api/games/count` 60/min.
-- **Conteneurs** backend et frontend non-root, rootfs read-only, `cap_drop: ALL` (le frontend garde `NET_BIND_SERVICE`, nécessaire à Caddy non-root sur le port 80).
+- **Conteneurs** backend et frontend non-root, rootfs read-only, `cap_drop: ALL` (le frontend garde `NET_BIND_SERVICE` : le binaire de Caddy porte cette capacité et ne démarre pas sans elle).
 - **Taille des requêtes** vers `/api/*` plafonnée à 10 Ko par le reverse-proxy (Caddy en déploiement autonome, Traefik sur l'instance publique), jamais sur les fichiers statiques ou la musique.
 - **Sauvegarde** quotidienne de la base SQLite, gérée dans le repo d'infra (`backup/`).
 

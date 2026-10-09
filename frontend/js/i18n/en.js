@@ -38,7 +38,7 @@ export default {
   "cookie.decline": "Decline",
 
   // --- Main menu ---
-  "menu.lore": "The galaxy is falling to enemy fleets —\nalone at the controls of the last free fighter,\nyou are its last hope.",
+  "menu.lore": "The galaxy is falling to enemy fleets —\nalone at the controls of the last free fighter,\nyou are its only hope.",
   "menu.play": "PLAY",
   "menu.leaderboard": "LEADERBOARD",
   "menu.help": "HELP",
@@ -49,10 +49,9 @@ export default {
   "hud.wave": "WAVE {wave}",
   "hud.bonusLevel": "BONUS LEVEL — RINGS {passed}/{total}",
   "hud.intact": "NO DAMAGE +{bonus}",
-  "hud.controlHint": "HOLD CLICK / TOUCH TO FIRE",
-  "bonus.intro.title": "BONUS LEVEL UNLOCKED!",
-  "bonus.intro.line1": "Your score unlocked it",
-  "bonus.intro.line2": "Fly through the rings to charge your NOVA gauge!",
+  "hud.controlHint": "HOLD TO FIRE",
+  "bonus.intro.title": "BONUS LEVEL!",
+  "bonus.intro.line": "Fly through the rings to charge your NOVA gauge!",
 
   // --- Banners ---
   "banner.bossWave": "WAVE {wave} — MASSIVE WEAPON INCOMING",
@@ -90,7 +89,7 @@ export default {
   "help.fire.detail": 'Automatic. Uncheck "Auto-fire" (bottom left) to fire only while you hold the mouse button or keep a finger down',
   "help.nova": "NOVA",
   "help.nova.detail":
-    "Graze (without touching) an enemy shot or an enemy ship — not the boss — to charge the NOVA gauge at the top left: take risks! Once full, SPACE (or the touch button at the bottom right) destroys every enemy on screen and their shots, never the boss. Up to 2 charges in reserve from the 2nd boss fight (only 1 before). Use them whenever you like.",
+    "Graze (without touching) an enemy shot or an enemy ship — not the boss — to charge the NOVA gauge at the top left: take risks! Once full, SPACE (or the touch button at the bottom right) destroys every enemy on screen and their shots, never the boss. Up to 2 charges in reserve from the 2nd boss fight on (only 1 before that). Use them whenever you like.",
   "help.boss": "BOSS",
   "help.boss.detail": "Aim for the YELLOW weak points, avoid its hull — defeating it grants +1 life",
   "help.music": "MUSIC",

@@ -16,13 +16,11 @@ export default [
         document: "readonly",
         navigator: "readonly",
         localStorage: "readonly",
-        console: "readonly",
         performance: "readonly",
         requestAnimationFrame: "readonly",
         Audio: "readonly",
         AudioContext: "readonly",
         webkitAudioContext: "readonly",
-        Event: "readonly",
         fetch: "readonly",
         AbortController: "readonly",
         setTimeout: "readonly",
@@ -33,7 +31,7 @@ export default [
     },
     rules: {
       // "warn" plutôt que "error" : un argument/import non utilisé pendant
-      // une itération ne doit pas bloquer un build, juste être visible.
+      // une itération ne doit pas bloquer la CI, juste être visible.
       "no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
     },
   },

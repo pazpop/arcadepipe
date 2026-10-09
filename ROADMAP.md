@@ -13,7 +13,7 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 
 ## Avant de publier sur des plateformes (itch.io...)
 
-- [ ] **Accord de mall-e** pour diffuser sa musique ailleurs que sur le site : conserver son message et sa réponse par courriel.
+- [ ] **Titres des morceaux** : mall-e va leur en donner et les publier sur Bandcamp ; renommer alors les fichiers (`AUDIO.tracks`, `config.js`) et citer les titres dans les crédits.
 - [ ] **Publier sur itch.io** : déposer la dernière archive (`python tools/build_itch.py`, voir [docs/deploiement.md](docs/deploiement.md#itchio)), puis passer la page en public.
 - [ ] **Supprimer de faux scores à distance** : une commande d'administration protégée, au lieu d'une requête SQL à la main sur le serveur.
 - [ ] **Compléter le kit presse** (`frontend/press/`, captures refaites par `npm run presskit` dans `e2e/`) : une adresse de contact, la date de sortie, les liens des plateformes ; éventuellement la vidéo en MP4 ou en GIF, ou sur YouTube pour la page itch.io.

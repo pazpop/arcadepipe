@@ -74,6 +74,7 @@ export function gameState(page) {
     const { game } = await import("/js/main.js");
     return {
       mode: game.mode,
+      helpPage: game.helpPage,
       player: game.playerPosition,
       playerBullets: game.playerBulletsOnScreen,
       lives: game.lives,

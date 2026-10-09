@@ -112,6 +112,7 @@ test("toutes les pages de l'aide et les crédits s'affichent", async ({ page }) 
   await waitForMode(page, "help");
   for (let pageNumber = 2; pageNumber <= 4; pageNumber++) {
     await clickLogical(326, 210); // SUIV.
+    expect((await gameState(page)).helpPage).toBe(pageNumber - 1); // helpPage compte à partir de 0
     await canvas.screenshot({ path: `test-results/help-page-${pageNumber}.png` });
   }
   await clickLogical(240, 232); // CONTINUER
@@ -119,7 +120,6 @@ test("toutes les pages de l'aide et les crédits s'affichent", async ({ page }) 
 
   await clickLogical(240, 151.2 + 3 * 22); // CRÉDITS
   await waitForMode(page, "credits");
-  await page.waitForTimeout(1000); // le temps que le texte défile à l'écran
   await canvas.screenshot({ path: "test-results/credits.png" });
   await page.keyboard.press("Escape");
   await waitForMode(page, "menu");
@@ -210,16 +210,23 @@ test("un réglage cliqué ne garde pas le focus : Espace ne le rebascule pas", a
   await page.keyboard.press("Space");
   await expect(page.locator("#autofire-toggle")).not.toBeChecked();
 
-  // Bouton Pause cliqué en partie, reprise au clavier : Espace ne remet pas en pause.
+  // Même chose pour un bouton : la vitesse passe à x1.5 au clic, et Espace ne la change plus.
+  await page.click("#speed-btn");
+  await expect(page.locator("#speed-btn")).toHaveText("x1.5");
+  await page.keyboard.press("Space");
+  await expect(page.locator("#speed-btn")).toHaveText("x1.5");
+});
+
+test("bouton Pause au clavier : Entrée met en pause, sans reprendre aussitôt", async ({ page }) => {
+  await page.goto("/");
+  await skipHints(page);
   const { startRun } = canvasHelpers(page);
   await startRun();
-  await page.click("#pause-btn");
+  await page.locator("#pause-btn").focus();
+  await page.keyboard.press("Enter");
   await waitForMode(page, "paused");
-  await page.keyboard.press("KeyP");
-  await waitForMode(page, "playing");
-  await page.keyboard.press("Space");
-  await page.waitForTimeout(300); // rien ne doit se passer : pas d'état à attendre
-  expect((await gameState(page)).mode).toBe("playing");
+  await page.waitForTimeout(300); // l'Entrée ne doit pas choisir REPRENDRE à l'image suivante
+  expect((await gameState(page)).mode).toBe("paused");
 });
 
 test("case Filtre rétro : coupe le filtre, et le choix tient au rechargement", async ({ page }) => {

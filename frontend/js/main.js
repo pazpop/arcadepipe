@@ -95,9 +95,15 @@ mcToggle.addEventListener("click", () => {
   saveItem(STORAGE_KEYS.panelCollapsed, panelCollapsed ? "1" : "0");
 });
 
-// Pause, sans effet hors partie. pointerdown et non click : pendant qu'un doigt
-// pilote le vaisseau, un second doigt sur un bouton ne produit aucun "click".
-$("pause-btn").addEventListener("pointerdown", () => game.pause());
+// Pause, sans effet hors partie. pointerdown : pendant qu'un doigt pilote le
+// vaisseau, un second doigt sur un bouton ne produit aucun "click". click en
+// plus : c'est ce qu'envoient le clavier et les lecteurs d'écran (mettre en
+// pause deux fois ne change rien). e.button : le bouton gauche seulement.
+$("pause-btn").addEventListener("pointerdown", (e) => e.button === 0 && game.pause());
+$("pause-btn").addEventListener("click", () => {
+  game.pause();
+  input.justPressed.clear(); // l'Entrée qui vient d'actionner le bouton ne doit pas aussi choisir REPRENDRE
+});
 
 // --- Musique : stop/lecture, piste suivante, volume.
 const musicStopBtn = $("music-stop-btn");
@@ -156,9 +162,16 @@ speedBtn.addEventListener("click", () => {
 });
 
 // --- Bouton NOVA (tactile) : lu par le jeu comme une touche (states/playing.js).
-// pointerdown, comme le bouton Pause.
+// pointerdown seul, pour le second doigt (voir Pause) : avec click en plus, un
+// même appui dépenserait deux charges. Au clavier, NOVA est sur Espace.
+// preventDefault : le bouton disparaît sous le doigt, et sans cela le navigateur
+// enverrait le clic qui suit au jeu, juste dessous.
 const novaBtn = $("nova-btn");
-novaBtn.addEventListener("pointerdown", () => input.justPressed.add("NovaTrigger"));
+novaBtn.addEventListener("pointerdown", (e) => {
+  if (e.button !== 0) return;
+  e.preventDefault();
+  input.justPressed.add("NovaTrigger");
+});
 
 // --- Bouton Partager (fin de partie) : image PNG du résultat (shareCard.js),
 // toujours téléchargée, et copiée dans le presse-papier si le navigateur le permet.
@@ -203,7 +216,7 @@ window.addEventListener("keydown", (e) => {
     if (key === "enter" && !e.repeat) game.confirmNameEntry();
     return;
   }
-  if (key === "m") audio.setMuted(music.toggleMuted());
+  if (key === "m" && !e.repeat) audio.setMuted(music.toggleMuted());
   checkKonami(key);
 });
 

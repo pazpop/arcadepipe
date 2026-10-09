@@ -31,7 +31,7 @@ export function createBonusLevel() {
 
 function spawnRing(bl) {
   const i = bl.spawnedCount;
-  const innerRadius = Math.max(BONUS_LEVEL.ringInnerRadiusMin, BONUS_LEVEL.ringInnerRadius - i * BONUS_LEVEL.ringTighten);
+  const innerRadius = BONUS_LEVEL.ringInnerRadius - i * BONUS_LEVEL.ringTighten;
   bl.rings.push({
     x: RES_W + BONUS_LEVEL.ringOuterRadius + 10,
     y: 30 + Math.random() * (RES_H - 60),
@@ -83,7 +83,9 @@ export function updateBonusLevel(bl, dt, player, particles, audio) {
     }
   }
 
-  if (bl.resolvedCount >= BONUS_LEVEL.ringCount) bl.finished = true;
+  // Terminé quand le dernier anneau, une fois jugé, a quitté l'écran par la gauche.
+  const allResolved = bl.resolvedCount >= BONUS_LEVEL.ringCount;
+  if (allResolved && bl.rings.at(-1).x < -BONUS_LEVEL.ringOuterRadius) bl.finished = true;
 }
 
 function drawRing(ctx, ring) {

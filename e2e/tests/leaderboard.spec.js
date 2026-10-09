@@ -26,7 +26,9 @@ test("le classement affiche les scores du serveur, du meilleur au moins bon", as
   const { clickLogical } = canvasHelpers(page);
   await clickLogical(240, 151.2 + 22); // CLASSEMENT
   await waitForMode(page, "leaderboard");
-  await expect.poll(() => names(page)).toEqual(["BETA", "ALPHA"]);
+  // Les deux scores sont là, le meilleur devant (d'autres peuvent déjà être en base).
+  const order = async () => (await names(page)).filter((n) => n === "ALPHA" || n === "BETA").slice(0, 2);
+  await expect.poll(order).toEqual(["BETA", "ALPHA"]);
 });
 
 test("fin de partie : top annoncé ; score inscrit en rejouant, au tap sur VALIDER, puis au clavier", async ({ page, request }) => {

@@ -15,7 +15,6 @@ test("niveau bonus : se déclenche avant la vague 10, se termine, puis la partie
     DIFFICULTY.waveKillsStep = 0;
     DIFFICULTY.waveBreakDuration = 0.3;
     DIFFICULTY.bossWaveEvery = 999; // pas de combat de boss pour ce test
-    BONUS_LEVEL.firstScoreThreshold = 0;
     BONUS_LEVEL.ringCount = 3; // niveau court
     BONUS_LEVEL.introDuration = 0.5;
   });

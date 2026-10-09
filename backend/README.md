@@ -26,6 +26,8 @@ docker compose exec backend python -c "import os, sqlite3; c = sqlite3.connect(o
 
 ## Tests
 
+Depuis `backend/`, environnement activé : `pip install -r requirements-dev.txt`, puis `pytest` et `ruff check .`.
+
 - `tests/test_main.py` : validation des scores et lecture de l'IP du client.
 - `tests/test_api.py` : les routes, via `TestClient`, sur une base SQLite temporaire par test.
 - `tests/test_rate_limit.py` : le rate limiting, que `test_api.py` désactive pour ses propres tests.

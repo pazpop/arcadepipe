@@ -3,7 +3,7 @@
 // blittée (drawImage) à chaque frame.
 import { desaturate } from "./color.js";
 
-function pixelsToCanvas(rows, palette, scale = 1) {
+function pixelsToCanvas(rows, palette, scale) {
   const h = rows.length;
   const w = rows[0].length;
   const off = document.createElement("canvas");

@@ -42,7 +42,7 @@ test("le QR de la carte de partage se décode, y compris après recompression JP
     const px = card.getContext("2d").getImageData(0, 0, 1080, 1080);
     const at = (x, y) => Array.from(px.data.slice((y * 1080 + x) * 4, (y * 1080 + x) * 4 + 3));
     out.margin = at(446, 846); // quiet zone : blanc pur attendu
-    out.finder = at(459, 859); // centre du module (0,0), coin du marqueur de position : noir pur attendu
+    out.finder = at(459, 859); // dans le marqueur de position du coin haut-gauche : noir pur attendu
     return out;
   });
 

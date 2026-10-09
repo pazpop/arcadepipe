@@ -2,7 +2,8 @@ name: Audit des dépendances
 
 # Chaque lundi, et à la demande (onglet Actions, « Run workflow ») : une faille
 # publiée entre deux pushs serait sinon ignorée jusqu'au push suivant. En cas
-# d'échec, GitHub prévient par courriel.
+# d'échec, GitHub prévient par courriel. GitHub suspend ce déclenchement après
+# 60 jours sans activité dans le dépôt : il se réactive depuis l'onglet Actions.
 on:
   schedule:
     - cron: "0 6 * * 1" # lundi, 6 h UTC
@@ -21,7 +22,7 @@ jobs:
           python-version: "3.13"
       - name: pip-audit (backend)
         run: |
-          pip install pip-audit==2.10.1
+          pip install -r backend/requirements-dev.txt
           pip-audit -r backend/requirements.txt
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:

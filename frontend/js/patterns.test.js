@@ -17,6 +17,17 @@ test("éventail courbe : tous les tirs ont quitté l'écran après 20 s", () => 
 
 test("anneau courbe : tous les tirs ont quitté l'écran après 20 s", () => {
   const projectiles = createProjectiles();
-  patternRing(projectiles, 400, 135, 60, 12, 0.5);
+  patternRing(projectiles, 400, 135, 0, 60, 12, 0.5);
   assert.equal(activeAfter(projectiles, 20), 0);
+});
+
+test("anneau : l'angle de départ décale tous les tirs", () => {
+  const directions = (angle) => {
+    const projectiles = createProjectiles();
+    patternRing(projectiles, 400, 135, angle, 60, 12, 0);
+    return projectiles.enemy.items.filter((b) => b.active).map((b) => Math.atan2(b.vy, b.vx).toFixed(3));
+  };
+  const first = directions(0);
+  assert.equal(first.length, 12);
+  assert.ok(directions(0.4).every((d) => !first.includes(d)));
 });

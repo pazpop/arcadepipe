@@ -31,11 +31,13 @@ export function patternSpiralStep(projectiles, x, y, angle, speed, arms) {
   }
 }
 
-// curve (rad/s) : l'anneau tourne en s'étendant — effet "pinwheel". Couleur
-// "circulaire", comme patternSpiralStep.
-export function patternRing(projectiles, x, y, speed, count, curve) {
+// Anneau de `count` tirs partant de `angle` : l'appelant le change à chaque
+// salve, sinon les tirs suivraient toujours les mêmes rayons et les couloirs
+// entre eux seraient sûrs pour toujours. curve (rad/s) : l'anneau tourne en
+// s'étendant — effet "pinwheel". Couleur "circulaire", comme patternSpiralStep.
+export function patternRing(projectiles, x, y, angle, speed, count, curve) {
   for (let i = 0; i < count; i++) {
-    const a = (Math.PI * 2 * i) / count;
+    const a = angle + (Math.PI * 2 * i) / count;
     fireEnemyBullet(projectiles, x, y, Math.cos(a) * speed, Math.sin(a) * speed, PALETTE.bulletBossCircular, curve);
   }
 }

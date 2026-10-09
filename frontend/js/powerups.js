@@ -44,7 +44,7 @@ export function updatePowerups(pool, dt) {
 // bonus qui tombe en jeu (drawPowerups ci-dessous) et à sa légende dans le
 // menu Aide (voir drawInfoScreen dans hud.js), pour garantir qu'ils restent
 // visuellement identiques sans dupliquer le dessin.
-export function drawPowerupIcon(ctx, x, y, type, size = POWERUP.radius) {
+export function drawPowerupIcon(ctx, x, y, type, size) {
   const def = POWERUP.types[type];
   ctx.save();
   ctx.translate(x, y);

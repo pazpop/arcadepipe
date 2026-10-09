@@ -218,6 +218,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
       return g.bonusLevel !== null;
     },
     // Les accesseurs qui suivent, jusqu'à bossBulletsOnScreen, ne servent qu'à la suite e2e (e2e/tests/helpers.js).
+    get helpPage() {
+      return g.helpPage;
+    },
     get playerPosition() {
       return { x: player.x, y: player.y };
     },

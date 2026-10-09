@@ -51,9 +51,8 @@ export default {
   "hud.bonusLevel": "NIVEAU BONUS — ANNEAUX {passed}/{total}",
   "hud.intact": "INTACT +{bonus}",
   "hud.controlHint": "MAINTIENS CLIC / DOIGT POUR TIRER",
-  "bonus.intro.title": "NIVEAU BONUS DÉBLOQUÉ !",
-  "bonus.intro.line1": "Ton score l'a débloqué",
-  "bonus.intro.line2": "Traverse les anneaux pour charger ta jauge NOVA !",
+  "bonus.intro.title": "NIVEAU BONUS !",
+  "bonus.intro.line": "Traverse les anneaux pour charger ta jauge NOVA !",
 
   // --- Bannières ---
   "banner.bossWave": "VAGUE {wave} — ARME MASSIVE EN APPROCHE",

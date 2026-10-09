@@ -8,6 +8,10 @@ const PLAYER_POOL_SIZE = 60;
 const ENEMY_POOL_SIZE = 400;
 const PELLET_POOL_SIZE = 40;
 
+// Durée de la courbe d'un tir ennemi, en secondes. Limitée : un tir qui
+// tournerait sans fin décrirait un cercle et ne quitterait jamais l'écran.
+const CURVE_DURATION = 1;
+
 function makePool(size, radius, color, shape) {
   return {
     radius,
@@ -64,7 +68,7 @@ export function firePlayerBullet(projectiles, x, y, speed, damage, color) {
 }
 
 // Dégâts perdus par seconde de vol — avec `damage` initial (POWERUP.types.shotgun),
-// un plomb s'éteint en ~0.67s, soit ~170px à bulletSpeed (voir PLAYER.bulletSpeed,
+// un plomb s'éteint en ~0.62s, soit ~160px à bulletSpeed (voir PLAYER.bulletSpeed,
 // un peu plus du tiers de l'écran) : fort à bout portant, négligeable au-delà.
 const PELLET_DAMAGE_DECAY = 3;
 
@@ -84,10 +88,7 @@ export function firePlayerPellets(projectiles, x, y, speed, damage, color) {
 }
 
 // turnRate (rad/s, optionnel) : courbe la trajectoire (patternFan/patternRing)
-// pendant CURVE_DURATION secondes. Limitée dans le temps : un tir qui
-// tournerait sans fin décrirait un cercle et ne quitterait jamais l'écran.
-const CURVE_DURATION = 1;
-
+// pendant CURVE_DURATION secondes.
 export function fireEnemyBullet(projectiles, x, y, vx, vy, color = null, turnRate = 0) {
   spawnInto(projectiles.enemy, x, y, vx, vy, color, 1, turnRate);
 }

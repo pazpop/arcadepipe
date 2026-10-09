@@ -13,10 +13,10 @@ npm test                   # ou : npx playwright test --headed
 
 ## Ce qui est couvert (`tests/`)
 
-- `menu-pause` — menu, pause (scène figée), confirmation de sortie, aide (bienvenue, toutes ses pages, menu, pause, bouton du panneau), crédits, clavier et focus, panneau replié, plein écran, filtre rétro
+- `menu-pause` — menu, pause (scène figée, bouton Pause au clavier), confirmation de sortie, aide (bienvenue, toutes ses pages, menu, pause, bouton du panneau), crédits, clavier et focus, panneau replié, plein écran, filtre rétro
 - `gameplay` — tir manuel et automatique, choix de piste, fin de vague, fin de partie sans serveur
 - `powerups-boss` — bonus (arme, bouclier, les deux ensemble), boss invulnérable à son entrée, vie perdue contre sa coque, boss vaincu
-- `graze-nova` — frôlements, jauge NOVA, bouton tactile
+- `graze-nova` — frôlements, jauge NOVA, bouton tactile (efface les tirs du boss), Espace (détruit les ennemis)
 - `bonus-level` — le niveau bonus se déclenche, se termine, puis la partie reprend
 - `music-retry` — un 429 sur les pistes ne déclenche pas de rafale de requêtes
 - `music-end` — une fin de piste enchaîne sur une autre piste, qui joue réellement
@@ -52,6 +52,10 @@ await page.evaluate(async () => {
 ```
 
 Marche pour tout module déjà chargé : `config.js` (constantes), `main.js` (instances `music` et `game`). Voir `tests/helpers.js` : `skipHints()` saute l'aide de bienvenue, `enableAnalytics()` active la mesure d'audience pour les tests du bandeau.
+
+## Après un déploiement
+
+`npm run smoke` ouvre le jeu en ligne et signale ce que les tests locaux ne peuvent pas voir, parce que cela dépend du serveur : une erreur dans la console (politique de sécurité CSP), un fichier manquant, les drapeaux du bouton de langue bloqués, un classement qui ne répond pas.
 
 ## Kit presse
 

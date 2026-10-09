@@ -7,8 +7,10 @@ import { GRAZE, NOVA, DIFFICULTY } from "./config.js";
 import { circlesOverlap } from "./collisions.js";
 import { spawnSpark } from "./particles.js";
 
+// Le multiplicateur s'arrête à GRAZE.maxChainMultiplier : sans plafond, une
+// très longue chaîne rapporterait plus que tout le reste de la partie.
 export function grazeScoreForChain(chain) {
-  return GRAZE.baseScore * chain;
+  return GRAZE.baseScore * Math.min(chain, GRAZE.maxChainMultiplier);
 }
 
 // Dérivé de bossWaveEvery (même convention que isFirstBoss dans boss.js)

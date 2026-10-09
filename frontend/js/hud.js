@@ -198,12 +198,7 @@ export function drawBonusLevelIntro(ctx, timer) {
     glow: PALETTE.gold,
     alpha,
   });
-  text(ctx, t("bonus.intro.line1"), RES_W / 2, RES_H * 0.3 + 18, {
-    size: 8,
-    align: "center",
-    alpha: alpha * 0.85,
-  });
-  text(ctx, t("bonus.intro.line2"), RES_W / 2, RES_H * 0.3 + 32, {
+  text(ctx, t("bonus.intro.line"), RES_W / 2, RES_H * 0.3 + 20, {
     size: 8,
     align: "center",
     color: NOVA.color,
@@ -548,16 +543,14 @@ export function drawInfoScreen(ctx, content, page, pageCount) {
   ctx.restore();
 }
 
-// --- Game over / saisie du nom ---
+// --- Écran "GAME OVER" (après le ralenti de mort) : rejouer aussitôt, ou
+// passer par la saisie du nom/le classement ---
 
 function drawGameOverScreen(ctx, score, wave, kills, distance) {
   text(ctx, t("gameover.title"), RES_W / 2, RES_H * 0.28, { size: 20, align: "center", color: PALETTE.danger, glow: PALETTE.danger });
   text(ctx, t("gameover.stats", { score, wave, kills }), RES_W / 2, RES_H * 0.28 + 22, { size: 10, align: "center" });
   text(ctx, t("gameover.distance", { distance: Math.round(distance) }), RES_W / 2, RES_H * 0.28 + 34, { size: 7, align: "center", alpha: 0.8 });
 }
-
-// --- Écran "GAME OVER" (après le ralenti de mort) : rejouer aussitôt, ou
-// passer par la saisie du nom/le classement ---
 
 // La seconde option mène à la saisie du pseudo quand le score entre dans le
 // classement (qualifies), sinon au classement.
@@ -606,7 +599,8 @@ export function drawNameEntry(ctx, name, cursorVisible, score, wave, kills) {
   text(ctx, t("name.title"), RES_W / 2, NAME_ENTRY_Y, { size: 12, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
   text(ctx, t("gameover.stats", { score, wave, kills }), RES_W / 2, NAME_ENTRY_Y + 20, { size: 9, align: "center" });
   text(ctx, t("name.prompt"), RES_W / 2, NAME_ENTRY_Y + 42, { size: 7, align: "center", alpha: 0.8 });
-  const shown = name + (cursorVisible ? "_" : " ");
+  // Pas de curseur une fois les 8 caractères saisis : il n'y a plus de place.
+  const shown = name + (cursorVisible && name.length < 8 ? "_" : "");
   text(ctx, shown.padEnd(8, "·"), RES_W / 2, NAME_ENTRY_Y + 60, { size: 14, align: "center", glow: PALETTE.hud });
   const r = nameEntryValidateRect();
   text(ctx, t("name.validate"), r.x, r.y, { size: 11, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });

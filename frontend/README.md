@@ -57,6 +57,7 @@ Node 22 ou plus récent. Chaque commande part de la racine du dépôt :
 ```bash
 cd frontend/js && node --test                # logique pure : collisions, frôlement, bonus, ennemis, boss, tirs courbes, traductions, cache de l'API
 cd frontend && npm install && npm run lint   # ESLint
+python tools/check_unused.py                 # code fantôme : exports, textes, ids et styles inutilisés
 ```
 
 Le canvas, les entrées et l'audio sont couverts par les [tests bout-en-bout](../e2e/README.md).

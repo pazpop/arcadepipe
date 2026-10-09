@@ -123,7 +123,7 @@ function countActiveKamikaze(pool) {
 // Fait apparaître un ennemi, dont le type dépend de la vague. Entrée par la
 // droite, ou par le haut/bas (dans le tiers droit de l'écran) pour varier les
 // angles d'approche.
-export function spawnEnemy(pool, waveNumber) {
+function spawnEnemy(pool, waveNumber) {
   const isElite = waveNumber >= ELITE_MIN_WAVE && Math.random() < eliteChance(waveNumber);
   const isKamikaze =
     !isElite &&
@@ -172,10 +172,28 @@ export function formationCountdownForWave(wave) {
 export function spawnFormation(pool) {
   const speed = TYPE_STATS.normal.speed;
   const x = RES_W + 4;
-  const y = 40 + Math.random() * (RES_H - 80);
-  spawnOne(pool, "normal", x, y, -speed, 0);
-  spawnOne(pool, "normal", x + FORMATION_SPACING, y - FORMATION_SPACING, -speed, 0);
-  spawnOne(pool, "normal", x + FORMATION_SPACING, y + FORMATION_SPACING, -speed, 0);
+  // Positions du meneur puis des deux ailiers, pour une hauteur y donnée.
+  const places = (y) => [
+    [x, y],
+    [x + FORMATION_SPACING, y - FORMATION_SPACING],
+    [x + FORMATION_SPACING, y + FORMATION_SPACING],
+  ];
+  // Quelques tirages pour une hauteur libre, comme spawnEnemy.
+  let trio;
+  for (let attempt = 0; attempt < 10; attempt++) {
+    trio = places(40 + Math.random() * (RES_H - 80));
+    if (!trio.some(([px, py]) => tooCloseToActive(pool, px, py, SPAWN_MIN_GAP))) break;
+  }
+  for (const [px, py] of trio) spawnOne(pool, "normal", px, py, -speed, 0);
+}
+
+// Apparition suivante d'une vague : la formation quand son tour est venu
+// (compte à rebours à 0), sinon un ennemi seul. Renvoie le compte à rebours
+// suivant ; une fois négatif, plus de formation dans cette vague.
+export function spawnNext(pool, wave, formationCountdown) {
+  if (formationCountdown === 0) spawnFormation(pool);
+  else spawnEnemy(pool, wave);
+  return formationCountdown - 1;
 }
 
 // Vitesse de base des ennemis en fuite (avant le warp, x10 max — voir
@@ -201,7 +219,7 @@ const KAMIKAZE_TURN_RATE = 2.6;
 // Durée de la poursuite, en secondes : ensuite il file tout droit et quitte
 // l'écran. Sans limite, il tournerait sans fin autour d'un joueur immobile,
 // trop près pour être atteint par un virage aussi large.
-const KAMIKAZE_CHASE_TIME = 6;
+const KAMIKAZE_CHASE_TIME = 8;
 
 const BULLET_SPEED = 70; // px/s en vague 1 ; accélère ensuite (bulletSpeedFactor)
 

@@ -1,13 +1,13 @@
 # Règles du jeu
 
-Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/config.js`](js/config.js), sauf celles des ennemis ([`js/enemies.js`](js/enemies.js)) et la cadence du boss ([`js/boss.js`](js/boss.js)) ; l'organisation du code est décrite dans le [README du frontend](README.md).
+Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/config.js`](js/config.js), sauf celles des ennemis ([`js/enemies.js`](js/enemies.js)) ; l'organisation du code est décrite dans le [README du frontend](README.md).
 
 ## Le vaisseau
 
 - Il suit la souris ou le doigt. Au tactile, il vole un peu en avant du doigt, pour ne pas être caché dessous.
 - Tir automatique par défaut ; en décochant la case « Tir automatique », on tire en maintenant le clic ou le doigt.
 - 3 vies. Après un coup, le vaisseau clignote et reste invulnérable un court instant.
-- La zone qui encaisse les coups est minuscule (le cockpit), bien plus petite que le sprite.
+- La zone qui encaisse les coups est minuscule (le centre du vaisseau), bien plus petite que le sprite.
 
 ## Les ennemis
 
@@ -15,14 +15,14 @@ Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/confi
 | --- | --- | --- | --- |
 | Normal (vert) | 1 | vole en ligne droite, ne tire pas | vague 1 |
 | Élite (violet) | 3 | ondule, tir visé | vague 3 |
-| Kamikaze (rouge) | 1 | poursuit le joueur, ne tire pas ; 2 à la fois au maximum | vague 4 |
+| Kamikaze (rouge) | 1 | poursuit le joueur pendant 8 secondes, puis file tout droit ; ne tire pas ; 2 à la fois au maximum | vague 4 |
 | Gunner (bleu) | 2 | un ennemi normal qui tire, plus lentement qu'une élite | vague 6 |
 
 - Ils apparaissent dans le tiers droit de l'écran, puis se déplacent librement.
 - À partir de la vague 2, une vague sur deux environ voit passer une formation : trois ennemis normaux en flèche, qui entrent ensemble par la droite. Une par vague au plus.
 - Un ennemi ne tire que si le joueur est devant lui, et jamais depuis le tiers gauche de l'écran.
 - Un ennemi touché mais pas détruit passe à une version ternie de son sprite : il n'y a pas de jauge de PV.
-- Foncer dans un ennemi le détruit, sans rapporter de points, au prix d'un coup (un point de bouclier, ou une vie).
+- Foncer dans un ennemi le détruit, sans rapporter de points, au prix d'un coup (un point de bouclier, ou une vie), sauf pendant l'invulnérabilité qui suit un coup.
 
 ## Les vagues
 
@@ -34,11 +34,11 @@ Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/confi
 ## Le boss
 
 - Sa coque est indestructible : il faut détruire ses points faibles (4 à 6 selon la vague), qui passent du jaune à l'orange puis au rouge. Une barre de vie en bas de l'écran résume l'ensemble.
-- Il est invulnérable pendant son entrée, puis tire aussitôt. Sa façon de tirer change à chaque point faible détruit (éventail, spirale, anneau) et sa cadence accélère.
-- Deux couleurs de tirs, selon la façon de les esquiver : bleu pour les éventails visés, blanc pour les spirales et les anneaux.
-- Foncer dans sa coque coûte une vie.
+- Il est invulnérable pendant son entrée, puis tire aussitôt. Sa façon de tirer change à chaque point faible détruit (éventail, spirale, anneau) et sa cadence accélère. Elle accélère aussi toutes les 30 secondes : un boss qu'on se contente d'esquiver devient vite intenable.
+- Deux couleurs de tirs, selon la façon de les esquiver : bleu pour les éventails visés (le tir du milieu part droit sur le vaisseau), blanc pour les spirales et les anneaux (chaque anneau passe là où le précédent laissait un couloir).
+- Foncer dans sa coque coûte un coup (un point de bouclier, ou une vie).
 - Derrière lui, en décor, la silhouette du vaisseau-mère de la flotte ennemie.
-- Le premier boss est adouci (moins de vie, tirs plus lents et moins nombreux).
+- Le premier boss est adouci (moins de vie, tirs plus lents, éventails et anneaux moins fournis).
 - Le vaincre rapporte un gros bonus de score et une vie (5 au maximum).
 
 ## Les bonus
@@ -56,7 +56,7 @@ Les trois armes durent 20 secondes ; le décompte est en pause pendant un saut s
 
 ## Frôlement et NOVA
 
-- **Frôler** un tir ennemi ou le corps d'un ennemi (sans se faire toucher) rapporte des points, multipliés par la longueur de la chaîne de frôlements en cours, jusqu'à 20. Un son marque les chaînes de 5, 10 et 15.
+- **Frôler** un tir ennemi rapporte des points, multipliés par la longueur de la chaîne de frôlements en cours, jusqu'à 20. Frôler le corps d'un ennemi allonge la chaîne et charge NOVA, sans rapporter de points : un ennemi qui ne tire pas se frôle sans risque. Un son marque les chaînes de 5, 10 et 15.
 - La chaîne repart de zéro à chaque vague et à chaque coup encaissé (pas un coup absorbé par le bouclier).
 - Un tir ne compte qu'une fois ; un ennemi peut être frôlé de nouveau après un délai. La coque du boss ne compte pas.
 - Chaque frôlement charge la jauge **NOVA** (en haut à gauche) : 12 frôlements pour une charge. Une charge en réserve au maximum, deux à partir du deuxième boss.
@@ -72,8 +72,8 @@ Les trois armes durent 20 secondes ; le décompte est en pause pendant un saut s
 
 - À la dernière vie perdue, l'écran GAME OVER propose **REJOUER** (une nouvelle partie aussitôt) ou **CLASSEMENT**.
 - Si le score entre dans le top 10, l'écran l'annonce et la seconde option devient **ENTRER MON PSEUDO** (8 caractères). Le score est enregistré dans les deux cas : en rejouant, c'est sous le dernier pseudo saisi, ou « AAA ».
-- Si le serveur du classement ne répond pas, le score n'est pas enregistré.
-- Le meilleur score est gardé sur l'appareil : le menu l'affiche, et l'écran de fin annonce un nouveau record personnel. Si le serveur du classement ne répond pas, l'écran de fin le dit.
+- Si le serveur du classement ne répond pas, le score n'est pas enregistré, et l'écran de fin le dit.
+- Le meilleur score est gardé sur l'appareil, à la fin de chaque partie : le menu l'affiche, et l'écran de fin annonce un nouveau record personnel.
 - Le bouton Partager crée une image du résultat (score, vague, ennemis abattus, meilleure chaîne, distance) avec un QR code vers le jeu.
 
 ## Réglages et accessibilité

@@ -142,7 +142,7 @@ test("premier boss : invulnérable pendant son entrée, puis il tire", async ({ 
   expect(errors).toEqual([]);
 });
 
-test("foncer dans la coque du boss coûte une seule vie, grâce à l'invulnérabilité", async ({ page }) => {
+test("foncer dans la coque du boss coûte une seule vie, grâce à l'invulnérabilité, et casse la chaîne de frôlements", async ({ page }) => {
   await page.goto("/");
   await skipHints(page);
   await page.evaluate(async () => {
@@ -153,10 +153,20 @@ test("foncer dans la coque du boss coûte une seule vie, grâce à l'invulnérab
   await page.mouse.up();
   expect((await gameState(page)).lives).toBe(3);
 
+  // Une chaîne de frôlements en cours (rayon élargi le temps d'en compter quelques-uns, puis nul).
+  const setGrazeRadius = (radius) =>
+    page.evaluate(async (r) => {
+      (await import("/js/config.js")).GRAZE.radius = r;
+    }, radius);
+  await setGrazeRadius(999);
+  await expect.poll(async () => (await gameState(page)).grazeChain).toBeGreaterThan(0);
+  await setGrazeRadius(0);
+
   const { toPage } = canvasHelpers(page);
   const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
   await page.mouse.move(hull.x, hull.y);
   await expect.poll(async () => (await gameState(page)).lives).toBe(2);
+  expect((await gameState(page)).grazeChain).toBe(0); // le coup encaissé a cassé la chaîne
   await page.waitForTimeout(600); // toujours dans la coque, mais invulnérable (1,4 s)
   expect((await gameState(page)).lives).toBe(2);
 });

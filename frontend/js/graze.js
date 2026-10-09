@@ -29,12 +29,13 @@ export function addNovaGrazes(g, count) {
   g.novaGrazes = total % perCharge;
 }
 
-function registerGraze(g, particles, audio, x, y) {
+// scores : le frôlement rapporte des points (un tir) ou non (le corps d'un ennemi).
+function registerGraze(g, particles, audio, x, y, scores) {
   g.grazeChain += 1;
   // Sur toute la partie (pas remise à zéro par vague comme grazeChain) —
   // affichée en fin de run sur la carte de partage (voir shareCard.js).
   g.maxGrazeChain = Math.max(g.maxGrazeChain, g.grazeChain);
-  g.score += grazeScoreForChain(g.grazeChain);
+  if (scores) g.score += grazeScoreForChain(g.grazeChain);
   addNovaGrazes(g, 1);
   spawnSpark(particles, x, y, 2);
   // Le son monte avec la chaîne, jusqu'à un plafond : au-delà, il deviendrait insupportable.
@@ -52,7 +53,7 @@ export function updateGraze(g, dt, player, projectiles, enemies, particles, audi
     if (!b.active || b.grazed) continue;
     if (circlesOverlap(b.x, b.y, projectiles.enemy.radius, player.x, player.y, GRAZE.radius)) {
       b.grazed = true;
-      registerGraze(g, particles, audio, b.x, b.y);
+      registerGraze(g, particles, audio, b.x, b.y, true);
     }
   }
 
@@ -67,7 +68,9 @@ export function updateGraze(g, dt, player, projectiles, enemies, particles, audi
     }
     if (circlesOverlap(en.x, en.y, en.radius, player.x, player.y, GRAZE.radius)) {
       en.grazeCooldown = GRAZE.bodyCooldown;
-      registerGraze(g, particles, audio, en.x, en.y);
+      // Sans points : un ennemi qui ne tire pas se frôle sans risque, et une
+      // vague ne finit que par des ennemis abattus.
+      registerGraze(g, particles, audio, en.x, en.y, false);
     }
   }
 }

@@ -87,11 +87,12 @@ export class AudioEngine {
 
   // Tir joueur : "pew" glissé vers le grave. À cette cadence (plusieurs
   // tirs/s), le timbre, la hauteur et l'amplitude du glissando varient d'un tir à l'autre.
-  playPlayerShot(colorKey = "normal") {
+  // colorKey : "normal", "power" ou "rapid" (le fusil à pompe a son propre son).
+  playPlayerShot(colorKey) {
     const waveforms = ["square", "triangle", "sawtooth"];
     const type = waveforms[Math.floor(Math.random() * waveforms.length)];
-    const baseStart = { normal: 800, power: 620, rapid: 980 }[colorKey] ?? 800;
-    const baseEnd = { normal: 400, power: 260, rapid: 560 }[colorKey] ?? 400;
+    const baseStart = { normal: 800, power: 620, rapid: 980 }[colorKey];
+    const baseEnd = { normal: 400, power: 260, rapid: 560 }[colorKey];
     const pitchVariance = 0.8 + Math.random() * 0.4; // ±20%
     const sweepVariance = 0.7 + Math.random() * 0.5; // amplitude du glissando, de -30 % à +20 %
     this._tone({

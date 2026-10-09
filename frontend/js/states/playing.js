@@ -7,7 +7,7 @@ import { updateStarfield, triggerBossBackdropLeave } from "../stars.js";
 import { resetPlayer, updatePlayer, moveToward, hitPlayer, drawPlayer, applyPowerup, applyShield, canReceivePowerup } from "../player.js";
 import { updateProjectiles, drawProjectiles } from "../projectiles.js";
 import { updateParticles, drawParticles, spawnExplosion, spawnFlashBurst, spawnSpark } from "../particles.js";
-import { spawnEnemy, spawnFormation, updateEnemies, damageEnemy, pointsFor, drawEnemies, enemyGlowColor } from "../enemies.js";
+import { spawnNext, updateEnemies, damageEnemy, pointsFor, drawEnemies, enemyGlowColor } from "../enemies.js";
 import { updateBoss, hitBossWeakPoint, hitsBossHull, drawBoss } from "../boss.js";
 import { spawnPowerup, updatePowerups, drawPowerups } from "../powerups.js";
 import { updateGraze } from "../graze.js";
@@ -408,16 +408,14 @@ export function update(g, engine, dt) {
   } else if (g.waveBreak <= 0 && !g.bonusLevel) {
     g.spawnTimer -= dt;
     if (g.spawnTimer <= 0) {
-      if (g.formationCountdown === 0) spawnFormation(enemies);
-      else spawnEnemy(enemies, g.wave);
-      g.formationCountdown -= 1;
+      g.formationCountdown = spawnNext(enemies, g.wave, g.formationCountdown);
       g.spawnTimer = Math.max(0.12, g.spawnInterval + (Math.random() - 0.5) * 0.15);
     }
   }
 
   resolveCollisions(g, engine);
-  // Après resolveCollisions() : un tir qui a touché ce frame est déjà
-  // désactivé, donc jamais compté comme un graze en plus d'un vrai coup.
+  // Après resolveCollisions() : un tir qui vient de toucher est déjà désactivé.
+  // Il a pu être frôlé aux images précédentes, en entrant dans le rayon.
   updateGraze(g, dt, player, projectiles, enemies, particles, audio);
 }
 

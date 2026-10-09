@@ -1,6 +1,6 @@
 // Constantes globales — résolution interne, vitesses, difficulté, sons.
-// Regroupées ici pour l'essentiel ; les valeurs propres aux ennemis et la
-// cadence du boss sont dans enemies.js et boss.js.
+// Regroupées ici pour l'essentiel ; les valeurs propres aux ennemis sont dans
+// enemies.js.
 
 export const RES_W = 480;
 export const RES_H = 270;
@@ -54,7 +54,7 @@ export const PLAYER = {
   speed: 2000,
   restX: RES_W * 0.18, // position de repos, en début de partie et dans le niveau bonus
   entryX: -20, // hors écran à gauche : départ des glissées d'entrée
-  hitboxRadius: 2.2, // cockpit uniquement, style danmaku
+  hitboxRadius: 2.2, // le centre du vaisseau seulement, style danmaku
   fireCooldown: 0.11,
   bulletSpeed: 260,
   invulnDuration: 1.4,
@@ -121,7 +121,8 @@ export const BOSS = {
   weakPointScore: 300, // autant qu'un ennemi élite
   victoryScore: 1000, // nettement au-dessus d'un point faible, pour marquer l'accomplissement
   fireInterval: 1.2, // secondes entre deux salves, boss intact
-  fireIntervalFactor: 0.645, // multiplié par ce facteur à chaque point faible détruit (0,13 s au cinquième)
+  fireIntervalFactor: 0.645, // multiplié par ce facteur à chaque phase du combat (0,13 s à la cinquième)
+  hurryEverySeconds: 30, // sans point faible détruit, le combat monte quand même d'une phase à ce rythme
   bulletSpeed: 90,
   // 1er combat de boss (isFirstBoss() dans boss.js) volontairement plus
   // clément — le joueur n'a pas encore le rythme. Boss suivants non

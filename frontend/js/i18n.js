@@ -8,12 +8,19 @@ import en from "./i18n/en.js";
 export const LANGS = { fr, en };
 const FALLBACK = "en"; // navigateur dans une langue non traduite
 
-// Langue choisie (mémorisée), sinon celle du navigateur si elle est traduite.
+const isTranslated = (code) => Object.keys(LANGS).includes(code);
+
+// Langue demandée dans l'adresse (?lang=en, posé par nextLang), sinon celle
+// mémorisée, sinon celle du navigateur si elle est traduite. L'adresse passe en
+// premier : quand le stockage est bloqué (jeu embarqué dans une autre page),
+// rien d'autre ne survit au rechargement.
 function detectLang() {
+  const asked = new URLSearchParams(globalThis.location?.search).get("lang");
+  if (isTranslated(asked)) return asked;
   const saved = loadItem(STORAGE_KEYS.lang);
-  if (Object.hasOwn(LANGS, saved)) return saved;
+  if (isTranslated(saved)) return saved;
   const browser = (globalThis.navigator?.language || "").slice(0, 2).toLowerCase();
-  return Object.hasOwn(LANGS, browser) ? browser : FALLBACK;
+  return isTranslated(browser) ? browser : FALLBACK;
 }
 
 export const lang = detectLang();
@@ -34,7 +41,7 @@ export function t(key, params = {}) {
 // des modules.
 export function nextLang() {
   saveItem(STORAGE_KEYS.lang, nextLangCode);
-  window.location.reload();
+  window.location.search = `?lang=${nextLangCode}`; // recharge la page à cette adresse
 }
 
 // Textes du HTML : data-i18n (contenu), data-i18n-title (infobulle),

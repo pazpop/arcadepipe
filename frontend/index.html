@@ -29,7 +29,8 @@
     <!-- tabindex="-1" : jamais atteint par Tab, seul le jeu lui donne le focus. -->
     <input id="name-input" type="text" maxlength="8" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="characters" enterkeyhint="done" tabindex="-1" data-i18n-aria="name.prompt" />
 
-    <div id="mc-wrap">
+    <!-- Replié au départ ; main.js l'ouvre si le joueur l'avait laissé ouvert. -->
+    <div id="mc-wrap" class="collapsed">
       <div id="music-controls">
         <div class="mc-section">
           <div class="mc-label" data-i18n="panel.music"></div>

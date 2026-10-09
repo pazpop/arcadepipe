@@ -94,7 +94,7 @@ export default {
   "help.boss": "BOSS",
   "help.boss.detail": "Aim for the YELLOW weak points, avoid its hull — defeating it grants +1 life. Its BLUE shots are aimed at you, in a fan; the WHITE ones come in spirals or rings",
   "help.ram": "COLLISION",
-  "help.ram.detail": "Ramming an enemy destroys it but costs you a hit: one shield point, or a life",
+  "help.ram.detail": "Ramming an enemy destroys it but costs you a hit: one shield point, or a life. Grazing an enemy charges NOVA; only grazed shots score points",
   "help.music": "MUSIC",
   "help.music.detail": "Shuffled playlist, adjustable in the settings panel (⚙ button, bottom left)",
   "help.keys": "KEYBOARD SHORTCUTS",

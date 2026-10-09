@@ -1,7 +1,7 @@
 // Menus, pause, aide, crédits, panneau de réglages : le texte du jeu est dessiné
 // dans le canvas, donc ces tests suivent l'écran courant (mode) et laissent des
 // captures dans test-results/ pour la vérification à l'œil.
-import { test, expect, canvasHelpers, collectErrors, gameState, skipHints, waitForMode } from "./helpers.js";
+import { test, expect, canvasHelpers, collectErrors, gameState, screenText, skipHints, waitForMode } from "./helpers.js";
 
 test("le menu se charge sans erreur et les contrôles musique sont visibles", async ({ page }) => {
   const errors = collectErrors(page);
@@ -9,6 +9,7 @@ test("le menu se charge sans erreur et les contrôles musique sont visibles", as
   await expect(page.locator("#game-canvas")).toBeVisible();
   await expect(page.locator("#music-controls")).toBeVisible();
   await expect(page.locator("#autofire-toggle")).toBeVisible();
+  await expect.poll(() => screenText(page)).toContain("JOUER");
   expect(errors).toEqual([]);
 });
 
@@ -148,7 +149,7 @@ test("le bouton Aide du panneau (bas gauche) ouvre l'aide directement, au menu e
   expect(errors).toEqual([]);
 });
 
-test("Tab puis Entrée au menu lance une partie, sans envoyer de score", async ({ page }) => {
+test("Tab n'atteint jamais le champ du pseudo ; Entrée sur un réglage n'agit pas dans le jeu", async ({ page }) => {
   const posts = [];
   page.on("request", (r) => {
     if (r.method() === "POST") posts.push(new URL(r.url()).pathname);
@@ -157,9 +158,28 @@ test("Tab puis Entrée au menu lance une partie, sans envoyer de score", async (
   await skipHints(page);
   await page.keyboard.press("Tab");
   expect(await page.evaluate(() => document.activeElement.id)).not.toBe("name-input");
+
+  // Entrée sur le bouton Vitesse change la vitesse, et rien d'autre : pas de partie lancée.
+  await page.locator("#speed-btn").focus();
   await page.keyboard.press("Enter");
-  await waitForMode(page, "playing");
+  await expect(page.locator("#speed-btn")).toHaveText("x1.5");
+  await page.waitForTimeout(300); // rien ne doit se passer : pas d'état à attendre
+  expect((await gameState(page)).mode).toBe("menu");
   expect(posts).toEqual([]);
+});
+
+test("clic droit sur une option du menu : sans effet", async ({ page }) => {
+  await page.goto("/");
+  await skipHints(page);
+  const { toPage } = canvasHelpers(page);
+  const play = await toPage(240, 150);
+  await page.mouse.click(play.x, play.y, { button: "right" });
+  await page.waitForTimeout(300); // rien ne doit se passer : pas d'état à attendre
+  expect((await gameState(page)).mode).toBe("menu");
+});
+
+test("le panneau de réglages est replié dès le HTML : il ne s'affiche pas un instant au chargement", async ({ request }) => {
+  expect(await (await request.get("/")).text()).toContain('<div id="mc-wrap" class="collapsed">');
 });
 
 test("en pause, la scène est figée : deux captures identiques", async ({ page }) => {
@@ -217,16 +237,19 @@ test("un réglage cliqué ne garde pas le focus : Espace ne le rebascule pas", a
   await expect(page.locator("#speed-btn")).toHaveText("x1.5");
 });
 
-test("bouton Pause au clavier : Entrée met en pause, sans reprendre aussitôt", async ({ page }) => {
+test("bouton Pause au clavier : Entrée met en pause, puis une seconde Entrée choisit REPRENDRE", async ({ page }) => {
   await page.goto("/");
   await skipHints(page);
-  const { startRun } = canvasHelpers(page);
+  const { startRun, moveLogical } = canvasHelpers(page);
   await startRun();
+  await moveLogical(240, 132); // là où sera REPRENDRE, pour que la souris ne survole pas une autre option
   await page.locator("#pause-btn").focus();
   await page.keyboard.press("Enter");
   await waitForMode(page, "paused");
   await page.waitForTimeout(300); // l'Entrée ne doit pas choisir REPRENDRE à l'image suivante
   expect((await gameState(page)).mode).toBe("paused");
+  await page.keyboard.press("Enter"); // le bouton n'a pas gardé le focus : c'est le menu de pause qui la reçoit
+  await waitForMode(page, "playing");
 });
 
 test("case Filtre rétro : coupe le filtre, et le choix tient au rechargement", async ({ page }) => {

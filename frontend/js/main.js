@@ -60,6 +60,7 @@ for (const type of ["pointerdown", "pointerup", "keydown"]) window.addEventListe
 let pointerDownMode = null;
 canvas.addEventListener("pointerdown", () => (pointerDownMode = game.mode));
 canvas.addEventListener("pointerup", (e) => {
+  if (e.button !== 0) return; // bouton gauche (ou doigt) seulement
   const sameScreen = pointerDownMode === game.mode;
   pointerDownMode = null;
   if (!sameScreen) return;
@@ -98,11 +99,16 @@ mcToggle.addEventListener("click", () => {
 // Pause, sans effet hors partie. pointerdown : pendant qu'un doigt pilote le
 // vaisseau, un second doigt sur un bouton ne produit aucun "click". click en
 // plus : c'est ce qu'envoient le clavier et les lecteurs d'écran (mettre en
-// pause deux fois ne change rien). e.button : le bouton gauche seulement.
-$("pause-btn").addEventListener("pointerdown", (e) => e.button === 0 && game.pause());
-$("pause-btn").addEventListener("click", () => {
+// pause deux fois ne change rien). Le bouton rend ensuite le focus : les
+// touches suivantes vont au menu de pause.
+const pauseBtn = $("pause-btn");
+pauseBtn.addEventListener("pointerdown", (e) => {
+  if (e.button !== 0) return; // bouton gauche (ou doigt) seulement
   game.pause();
-  input.justPressed.clear(); // l'Entrée qui vient d'actionner le bouton ne doit pas aussi choisir REPRENDRE
+});
+pauseBtn.addEventListener("click", () => {
+  game.pause();
+  pauseBtn.blur();
 });
 
 // --- Musique : stop/lecture, piste suivante, volume.
@@ -165,7 +171,7 @@ speedBtn.addEventListener("click", () => {
 // pointerdown seul, pour le second doigt (voir Pause) : avec click en plus, un
 // même appui dépenserait deux charges. Au clavier, NOVA est sur Espace.
 // preventDefault : le bouton disparaît sous le doigt, et sans cela le navigateur
-// enverrait le clic qui suit au jeu, juste dessous.
+// simulerait une souris sur le jeu, juste dessous, qui passerait en mode souris.
 const novaBtn = $("nova-btn");
 novaBtn.addEventListener("pointerdown", (e) => {
   if (e.button !== 0) return;

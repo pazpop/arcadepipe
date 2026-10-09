@@ -44,13 +44,17 @@ for key in sorted(asked - keys):
     if not any(path.name.endswith(".test.js") and f'"{key}"' in source for path, source in js.items()):
         problems.append(f"texte « {key} » demandé par le code mais absent de fr.js")
 
-# Ids de la page : utilisés par le JS, les tests ou le CSS.
+# Ids de la page : utilisés par le JS ou les tests (entre guillemets ou après un #), ou par le CSS.
 for element_id in re.findall(r'id="([\w-]+)"', html):
-    if element_id not in everything and f"#{element_id}" not in css:
+    used = re.search(rf'["\'`#]{re.escape(element_id)}\b', everything) or f"#{element_id}" in css
+    if not used:
         problems.append(f"frontend/index.html : id « {element_id} » utilisé nulle part")
 
-# Sélecteurs du CSS, commentaires et images intégrées (url(...)) mis à part.
+# Sélecteurs du CSS : commentaires, images intégrées (url(...)) et contenu des
+# règles (entre accolades, où une couleur comme #abcdef ressemble à un id) mis à part.
 rules = re.sub(r"/\*.*?\*/|url\([^)]*\)", "", css, flags=re.S)
+while re.search(r"\{[^{}]*\}", rules):
+    rules = re.sub(r"\{[^{}]*\}", " ", rules)
 for selector in sorted(set(re.findall(r"[#.]([a-zA-Z][\w-]+)", rules))):
     if selector not in html and selector not in everything:
         problems.append(f"frontend/css/style.css : sélecteur « {selector} » qui ne correspond à rien")

@@ -107,7 +107,6 @@ if (wants("captures")) {
   const { context, page } = await openGame();
   await setConfig(page, {
     DIFFICULTY: { baseWaveKills: 0, waveKillsStep: 0, waveBreakDuration: 0.3, bossWaveEvery: 999 },
-    BONUS_LEVEL: { firstScoreThreshold: 0 },
   });
   await page.mouse.click(...at(240, 150));
   await page.mouse.move(...at(110, 135));

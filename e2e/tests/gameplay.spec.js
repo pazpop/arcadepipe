@@ -1,4 +1,4 @@
-import { test, expect, canvasHelpers, collectErrors, gameState, reachBoss, skipHints, waitForMode } from "./helpers.js";
+import { test, expect, canvasHelpers, collectErrors, gameState, reachBoss, screenText, skipHints, waitForMode } from "./helpers.js";
 
 test("tir automatique par défaut : le vaisseau tire sans clic", async ({ page }) => {
   await page.goto("/");
@@ -96,9 +96,14 @@ test("fin de partie sans serveur : classement annoncé injoignable, record perso
   await waitForMode(page, "game_over", 15000);
   await expect.poll(() => [...apiCalls].sort()).toEqual(["GET /api/scores", "POST /api/games"]);
   expect((await gameState(page)).scoreQualifies).toBe(false);
-  await expect.poll(async () => (await gameState(page)).leaderboardDown).toBe(true); // l'écran l'annonce
-  // Premier score de ce navigateur : c'est le record personnel, gardé sur l'appareil.
-  expect(Number(await page.evaluate(() => localStorage.getItem("arcadepipe_best_score")))).toBeGreaterThan(0);
+  await expect.poll(() => screenText(page)).toContain("CLASSEMENT INJOIGNABLE");
+  // Premier score de ce navigateur : c'est le record personnel.
+  const shown = await screenText(page);
+  expect(shown).toContain("GAME OVER");
+  expect(shown).toContain("NOUVEAU RECORD PERSONNEL !");
+  expect(shown).not.toContain("ARME MASSIVE"); // la bannière de la vague ne reste pas figée sous GAME OVER
+  const best = Number(await page.evaluate(() => localStorage.getItem("arcadepipe_best_score")));
+  expect(best).toBeGreaterThan(0);
   await canvas.screenshot({ path: "test-results/game-over-offline.png" });
 
   // Seconde option : pas de saisie de pseudo, le classement directement.
@@ -106,6 +111,67 @@ test("fin de partie sans serveur : classement annoncé injoignable, record perso
   await waitForMode(page, "leaderboard");
   expect(apiCalls.filter((c) => c === "POST /api/scores")).toEqual([]);
 
+  await expect.poll(() => screenText(page)).toContain("Classement indisponible");
+
   // Les requêtes coupées laissent un message réseau dans la console, pas une erreur JS.
   expect(errors.filter((e) => !e.includes("net::ERR_"))).toEqual([]);
+
+  // Le record est gardé sur l'appareil : le menu l'affiche après un rechargement.
+  await page.reload();
+  await expect.poll(() => screenText(page)).toContain(`RECORD ${best}`);
+});
+
+test("serveur du classement lent : « … » pendant l'attente, puis « Chargement… », et REJOUER répond toujours", async ({ page }) => {
+  await page.goto("/");
+  await skipHints(page);
+  await page.evaluate(async () => {
+    const { PLAYER, BOSS } = await import("/js/config.js");
+    PLAYER.startingLives = 1;
+    BOSS.bulletSpeed = 0; // seule la coque du boss peut toucher
+  });
+  // Le classement répond au bout de 2,5 s, et répond qu'il est vide.
+  await page.route("**/api/scores**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 2500));
+    await route.fulfill({ json: [] });
+  });
+  await page.route("**/api/games**", (route) => route.fulfill({ status: 201, json: { status: "ok" } }));
+
+  const { toPage, clickLogical } = canvasHelpers(page);
+  async function die() {
+    await reachBoss(page, 2);
+    await page.mouse.up();
+    const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
+    await page.mouse.move(hull.x, hull.y);
+    await waitForMode(page, "game_over", 15000);
+  }
+
+  // Seconde option choisie avant la réponse : l'écran montre qu'il attend, puis passe à la suite.
+  await die();
+  await clickLogical(240, 187.4);
+  await expect.poll(() => screenText(page)).toContain("CLASSEMENT …");
+  await waitForMode(page, "name_entry"); // classement vide : le score y entre
+
+  // REJOUER, lui, n'attend pas le serveur.
+  await page.reload();
+  await skipHints(page);
+  await page.evaluate(async () => {
+    const { PLAYER, BOSS } = await import("/js/config.js");
+    PLAYER.startingLives = 1;
+    BOSS.bulletSpeed = 0;
+  });
+  await die();
+  await clickLogical(240, 167.4);
+  await waitForMode(page, "playing", 1000);
+});
+
+test("classement ouvert depuis le menu : « Chargement… » tant que le serveur n'a pas répondu", async ({ page }) => {
+  await page.route("**/api/**", async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+    await route.fulfill({ json: [] });
+  });
+  await page.goto("/");
+  const { clickLogical } = canvasHelpers(page);
+  await clickLogical(240, 151.2 + 22); // CLASSEMENT
+  await expect.poll(() => screenText(page)).toContain("Chargement…");
+  await expect.poll(() => screenText(page), { timeout: 5000 }).toContain("Aucun score pour l'instant.");
 });

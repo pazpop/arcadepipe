@@ -32,14 +32,6 @@ Depuis `backend/`, environnement activé : `pip install -r requirements-dev.txt`
 - `tests/test_api.py` : les routes, via `TestClient`, sur une base SQLite temporaire par test.
 - `tests/test_rate_limit.py` : le rate limiting, que `test_api.py` désactive pour ses propres tests.
 
-```bash
-pip install -r requirements-dev.txt && pytest
-```
-
 ## Lint
 
-Voir `pyproject.toml` (vérifié en CI avant chaque build, voir [docs/deploiement.md](../docs/deploiement.md#cicd)) :
-
-```bash
-ruff check .   # inclus dans requirements-dev.txt ci-dessus
-```
+`ruff check .`, réglé dans `pyproject.toml` et vérifié en CI avant chaque build (voir [docs/deploiement.md](../docs/deploiement.md#cicd)).

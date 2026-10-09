@@ -23,6 +23,7 @@ export default [
         webkitAudioContext: "readonly",
         fetch: "readonly",
         AbortController: "readonly",
+        URLSearchParams: "readonly",
         setTimeout: "readonly",
         clearTimeout: "readonly",
         URL: "readonly",

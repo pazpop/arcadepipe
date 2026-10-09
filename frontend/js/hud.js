@@ -427,7 +427,7 @@ export function hitTestInfoContinue(x, y) {
 }
 
 // Pagination (voir states/help.js, HELP_PAGES) — juste au-dessus de
-// CONTINUER, jamais chevauchée quel que soit le contenu de la page.
+// CONTINUER. La page la plus remplie (la première) s'arrête une ligne au-dessus.
 function infoPrevRect() {
   return { x: RES_W * 0.32, y: RES_H * 0.78, w: 70, h: 16 };
 }
@@ -606,13 +606,15 @@ export function hitTestNameEntryValidate(x, y) {
   return pointInRect(x, y, nameEntryValidateRect());
 }
 
-export function drawNameEntry(ctx, name, cursorVisible, score, wave, kills) {
+// g : l'état du jeu (pseudo en cours de saisie, score de la partie, envoi en cours).
+export function drawNameEntry(ctx, g, cursorVisible) {
+  const name = g.nameEntry;
   text(ctx, t("name.title"), RES_W / 2, NAME_ENTRY_Y, { size: 12, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
-  text(ctx, t("gameover.stats", { score, wave, kills }), RES_W / 2, NAME_ENTRY_Y + 20, { size: 9, align: "center" });
+  text(ctx, t("gameover.stats", { score: g.score, wave: g.wave, kills: g.enemiesKilled }), RES_W / 2, NAME_ENTRY_Y + 20, { size: 9, align: "center" });
   text(ctx, t("name.prompt"), RES_W / 2, NAME_ENTRY_Y + 42, { size: 7, align: "center", alpha: 0.8 });
   // Pas de curseur une fois les 8 caractères saisis : il n'y a plus de place.
   const shown = name + (cursorVisible && name.length < 8 ? "_" : "");
   text(ctx, shown.padEnd(8, "·"), RES_W / 2, NAME_ENTRY_Y + 60, { size: 14, align: "center", glow: PALETTE.hud });
   const r = nameEntryValidateRect();
-  text(ctx, t("name.validate"), r.x, r.y, { size: 11, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
+  text(ctx, t("name.validate") + (g.nameEntrySending ? " …" : ""), r.x, r.y, { size: 11, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
 }

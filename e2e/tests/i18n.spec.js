@@ -38,3 +38,18 @@ test.describe("navigateur dans une langue non traduite", () => {
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
   });
 });
+
+test("stockage bloqué (page embarquée, navigation privée) : le bouton de langue change quand même la langue", async ({ page }) => {
+  await page.addInitScript(() => {
+    const blocked = () => {
+      throw new DOMException("stockage bloqué", "SecurityError");
+    };
+    Object.defineProperty(window, "localStorage", { get: blocked });
+  });
+  await page.goto("/");
+  await expect(page.locator("html")).toHaveAttribute("lang", "fr");
+  await page.click("#mc-toggle"); // le panneau est replié : son ouverture non plus n'a pas pu être mémorisée
+  await page.click("#lang-btn"); // recharge la page
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  await expect(page.locator("#help-btn")).toHaveText("Help");
+});

@@ -35,7 +35,7 @@ itch.io héberge les fichiers du jeu chez lui ; le classement, lui, reste sur le
 flowchart TD
     PR["Pull request"] --> checks
     push["Push sur main"] --> checks
-    checks["Lint (ruff, eslint), audit (pip-audit),<br/>tests (pytest, node --test, Playwright)"]
+    checks["Lint (ruff, eslint), code fantôme (check_unused.py), audit (pip-audit),<br/>tests (pytest, node --test, Playwright)"]
     checks -->|échec| stop["Arrêt : rien n'est construit ni déployé"]
     checks -->|"succès, push sur main seulement"| build["Construction des images<br/>backend et frontend"]
     vars["Variable du dépôt GA_MEASUREMENT_ID,<br/>numéro de version (nombre de commits)"] -.-> build

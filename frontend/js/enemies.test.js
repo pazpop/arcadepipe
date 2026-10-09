@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { createEnemyPool, formationCountdownForWave, spawnFormation, updateEnemies } from "./enemies.js";
+import { createEnemyPool, formationCountdownForWave, spawnFormation, spawnNext, updateEnemies } from "./enemies.js";
 import { createProjectiles } from "./projectiles.js";
 
 // Un ennemi prêt à tirer (fireTimer 0), au centre, qui vole vers la gauche.
@@ -56,4 +56,38 @@ test("formation : jamais en vague 1, et pas à chaque vague ensuite", () => {
   assert.ok(later.includes(-1));
   assert.ok(later.some((n) => n >= 2));
   assert.ok(later.every((n) => n === -1 || (n >= 2 && n <= 6)));
+});
+
+test("kamikaze : parti du bord droit, il atteint un joueur resté tout à gauche", () => {
+  const pool = createEnemyPool();
+  const projectiles = createProjectiles();
+  const player = { x: 20, y: 135 };
+  Object.assign(pool.items[0], { active: true, type: "kamikaze", x: 490, y: 60, vx: -70, vy: 0, elapsed: 0 });
+  let closest = Infinity;
+  for (let t = 0; t < 12 && pool.items[0].active; t += 1 / 60) {
+    updateEnemies(pool, 1 / 60, projectiles, player, 4, 1);
+    closest = Math.min(closest, Math.hypot(pool.items[0].x - player.x, pool.items[0].y - player.y));
+  }
+  assert.ok(closest < 6, `au plus près : ${closest.toFixed(1)} px`);
+});
+
+test("formation : elle évite un ennemi déjà sur sa route", () => {
+  for (let run = 0; run < 300; run++) {
+    const pool = createEnemyPool();
+    Object.assign(pool.items[0], { active: true, type: "normal", x: 484, y: 135, radius: 4.5 });
+    spawnFormation(pool);
+    const trio = pool.items.filter((en, i) => en.active && i > 0);
+    assert.ok(trio.every((en) => Math.hypot(en.x - 484, en.y - 135) >= 14));
+  }
+});
+
+test("vague : la formation passe une seule fois, quand son tour arrive", () => {
+  const pool = createEnemyPool();
+  let countdown = 2;
+  const counts = [];
+  for (let i = 0; i < 5; i++) {
+    countdown = spawnNext(pool, 2, countdown);
+    counts.push(pool.items.filter((en) => en.active).length);
+  }
+  assert.deepEqual(counts, [1, 2, 5, 6, 7]);
 });

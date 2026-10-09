@@ -13,10 +13,36 @@ export const test = base.extend({
   page: async ({ page }, use) => {
     const pageErrors = [];
     page.on("pageerror", (e) => pageErrors.push(String(e)));
+    await page.addInitScript(recordDrawnTexts);
     await use(page);
     expect(pageErrors).toEqual([]);
   },
 });
+
+// Le texte du jeu est dessiné dans le canvas, donc absent du DOM. Ce script,
+// injecté dans la page avant le jeu, note chaque texte dessiné ; à chaque image,
+// window.drawnTexts reçoit ceux de l'image précédente, complète.
+function recordDrawnTexts() {
+  let current = [];
+  const fillText = CanvasRenderingContext2D.prototype.fillText;
+  CanvasRenderingContext2D.prototype.fillText = function (text, ...rest) {
+    current.push(String(text));
+    return fillText.call(this, text, ...rest);
+  };
+  window.drawnTexts = [];
+  const nextFrame = () => {
+    window.drawnTexts = current;
+    current = [];
+    requestAnimationFrame(nextFrame);
+  };
+  requestAnimationFrame(nextFrame);
+}
+
+// Textes affichés à l'écran par le jeu, réunis en une seule chaîne :
+//   await expect.poll(() => screenText(page)).toContain("GAME OVER");
+export function screenText(page) {
+  return page.evaluate(() => window.drawnTexts.join("\n"));
+}
 
 const RES_W = 480;
 const RES_H = 270;
@@ -81,6 +107,8 @@ export function gameState(page) {
       scores: game.scores,
       scoreQualifies: game.scoreQualifies,
       leaderboardDown: game.leaderboardDown,
+      grazeChain: game.grazeChain,
+      novaStock: game.novaStock,
       kills: game.getRunSummary().kills,
       wave: game.getRunSummary().wave,
       inBonusLevel: game.inBonusLevel,

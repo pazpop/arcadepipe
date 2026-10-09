@@ -74,10 +74,25 @@ function destroyedCount(boss) {
   return boss.weakPoints.filter((p) => p.destroyed).length;
 }
 
-// Secondes entre deux salves : l'intervalle raccourcit à chaque point faible détruit.
-export function bossFireInterval(destroyed, firstBoss) {
-  const interval = BOSS.fireInterval * Math.pow(BOSS.fireIntervalFactor, destroyed);
+// Phase du combat, de 0 à weakPointsMax - 1 : elle monte à chaque point faible
+// détruit, et aussi avec le temps (toutes les BOSS.hurryEverySeconds), pour
+// qu'un boss qu'on se contente d'esquiver ne reste pas inoffensif.
+export function bossPhase(destroyed, elapsed) {
+  return Math.min(BOSS.weakPointsMax - 1, destroyed + Math.floor(elapsed / BOSS.hurryEverySeconds));
+}
+
+// Secondes entre deux salves : l'intervalle raccourcit à chaque phase.
+export function bossFireInterval(phase, firstBoss) {
+  const interval = BOSS.fireInterval * Math.pow(BOSS.fireIntervalFactor, phase);
   return firstBoss ? interval * BOSS.firstBossFireIntervalMul : interval;
+}
+
+// Nombre de tirs de l'éventail. Toujours impair : le tir du milieu vise le
+// joueur, qui ne peut donc pas rester immobile.
+export function bossFanCount(destroyed, firstBoss) {
+  const countMul = firstBoss ? BOSS.firstBossBulletCountMul : 1;
+  const count = Math.max(3, Math.round((5 + destroyed) * countMul));
+  return count % 2 === 0 ? count + 1 : count;
 }
 
 // Durée du fondu de la coque après la victoire — courte pour ne pas "flotter"
@@ -110,17 +125,19 @@ export function updateBoss(boss, dt, projectiles, target) {
     const destroyed = destroyedCount(boss);
     if (destroyed % 3 === 0) {
       // courbe légère (0,6 rad/s aux bords) : l'éventail s'ouvre en "fleur", le centre reste droit.
-      patternFan(projectiles, boss.x - 20, boss.y, target, speed, Math.max(3, Math.round((5 + destroyed) * countMul)), Math.PI / 2.2, 0.6);
+      patternFan(projectiles, boss.x - 20, boss.y, target, speed, bossFanCount(destroyed, firstBoss), Math.PI / 2.2, 0.6);
     } else if (destroyed % 3 === 1) {
       boss.spiralAngle += 0.4;
       patternSpiralStep(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.9, 3 + Math.min(3, destroyed));
     } else {
-      // Angle décalé à chaque salve, comme la spirale. curve modeste :
-      // l'anneau tourne légèrement en s'étendant ("pinwheel").
-      boss.spiralAngle += 0.4;
-      patternRing(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.8, Math.max(6, Math.round((10 + destroyed * 2) * countMul)), 0.5);
+      // Chaque salve est décalée d'un demi-écart entre deux tirs : elle passe
+      // là où la précédente laissait un couloir. curve modeste : l'anneau
+      // tourne légèrement en s'étendant ("pinwheel").
+      const count = Math.max(6, Math.round((10 + destroyed * 2) * countMul));
+      boss.spiralAngle += Math.PI / count;
+      patternRing(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.8, count, 0.5);
     }
-    boss.fireTimer = bossFireInterval(destroyed, firstBoss);
+    boss.fireTimer = bossFireInterval(bossPhase(destroyed, boss.elapsed), firstBoss);
   }
 }
 

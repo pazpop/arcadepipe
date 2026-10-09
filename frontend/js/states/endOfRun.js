@@ -32,7 +32,9 @@ let qualifies = Promise.resolve(false);
 // ignoré. L'écran annonce l'entrée dans le classement dès que le serveur a répondu.
 export function open(g) {
   g.mode = MODE.GAME_OVER;
-  g.flash = 0; // le flash ne décroît qu'en partie : il resterait figé sur la scène
+  // Le flash et la bannière ne s'effacent qu'en partie : ils resteraient figés sur la scène.
+  g.flash = 0;
+  g.banner = null;
   g.gameOverSelected = 0;
   g.scoreQualifies = false;
   g.leaderboardDown = false;
@@ -104,11 +106,13 @@ export async function confirmNameEntry(g, engine) {
   busy = true;
   const name = g.nameEntry.trim() || DEFAULT_NAME;
   saveItem(STORAGE_KEYS.lastPlayerName, name);
+  g.nameEntrySending = true; // l'écran affiche "…" à côté de VALIDER (hud.js)
   try {
     await submitScore(name, g.score, g.wave, g.enemiesKilled);
   } catch {
     /* échec silencieux : le classement s'affiche quand même */
   }
+  g.nameEntrySending = false;
   busy = false;
   engine.nameInputEl.blur();
   // L'Entrée qui vient de valider ne doit pas aussi refermer le classement.
@@ -139,7 +143,7 @@ export function drawGameOverOverlay(c2d, g) {
 }
 
 export function drawNameEntry(c2d, g) {
-  hud.drawNameEntry(c2d, g.nameEntry, Math.floor(performance.now() / 400) % 2 === 0, g.score, g.wave, g.enemiesKilled);
+  hud.drawNameEntry(c2d, g, Math.floor(performance.now() / 400) % 2 === 0);
 }
 
 export function handleTapGameOver(g, engine, x, y) {

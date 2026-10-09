@@ -89,3 +89,15 @@ test("la jauge NOVA ne dépasse jamais sa réserve maximale", () => {
   addNovaGrazes(g, 10 * GRAZE.grazePerCharge);
   assert.deepEqual([g.novaStock, g.novaGrazes], [2, 0]);
 });
+
+test("frôler un vaisseau charge NOVA sans rapporter de points ; frôler un tir en rapporte", () => {
+  const body = makeGrazeFixture();
+  body.projectiles.enemy.items = [];
+  body.enemies.items = [{ active: true, grazeCooldown: 0, x: 0, y: 0, radius: 4 }];
+  updateGraze(body.g, 0.016, body.player, body.projectiles, body.enemies, body.particles, body.audio);
+  assert.deepEqual([body.g.score, body.g.novaGrazes, body.g.grazeChain], [0, 1, 1]);
+
+  const shot = makeGrazeFixture();
+  updateGraze(shot.g, 0.016, shot.player, shot.projectiles, shot.enemies, shot.particles, shot.audio);
+  assert.deepEqual([shot.g.score, shot.g.novaGrazes], [GRAZE.baseScore, 1]);
+});

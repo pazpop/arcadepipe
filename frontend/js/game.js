@@ -73,14 +73,14 @@ export function createGame({ input, audio, music, nameInputEl }) {
     waveKillTarget: DIFFICULTY.baseWaveKills,
     intactBlink: 0, // secondes de clignotement du rappel "INTACT" après le premier coup de la vague (hud.js)
     tookDamageThisWave: false, // pour DIFFICULTY.noDamageWaveBonus — reset dans startWave, mis à true dans onPlayerHit
-    grazeChain: 0, // reset dans startWave (pas startRun) — voir graze.js
+    grazeChain: 0, // remise à zéro à chaque vague (startWave) et à chaque coup encaissé (playing.js) — voir graze.js
     maxGrazeChain: 0, // meilleure chaîne de la partie entière — reset dans startRun (pas startWave), voir graze.js
     distanceTraveled: 0, // années-lumière, accumulé pendant PLAYING — reset dans startRun, voir DISTANCE dans config.js
     novaStock: 0, // rechargé par le graze, dépensé par useNova() (states/playing.js)
     novaGrazes: 0, // frôlements acquis pour la prochaine charge (voir addNovaGrazes, graze.js)
     novaMax: 1, // recalculé dans startWave (novaMaxForWave)
     spawnTimer: 0,
-    formationCountdown: -1, // apparitions avant la formation de la vague, -1 : aucune (enemies.js)
+    formationCountdown: -1, // apparitions avant la formation de la vague ; négatif : plus aucune (enemies.js)
     spawnInterval: DIFFICULTY.baseSpawnInterval,
     waveBreak: 0,
     waveBreakDuration: DIFFICULTY.waveBreakDuration, // mémorisé au déclenchement (normal ou bossWaveBreakDuration) pour calculer la courbe de warp
@@ -110,6 +110,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
 
     // Saisie du nom
     nameEntry: "",
+    nameEntrySending: false, // envoi du score en cours
   };
 
   // Ouvre l'aide depuis le bouton du panneau — pas forcément déjà en pause,
@@ -189,7 +190,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     ctx.restore();
   }
 
-  // Pause forcée depuis l'extérieur (onglet en arrière-plan, main.js) — no-op hors partie.
+  // Pause demandée par la page (bouton Pause, onglet en arrière-plan : main.js) — sans effet hors partie.
   function pause() {
     if (g.mode === MODE.PLAYING) playingState.pause(g);
   }
@@ -241,6 +242,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
     },
     get leaderboardDown() {
       return g.leaderboardDown;
+    },
+    get grazeChain() {
+      return g.grazeChain;
     },
     get playerBulletsOnScreen() {
       return projectiles.player.items.filter((b) => b.active).length;

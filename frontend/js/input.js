@@ -33,7 +33,10 @@ export function createInput(canvas) {
   // e.repeat : une touche maintenue ne compte qu'une fois.
   window.addEventListener("keydown", (e) => {
     if (e.target === document.body && SCROLL_KEYS.includes(e.code)) e.preventDefault();
-    if (!e.repeat) input.justPressed.add(e.code);
+    // Entrée ou Espace sur un bouton, une case ou un curseur du panneau
+    // l'actionne : le jeu, lui, n'en tient pas compte.
+    const onControl = e.target !== document.body && (e.code === "Enter" || e.code === "Space");
+    if (!e.repeat && !onControl) input.justPressed.add(e.code);
   });
 
   canvas.addEventListener("mousemove", (e) => {

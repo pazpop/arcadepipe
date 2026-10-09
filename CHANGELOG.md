@@ -2,6 +2,18 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : le résultat de `git rev-list --count HEAD`, plus un. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.154] - 2026-10-09
+- **Classement** : frôler un vaisseau ennemi charge NOVA et allonge la chaîne, mais ne rapporte plus de points (seuls les tirs frôlés en donnent) : on ne peut plus marquer sans fin en longeant des ennemis qui ne tirent pas.
+- **Boss** : son éventail a toujours un tir au milieu, qui vise le vaisseau ; sa cadence monte aussi avec le temps (toutes les 30 s) ; chaque anneau passe là où le précédent laissait un couloir.
+- **Kamikaze** : poursuite de 8 secondes au lieu de 6, assez pour atteindre un joueur resté tout à gauche.
+- La formation en flèche n'apparaît plus par-dessus un autre ennemi.
+- **Clavier** : Entrée ou Espace sur un réglage du panneau n'agit plus aussi dans le jeu ; après une pause au clavier, Entrée choisit bien REPRENDRE ; un clic droit ne choisit plus une option de menu.
+- **Langue** : le bouton fonctionne aussi quand le stockage du navigateur est bloqué (la langue passe dans l'adresse, `?lang=en`).
+- La bannière d'une vague ne reste plus figée sous GAME OVER ; le panneau de réglages ne clignote plus au chargement ; « … » à côté de VALIDER pendant l'envoi du score.
+- Tests e2e : ils lisent maintenant les textes affichés par le jeu, et couvrent le record personnel, le classement injoignable ou lent, la chaîne cassée par un coup et la récompense du niveau bonus.
+- Python 3.12 au minimum pour le backend ; une seule proposition Dependabot pour toutes les dépendances Python.
+- Numéros corrigés dans ce fichier : 2.125 (noté 2.124) et 2.142 (noté 2.144) ; dates des 2.127, 2.128 et 2.131.
+
 ## [2.153] - 2026-10-09
 - Images de base téléchargées depuis le miroir de Docker Hub tenu par Google : une panne de Docker Hub ne bloque plus la construction.
 
@@ -48,7 +60,7 @@ Changements notables (gameplay, visuel, audio, infra), plus récent en premier. 
 - Bandeau de cookies, page de confidentialité (sauvegardes, date non publiée) et docs de sécurité reformulés pour dire exactement ce qui est fait.
 - Backend : `uvicorn` sans ses extras inutilisés, outils de test épinglés.
 
-## [2.144] - 2026-10-09
+## [2.142] - 2026-10-09
 - **Classement mieux protégé** : 50 envois de scores par jour et par adresse IP, en plus de 5 par minute.
 - **Fin de partie** : REJOUER et la seconde option ne se figent plus quand le serveur du classement est lent.
 - **Panneau replié** : ses réglages ne se parcourent plus au clavier, et il ne décale plus les boutons ⏸ et ⚙ sur le jeu.
@@ -81,18 +93,18 @@ Changements notables (gameplay, visuel, audio, infra), plus récent en premier. 
 - **itch.io** : l'adresse de l'API du classement devient réglable (`apiBase`, `site-config.json`) et `tools/build_itch.py` construit l'archive à déposer.
 - CI : les tests bout-en-bout (Playwright) tournent avant la construction des images.
 
-## [2.131] - 2026-10-09
+## [2.131] - 2026-10-08
 - **Image d'aperçu des liens partagés** (`og-image.png`) : le titre du jeu sur une capture de partie, affichée par Discord, X, Facebook...
 - **Filtre rétro** : une case dans le panneau de réglages, donc réglable sur téléphone. Le raccourci C est retiré.
 - **Bouton de langue** : il propose l'autre langue, écrite dans cette langue et avec son drapeau (« Change » et le drapeau américain quand le jeu est en français).
 - **Fluidité** : le halo des tirs n'utilise plus de flou par tir, qui coûtait cher quand l'écran en était plein (combats de boss).
 - Numéro de version calculé par la CI ; test e2e du classement avec le vrai backend, lancé en local.
 
-## [2.128] - 2026-10-09
+## [2.128] - 2026-10-08
 - **Téléphone en paysage** : le jeu garde son format 16:9 et les commandes se rangent dans les bandes noires. Le bouton Pause et l'onglet du panneau sont toujours visibles à gauche (le panneau est replié par défaut sur un écran bas), NOVA et Partager à droite, en tenant compte de l'encoche.
 - Scores de départ (`seed.py`) écrits au format du jeu.
 
-## [2.127] - 2026-10-09
+## [2.127] - 2026-10-08
 Corrections issues d'une seconde relecture complète.
 - **Bonus : un bouclier et une arme peuvent être actifs ensemble.** Aucune arme n'apparaît tant qu'une arme bonus est active, aucun bouclier tant qu'il en reste un.
 - **Mesure d'audience désactivée par défaut** : l'identifiant Google Analytics n'est plus dans le dépôt, il est donné à la construction de l'image (variable `GA_MEASUREMENT_ID` du dépôt GitHub, voir [docs/deploiement.md](docs/deploiement.md)). Sans lui : ni script, ni bandeau, ni bouton Cookies.
@@ -102,7 +114,7 @@ Corrections issues d'une seconde relecture complète.
 - Panneau de réglages : il défile s'il est plus haut que l'écran (téléphone en paysage).
 - Backend : 10 000 scores gardés en base (100 lisibles), pour que de faux scores ne puissent pas effacer les vrais.
 
-## [2.124] - 2026-10-08
+## [2.125] - 2026-10-08
 - Anglais : une douzaine de formulations retouchées (aide, bandeau de cookies, fin de partie).
 
 ## [2.123] - 2026-10-08

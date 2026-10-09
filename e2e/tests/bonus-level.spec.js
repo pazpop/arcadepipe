@@ -1,10 +1,9 @@
-// Niveau bonus (bonusLevel.js) : trop lent à atteindre en conditions
-// normales (il faut un score conséquent avant la vague 10) — vagues
-// accélérées via import dynamique de config.js (voir helpers.js et
-// powerups-boss.spec.js pour le même principe).
+// Niveau bonus (bonusLevel.js) : trop lent à atteindre en conditions normales
+// (il arrive avant la vague 10) — vagues accélérées en forçant des constantes
+// de config.js (voir e2e/README.md).
 import { test, expect, canvasHelpers, collectErrors, gameState, skipHints } from "./helpers.js";
 
-test("niveau bonus : se déclenche avant la vague 10, se termine, puis la partie reprend", async ({ page }) => {
+test("niveau bonus : se déclenche avant la vague 10, se termine, remplit la jauge NOVA, puis la partie reprend", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);
@@ -17,6 +16,7 @@ test("niveau bonus : se déclenche avant la vague 10, se termine, puis la partie
     DIFFICULTY.bossWaveEvery = 999; // pas de combat de boss pour ce test
     BONUS_LEVEL.ringCount = 3; // niveau court
     BONUS_LEVEL.introDuration = 0.5;
+    BONUS_LEVEL.ringInnerRadius = 999; // tous les anneaux sont réussis, où que soit le vaisseau
   });
 
   const { startRun } = canvasHelpers(page);
@@ -31,6 +31,9 @@ test("niveau bonus : se déclenche avant la vague 10, se termine, puis la partie
   // Fin du niveau (intro, puis 3 anneaux à 1,3 s d'intervalle), puis la partie reprend.
   await expect.poll(inBonus, { timeout: 25000 }).toBe(false);
   await expect.poll(async () => (await gameState(page)).wave).toBeGreaterThanOrEqual(10);
+  // Tous les anneaux réussis : la jauge NOVA, vide jusque-là (aucun frôlement), est pleine.
+  // Une seule charge ici : la seconde vient avec le deuxième boss, absent de ce test.
+  expect((await gameState(page)).novaStock).toBe(1);
   await page.screenshot({ path: "test-results/bonus-level-reward.png" });
 
   expect(errors).toEqual([]);

@@ -15,6 +15,14 @@ test("éventail courbe : tous les tirs ont quitté l'écran après 20 s", () => 
   assert.equal(activeAfter(projectiles, 20), 0);
 });
 
+test("éventail impair : le tir du milieu vise la cible", () => {
+  const projectiles = createProjectiles();
+  patternFan(projectiles, 400, 135, { x: 100, y: 135 }, 60, 5, Math.PI / 2.2, 0.6);
+  const middle = projectiles.enemy.items.filter((b) => b.active)[2];
+  assert.ok(Math.abs(middle.vy) < 1e-9 && middle.vx < 0);
+  assert.equal(middle.turnRate, 0);
+});
+
 test("anneau courbe : tous les tirs ont quitté l'écran après 20 s", () => {
   const projectiles = createProjectiles();
   patternRing(projectiles, 400, 135, 0, 60, 12, 0.5);

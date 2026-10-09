@@ -1,7 +1,7 @@
 // Classement avec le vrai backend (lancé par playwright.config.js sur le port
 // 8001, base vide). Le jeu appelle le port 8000 en développement : ses requêtes
 // sont redirigées ici vers ce backend de test.
-import { test, expect, canvasHelpers, gameState, reachBoss, skipHints, waitForMode } from "./helpers.js";
+import { test, expect, canvasHelpers, gameState, reachBoss, screenText, skipHints, waitForMode } from "./helpers.js";
 
 const API = "http://localhost:8001";
 
@@ -50,7 +50,8 @@ test("fin de partie : top annoncé ; score inscrit en rejouant, au tap sur VALID
     const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
     await page.mouse.move(hull.x, hull.y);
     await waitForMode(page, "game_over", 15000);
-    await expect.poll(async () => (await gameState(page)).scoreQualifies).toBe(true);
+    await expect.poll(() => screenText(page)).toContain("TU ENTRES DANS LE TOP 10 !");
+    expect(await screenText(page)).toContain("ENTRER MON PSEUDO");
   }
 
   // 1. REJOUER : nouvelle partie aussitôt, score envoyé en arrière-plan sous le pseudo par défaut.
@@ -63,7 +64,13 @@ test("fin de partie : top annoncé ; score inscrit en rejouant, au tap sur VALID
   await dieAndQualify();
   await clickLogical(240, 187.4);
   await waitForMode(page, "name_entry");
+  // Envoi ralenti d'une seconde : l'écran montre qu'il attend.
+  await page.route("http://localhost:8000/api/scores", async (route) => {
+    if (route.request().method() === "POST") await new Promise((resolve) => setTimeout(resolve, 1000));
+    await route.fallback();
+  });
   await clickLogical(240, 118); // VALIDER
+  await expect.poll(() => screenText(page)).toContain("VALIDER …");
   await waitForMode(page, "leaderboard");
   await expect.poll(async () => (await serverNames()).filter((n) => n === "AAA").length).toBe(2);
   await clickLogical(240, 135); // retour au menu

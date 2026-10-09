@@ -191,10 +191,10 @@ function resolveCollisions(g, engine) {
     }
   }
 
-  // Corps des ennemis vs joueur. Invulnérable (il vient d'encaisser un coup),
-  // le vaisseau les traverse : il ne doit pas les détruire sans rien perdre.
+  // Corps des ennemis vs joueur : foncer dans un ennemi le détruit, au prix
+  // d'un coup (un point de bouclier, ou une vie sans bouclier).
   for (const en of enemies.items) {
-    if (!en.active || player.invuln > 0) continue;
+    if (!en.active) continue;
     if (circlesOverlap(en.x, en.y, en.radius, player.x, player.y, PLAYER.hitboxRadius)) {
       en.active = false;
       spawnExplosion(particles, en.x, en.y, 8, enemyGlowColor(en));

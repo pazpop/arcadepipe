@@ -8,7 +8,6 @@ Changements notables (gameplay, visuel, audio, infra), plus récent en premier. 
 - **Panneau replié** : ses réglages ne se parcourent plus au clavier, et il ne décale plus les boutons ⏸ et ⚙ sur le jeu.
 - **Clavier** : sur une page qui embarque le jeu (itch.io), il répond sans clic préalable, et Espace ou les flèches ne font pas défiler la page.
 - **Téléphone** : la musique démarre dès le premier toucher, toucher l'écran rouvre le clavier à la saisie du pseudo, et le classement fonctionne sur les iPhone d'avant 2022.
-- Un vaisseau invulnérable (il vient d'encaisser un coup) traverse les ennemis au lieu de les détruire.
 - Image de partage : marge blanche du QR code portée à la taille demandée par la norme. Le bouton Partager confirme toujours le téléchargement.
 - L'API ne renvoie plus l'identifiant ni la date des scores, dont le jeu ne se sert pas.
 - Kit presse et page de confidentialité : le jeu ne se pilote pas au clavier ; anglais corrigé.

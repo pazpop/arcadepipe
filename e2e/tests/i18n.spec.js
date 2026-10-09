@@ -11,14 +11,15 @@ test.describe("navigateur en anglais", () => {
     await enableAnalytics(page); // pour le texte du bandeau
     await page.goto("/");
     await expect(page.locator("html")).toHaveAttribute("lang", "en");
-    await expect(page.locator("#lang-btn")).toHaveText("English");
+    await expect(page.locator("#lang-btn")).toHaveText("Changer"); // propose le français, en français
+    await expect(page.locator("#lang-flag")).toHaveClass(/flag-fr/);
     await expect(page.locator("#help-btn")).toHaveText("Help");
     await expect(page.locator("#cookie-accept")).toHaveText("Accept");
     await page.locator("#game-canvas").screenshot({ path: "test-results/i18n-menu-en.png" });
 
     await page.click("#cookie-decline");
     await page.click("#lang-btn"); // recharge la page
-    await expect(page.locator("#lang-btn")).toHaveText("Français");
+    await expect(page.locator("#lang-btn")).toHaveText("Change");
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
     await page.reload();
     await expect(page.locator("#help-btn")).toHaveText("Aide");
@@ -29,7 +30,8 @@ test.describe("navigateur en anglais", () => {
 test("navigateur en français : jeu en français", async ({ page }) => {
   await page.goto("/");
   await expect(page.locator("html")).toHaveAttribute("lang", "fr");
-  await expect(page.locator("#lang-btn")).toHaveText("Français");
+  await expect(page.locator("#lang-btn")).toHaveText("Change"); // propose l'anglais, en anglais
+  await expect(page.locator("#lang-flag")).toHaveClass(/flag-en/);
 });
 
 test.describe("navigateur dans une langue non traduite", () => {

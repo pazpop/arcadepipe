@@ -119,13 +119,11 @@ test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + V
   await waitForMode(page, "name_entry");
   await canvas.screenshot({ path: "test-results/name-entry-prefilled.png" });
 
-  // M et C sont du texte pendant la saisie du pseudo : ni son coupé, ni CRT basculé.
-  const crtAvant = await page.locator("#crt-overlay").getAttribute("class");
+  // M est du texte pendant la saisie du pseudo : le son n'est pas coupé.
   await page.keyboard.type("é!"); // refusés : ne comptent pas dans les 8 caractères
   await page.keyboard.press("KeyM");
   await page.keyboard.press("KeyC");
   expect(await page.evaluate(async () => (await import("/js/main.js")).music.muted)).toBe(false);
-  expect(await page.locator("#crt-overlay").getAttribute("class")).toBe(crtAvant);
 
   // Valide au tap uniquement (bouton VALIDER), jamais via le clavier caché.
   await clickLogical(240, 183.6);

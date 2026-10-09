@@ -15,7 +15,7 @@ RUN apk add --no-cache libcap \
 COPY Caddyfile /etc/caddy/Caddyfile
 COPY index.html /usr/share/caddy/
 COPY robots.txt /usr/share/caddy/
-COPY favicon.svg /usr/share/caddy/
+COPY favicon.svg og-image.png /usr/share/caddy/
 COPY css/ /usr/share/caddy/css/
 COPY js/ /usr/share/caddy/js/
 COPY lib/ /usr/share/caddy/lib/
@@ -26,6 +26,11 @@ COPY music/ /usr/share/caddy/music/
 # aucune mesure d'audience (voir docs/deploiement.md).
 ARG GA_MEASUREMENT_ID=""
 RUN printf '{ "gaMeasurementId": "%s" }\n' "$GA_MEASUREMENT_ID" > /usr/share/caddy/site-config.json
+
+# Numéro de version affiché dans le jeu : calculé par la CI (nombre de commits,
+# voir .github/workflows/deploy.yml). Sans lui, le jeu affiche "dev".
+ARG APP_VERSION=""
+RUN if [ -n "$APP_VERSION" ]; then       sed -i "s/^export const VERSION = .*/export const VERSION = \"$APP_VERSION\";/" /usr/share/caddy/js/config.js;     fi
 
 # Utilisateur dédié plutôt que root — même raisonnement que backend/Dockerfile :
 # si Caddy est un jour compromis, l'attaquant hérite des droits de cet

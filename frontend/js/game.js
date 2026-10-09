@@ -218,9 +218,12 @@ export function createGame({ input, audio, music, nameInputEl }) {
     get inBonusLevel() {
       return g.bonusLevel !== null;
     },
-    // Vies, tirs du joueur, bonus actif, bouclier, bonus au sol, boss et ses tirs : lus par la suite e2e (e2e/tests/helpers.js).
+    // Vies, scores du classement, tirs du joueur, bonus actif, bouclier, bonus au sol, boss et ses tirs : lus par la suite e2e (e2e/tests/helpers.js).
     get lives() {
       return player.lives;
+    },
+    get scores() {
+      return g.scores;
     },
     get playerBulletsOnScreen() {
       return projectiles.player.items.filter((b) => b.active).length;

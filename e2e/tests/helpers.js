@@ -70,6 +70,7 @@ export function gameState(page) {
       mode: game.mode,
       playerBullets: game.playerBulletsOnScreen,
       lives: game.lives,
+      scores: game.scores,
       kills: game.getRunSummary().kills,
       wave: game.getRunSummary().wave,
       inBonusLevel: game.inBonusLevel,
@@ -93,4 +94,23 @@ export function collectErrors(page) {
   });
   page.on("pageerror", (e) => errors.push(`pageerror: ${e}`));
   return errors;
+}
+
+// Vagues d'un seul ennemi et boss dès la vague 2 ; tire jusqu'à l'arrivée du boss.
+export async function reachBoss(page) {
+  await page.evaluate(async () => {
+    const { DIFFICULTY } = await import("/js/config.js");
+    DIFFICULTY.bossWaveEvery = 2;
+    DIFFICULTY.baseWaveKills = 1;
+    DIFFICULTY.waveKillsStep = 0;
+  });
+  const { startRun, toPage } = canvasHelpers(page);
+  await startRun();
+  await page.mouse.down();
+  for (let i = 0; i < 100 && !(await gameState(page)).boss?.arrived; i++) {
+    const p = await toPage(90, 30 + (i % 8) * 30);
+    await page.mouse.move(p.x, p.y);
+    await page.waitForTimeout(300);
+  }
+  expect((await gameState(page)).boss?.arrived).toBe(true);
 }

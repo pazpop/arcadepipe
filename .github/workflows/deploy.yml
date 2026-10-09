@@ -73,6 +73,13 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0 # tout l'historique : le numéro de version est le nombre de commits
+
+      # Numéro de version du jeu : 2.<nombre de commits>, écrit dans l'image du frontend.
+      - name: Numéro de version
+        id: version
+        run: echo "version=2.$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
@@ -95,10 +102,12 @@ jobs:
         with:
           context: ./frontend
           push: true
-          # Variable du dépôt (Settings > Secrets and variables > Actions >
-          # Variables). Absente, sur un fork par exemple : pas de mesure d'audience.
+          # GA_MEASUREMENT_ID : variable du dépôt (Settings > Secrets and
+          # variables > Actions > Variables). Absente, sur un fork par exemple :
+          # pas de mesure d'audience.
           build-args: |
             GA_MEASUREMENT_ID=${{ vars.GA_MEASUREMENT_ID }}
+            APP_VERSION=${{ steps.version.outputs.version }}
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:latest
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:${{ github.sha }}

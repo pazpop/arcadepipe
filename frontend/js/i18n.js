@@ -18,6 +18,10 @@ function detectLang() {
 
 export const lang = detectLang();
 
+// Langue proposée par le bouton de langue : la suivante dans LANGS.
+const codes = Object.keys(LANGS);
+export const nextLangCode = codes[(codes.indexOf(lang) + 1) % codes.length];
+
 // Texte de la clé dans la langue courante ; "{nom}" remplacé par params.nom.
 // Clé absente d'une langue : repli sur le français, puis sur la clé elle-même.
 export function t(key, params = {}) {
@@ -29,8 +33,7 @@ export function t(key, params = {}) {
 // est perdue) — beaucoup de textes sont évalués une seule fois au chargement
 // des modules. Les rendre dynamiques si changer de langue en jeu devient utile.
 export function nextLang() {
-  const codes = Object.keys(LANGS);
-  saveItem(STORAGE_KEYS.lang, codes[(codes.indexOf(lang) + 1) % codes.length]);
+  saveItem(STORAGE_KEYS.lang, nextLangCode);
   window.location.reload();
 }
 

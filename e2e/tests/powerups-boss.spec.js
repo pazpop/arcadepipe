@@ -3,7 +3,7 @@
 // forcées via un import dynamique de config.js (voir helpers.js) ; chaque
 // test repart d'une page fraîche.
 import { test, expect } from "@playwright/test";
-import { canvasHelpers, collectErrors, gameState, skipHints } from "./helpers.js";
+import { canvasHelpers, collectErrors, gameState, reachBoss, skipHints } from "./helpers.js";
 
 // Tire en balayant la hauteur jusqu'à un drop, puis va chercher le bonus au
 // sol, jusqu'à ce que `picked(state)` soit vrai.
@@ -134,25 +134,6 @@ test("premier combat de boss : coque + points faibles s'affichent, pas d'erreur"
   await page.mouse.up();
   expect(errors).toEqual([]);
 });
-
-// Vagues d'un seul ennemi et boss dès la vague 2 ; tire jusqu'à l'arrivée du boss.
-async function reachBoss(page) {
-  await page.evaluate(async () => {
-    const { DIFFICULTY } = await import("/js/config.js");
-    DIFFICULTY.bossWaveEvery = 2;
-    DIFFICULTY.baseWaveKills = 1;
-    DIFFICULTY.waveKillsStep = 0;
-  });
-  const { startRun, toPage } = canvasHelpers(page);
-  await startRun();
-  await page.mouse.down();
-  for (let i = 0; i < 100 && !(await gameState(page)).boss?.arrived; i++) {
-    const p = await toPage(90, 30 + (i % 8) * 30);
-    await page.mouse.move(p.x, p.y);
-    await page.waitForTimeout(300);
-  }
-  expect((await gameState(page)).boss?.arrived).toBe(true);
-}
 
 test("foncer dans la coque du boss coûte une seule vie, grâce à l'invulnérabilité", async ({ page }) => {
   await page.goto("/");

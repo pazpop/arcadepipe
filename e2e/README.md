@@ -9,11 +9,11 @@ npm run install-browsers   # télécharge Chromium (une fois)
 npm test                   # ou : npx playwright test --headed
 ```
 
-`npm test` démarre le serveur statique du frontend (port 5500) avec `python`, qui doit donc être installé. Aucun backend n'est lancé : les appels au classement échouent, ce que le jeu gère. Résultats et captures dans `test-results/` (ignoré par git).
+`npm test` démarre le serveur statique du frontend (port 5500) avec `python`, qui doit donc être installé. Si l'environnement du backend existe (`backend/venv`, voir son [README](../backend/README.md)), il démarre aussi le backend sur le port 8001, avec une base vide, pour les tests du classement ; sinon ces tests sont sautés. Les autres tests tournent sans backend : les appels au classement échouent, ce que le jeu gère. Résultats et captures dans `test-results/` (ignoré par git).
 
 ## Ce qui est couvert (`tests/`)
 
-- `menu-pause` — menu, pause (scène figée), confirmation de sortie, aide (bienvenue, menu, pause, bouton du panneau)
+- `menu-pause` — menu, pause (scène figée), confirmation de sortie, aide (bienvenue, menu, pause, bouton du panneau), clavier et focus, filtre rétro
 - `gameplay` — tir manuel et automatique, choix de piste, fin de vague, fin de partie (REJOUER, saisie du pseudo)
 - `powerups-boss` — bonus (arme, bouclier, les deux ensemble), premier boss, vie perdue, boss vaincu
 - `graze-nova` — frôlements, jauge NOVA, bouton tactile
@@ -23,6 +23,7 @@ npm test                   # ou : npx playwright test --headed
 - `consent` — mesure d'audience désactivée par défaut ; activée, Google Analytics jamais chargé avant « Accepter », bouton Cookies (changer ou retirer son choix) ; bouton Plein écran
 - `i18n` — langue du navigateur par défaut, changement de langue mémorisé
 - `mobile` — téléphone en paysage : commandes dans les bandes noires, jeu au doigt
+- `leaderboard` — avec le vrai backend : scores du serveur triés, pseudo saisi puis score inscrit
 - `share-qr` — le QR de la carte de partage se décode après recompression JPEG ; contraste vérifié au pixel
 
 ## Attendre un état, pas un délai

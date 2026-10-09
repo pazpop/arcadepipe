@@ -7,6 +7,7 @@ JS vanilla (modules ES6) + Canvas 2D, sans étape de build : les fichiers sont s
 | Fichier | Rôle |
 | --- | --- |
 | `index.html`, `css/style.css` | la page : le canvas, le panneau de réglages, les boutons posés par-dessus |
+| `og-image.png` | image affichée quand un lien vers le jeu est partagé |
 | `js/main.js` | point d'entrée : crée le jeu, branche boutons et touches, lance la boucle |
 | `js/game.js` | machine à états : appelle l'écran courant de `js/states/` |
 | `js/config.js` | toutes les constantes (couleurs, difficulté, bonus, boss...) |

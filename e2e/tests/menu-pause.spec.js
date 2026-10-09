@@ -185,3 +185,14 @@ test("un réglage cliqué ne garde pas le focus : Espace ne le rebascule pas", a
   await page.waitForTimeout(300); // rien ne doit se passer : pas d'état à attendre
   expect((await gameState(page)).mode).toBe("playing");
 });
+
+test("case Filtre rétro : coupe le filtre, et le choix tient au rechargement", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#crt-toggle")).toBeChecked();
+  await expect(page.locator("#crt-overlay")).toBeVisible();
+  await page.locator("#crt-toggle").uncheck();
+  await expect(page.locator("#crt-overlay")).toBeHidden();
+  await page.reload();
+  await expect(page.locator("#crt-toggle")).not.toBeChecked();
+  await expect(page.locator("#crt-overlay")).toBeHidden();
+});

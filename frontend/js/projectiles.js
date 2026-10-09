@@ -116,34 +116,38 @@ export function updateProjectiles(projectiles, dt) {
   }
 }
 
+// Dessine un tir, élargi de `grow` pixels de chaque côté.
+function drawShape(ctx, pool, b, grow) {
+  if (pool.shape === "dot") {
+    ctx.beginPath();
+    ctx.arc(b.x, b.y, pool.radius + grow, 0, Math.PI * 2);
+    ctx.fill();
+    return;
+  }
+  // "dash" : tiret horizontal ; "streak" : tiret orienté selon la vitesse du tir.
+  const w = pool.radius * (pool.shape === "dash" ? 3.2 : 2.8) + grow * 2;
+  const h = pool.radius * (pool.shape === "dash" ? 1.3 : 1.2) + grow * 2;
+  ctx.save();
+  ctx.translate(b.x, b.y);
+  if (pool.shape === "streak") ctx.rotate(Math.atan2(b.vy, b.vx));
+  ctx.fillRect(-w / 2, -h / 2, w, h);
+  ctx.restore();
+}
+
 function drawPool(ctx, pool) {
   ctx.save();
   for (const b of pool.items) {
     if (!b.active) continue;
     // Fondu synchronisé avec la perte de dégâts (plombs uniquement — les
     // autres tirs ont maxDamage=0, donc alpha reste à 1).
-    ctx.globalAlpha = b.maxDamage > 0 ? Math.max(0.12, b.damage / b.maxDamage) : 1;
+    const alpha = b.maxDamage > 0 ? Math.max(0.12, b.damage / b.maxDamage) : 1;
     ctx.fillStyle = b.colorOverride || pool.color;
-    ctx.shadowColor = ctx.fillStyle;
-    ctx.shadowBlur = 4;
-    if (pool.shape === "dash") {
-      const w = pool.radius * 3.2;
-      const h = pool.radius * 1.3;
-      ctx.fillRect(b.x - w / 2, b.y - h / 2, w, h);
-    } else if (pool.shape === "streak") {
-      const w = pool.radius * 2.8;
-      const h = pool.radius * 1.2;
-      const angle = Math.atan2(b.vy, b.vx);
-      ctx.save();
-      ctx.translate(b.x, b.y);
-      ctx.rotate(angle);
-      ctx.fillRect(-w / 2, -h / 2, w, h);
-      ctx.restore();
-    } else {
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, pool.radius, 0, Math.PI * 2);
-      ctx.fill();
-    }
+    // Halo : la même forme, plus large et translucide, sous le tir. Un vrai
+    // flou (shadowBlur) par tir coûte trop cher quand l'écran en est plein.
+    ctx.globalAlpha = alpha * 0.35;
+    drawShape(ctx, pool, b, 1.2);
+    ctx.globalAlpha = alpha;
+    drawShape(ctx, pool, b, 0);
   }
   ctx.restore();
 }

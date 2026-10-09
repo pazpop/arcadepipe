@@ -2,7 +2,8 @@
 // les autres fichiers de ce dossier (vérifié par i18n.test.js).
 // {nom} est remplacé par une valeur au moment de l'affichage : à garder tel quel.
 export default {
-  "lang.name": "Français",
+  // Texte du bouton qui propose de passer à cette langue, à côté de son drapeau (.flag-fr, css/style.css).
+  "lang.switch": "Changer",
 
   // --- Panneau de réglages (HTML, bas à gauche) ---
   "panel.pause.title": "Menu pause",
@@ -15,6 +16,7 @@ export default {
   "panel.speed": "VITESSE DU JEU",
   "panel.speed.title": "Vitesse du jeu (n'affecte pas la musique/les bruitages)",
   "panel.autofire": "Tir automatique",
+  "panel.crt": "Filtre rétro",
   "panel.help": "Aide",
   "panel.fullscreen": "⛶ Plein écran",
   "panel.fullscreen.exit": "⛶ Quitter le plein écran",
@@ -93,7 +95,7 @@ export default {
   "help.music": "MUSIQUE",
   "help.music.detail": "Playlist aléatoire, réglable en bas à gauche",
   "help.keys": "RACCOURCIS CLAVIER",
-  "help.keys.detail": "Échap/P : pause · Espace : NOVA · M : son · C : filtre rétro",
+  "help.keys.detail": "Échap/P : pause · Espace : NOVA · M : son",
   "help.prev": "◀ PRÉC.",
   "help.next": "SUIV. ▶",
   "help.continue": "▶ CONTINUER",

@@ -5,9 +5,10 @@
 export const RES_W = 480;
 export const RES_H = 270;
 
-// 2.<nombre de commits git> (`git rev-list --count HEAD`), mis à jour à chaque
-// commit qui touche au jeu. Affichée dans le panneau et aux crédits.
-export const VERSION = "2.128";
+// Numéro de version affiché dans le panneau, aux crédits et sur la carte de
+// partage. "dev" ici : la CI le remplace par 2.<nombre de commits git> en
+// construisant l'image (voir frontend/Dockerfile).
+export const VERSION = "dev";
 
 export const PALETTE = {
   bgDeep: "#05060f",

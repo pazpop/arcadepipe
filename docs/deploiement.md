@@ -32,7 +32,7 @@ flowchart TD
     checks["Lint (ruff, eslint), audit (pip-audit),<br/>tests (pytest, node --test)"]
     checks -->|échec| stop["Arrêt : rien n'est construit ni déployé"]
     checks -->|"succès, push sur main seulement"| build["Construction des images<br/>backend et frontend"]
-    vars["Variable du dépôt<br/>GA_MEASUREMENT_ID"] -.-> build
+    vars["Variable du dépôt GA_MEASUREMENT_ID,<br/>numéro de version (nombre de commits)"] -.-> build
     build --> ghcr["Images publiées sur GHCR<br/>(:latest et :sha du commit)"]
     ghcr -->|repository_dispatch| infra["Dépôt terraform-infra-pazpop-hetzner"]
     infra --> prod["arcadepipe.pazpop.net"]

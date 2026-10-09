@@ -9,7 +9,7 @@ import { createGame } from "./game.js";
 import { createShareCardCanvas } from "./shareCard.js";
 import { loadItem, saveItem } from "./storage.js";
 import { initConsent } from "./consent.js";
-import { t, nextLang, translateDom } from "./i18n.js";
+import { t, LANGS, nextLangCode, nextLang, translateDom } from "./i18n.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -28,6 +28,10 @@ export { music, game };
 
 translateDom();
 $("version-label").textContent = `v${VERSION}`;
+// Bouton de langue : il propose la langue suivante, écrit dans cette langue
+// ("Change" pour passer à l'anglais) avec son drapeau.
+$("lang-label").textContent = LANGS[nextLangCode]["lang.switch"];
+$("lang-flag").classList.add(`flag-${nextLangCode}`);
 $("lang-btn").addEventListener("click", nextLang);
 initConsent();
 
@@ -169,18 +173,17 @@ shareBtn.addEventListener("click", async () => {
   }
 });
 
-// --- Filtre rétro CRT (touche C).
-const crtOverlay = $("crt-overlay");
-let crtEnabled = loadItem(STORAGE_KEYS.crt) !== "0";
-crtOverlay.classList.toggle("hidden", !crtEnabled);
-function toggleCrt() {
-  crtEnabled = !crtEnabled;
-  crtOverlay.classList.toggle("hidden", !crtEnabled);
-  saveItem(STORAGE_KEYS.crt, crtEnabled ? "1" : "0");
-}
+// --- Filtre rétro (case à cocher) : lignes de balayage par-dessus le jeu, actif par défaut.
+const crtToggle = $("crt-toggle");
+crtToggle.checked = loadItem(STORAGE_KEYS.crt) !== "0";
+$("crt-overlay").classList.toggle("hidden", !crtToggle.checked);
+crtToggle.addEventListener("change", () => {
+  $("crt-overlay").classList.toggle("hidden", !crtToggle.checked);
+  saveItem(STORAGE_KEYS.crt, crtToggle.checked ? "1" : "0");
+});
 
-// --- Raccourcis clavier. e.key (la lettre) et non e.code (la position de la
-// touche) : M et A ne sont pas au même endroit sur un clavier AZERTY.
+// --- Touche M (son) et Konami code. e.key (la lettre) et non e.code (la
+// position de la touche) : M et A ne sont pas au même endroit sur un clavier AZERTY.
 window.addEventListener("keydown", (e) => {
   const key = (e.key || "").toLowerCase();
   if (game.mode === game.MODE.NAME_ENTRY) {
@@ -189,7 +192,6 @@ window.addEventListener("keydown", (e) => {
     return;
   }
   if (key === "m") audio.setMuted(music.toggleMuted());
-  else if (key === "c") toggleCrt();
   checkKonami(key);
 });
 

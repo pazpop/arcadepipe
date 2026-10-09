@@ -1,7 +1,8 @@
 // English — same keys as fr.js (the reference file), checked by i18n.test.js.
 // {name} is replaced by a value at display time: keep it as is.
 export default {
-  "lang.name": "English",
+  // Texte du bouton qui propose de passer à cette langue, à côté de son drapeau (.flag-en, css/style.css).
+  "lang.switch": "Change",
 
   // --- Settings panel (HTML, bottom left) ---
   "panel.pause.title": "Pause menu",
@@ -14,6 +15,7 @@ export default {
   "panel.speed": "GAME SPEED",
   "panel.speed.title": "Game speed (does not affect music or sound effects)",
   "panel.autofire": "Auto-fire",
+  "panel.crt": "Retro filter",
   "panel.help": "Help",
   "panel.fullscreen": "⛶ Fullscreen",
   "panel.fullscreen.exit": "⛶ Exit fullscreen",
@@ -92,7 +94,7 @@ export default {
   "help.music": "MUSIC",
   "help.music.detail": "Shuffled playlist, adjustable at the bottom left",
   "help.keys": "KEYBOARD SHORTCUTS",
-  "help.keys.detail": "Esc/P: pause · Space: NOVA · M: mute · C: retro filter",
+  "help.keys.detail": "Esc/P: pause · Space: NOVA · M: mute",
   "help.prev": "◀ PREV.",
   "help.next": "NEXT ▶",
   "help.continue": "▶ CONTINUE",

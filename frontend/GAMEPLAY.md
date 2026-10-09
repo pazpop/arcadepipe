@@ -1,6 +1,6 @@
 # Règles du jeu
 
-Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/config.js`](js/config.js), sauf celles des ennemis ([`js/enemies.js`](js/enemies.js)) ; l'organisation du code est décrite dans le [README du frontend](README.md).
+Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/config.js`](js/config.js), sauf celles des ennemis ([`js/enemies.js`](js/enemies.js)) et la cadence du boss ([`js/boss.js`](js/boss.js)) ; l'organisation du code est décrite dans le [README du frontend](README.md).
 
 ## Le vaisseau
 
@@ -16,11 +16,12 @@ Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/confi
 | Normal (vert) | 1 | vole en ligne droite, ne tire pas | vague 1 |
 | Élite (violet) | 3 | ondule, tir visé | vague 3 |
 | Kamikaze (rouge) | 1 | poursuit le joueur, ne tire pas ; 2 à la fois au maximum | vague 4 |
-| Gunner (bleu) | 2 | un ennemi normal qui tire, plus lentement qu'une élite | vague 5 |
+| Gunner (bleu) | 2 | un ennemi normal qui tire, plus lentement qu'une élite | vague 6 |
 
 - Ils apparaissent dans le tiers droit de l'écran, puis se déplacent librement.
 - Un ennemi ne tire que si le joueur est devant lui, et jamais depuis le tiers gauche de l'écran.
 - Un ennemi touché mais pas détruit passe à une version ternie de son sprite : il n'y a pas de jauge de PV.
+- Foncer dans un ennemi le détruit, sans rapporter de points, au prix d'un coup (un point de bouclier, ou une vie).
 
 ## Les vagues
 

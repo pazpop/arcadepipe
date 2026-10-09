@@ -32,7 +32,7 @@ export const PALETTE = {
   // ennemi ne s'en approche), pour ne jamais laisser croire qu'un ennemi
   // normal "vaut" le boss.
   enemyNormal: "#27be4d", // facile (petit vaisseau)
-  enemyGunner: "#2748be", // moyen (variante d'ennemi normal qui tire aussi, dès la vague 5) — bleu, pour ne pas empiéter sur le jaune/or réservé au boss
+  enemyGunner: "#2748be", // moyen (variante d'ennemi normal qui tire aussi, dès la vague 6) — bleu, pour ne pas empiéter sur le jaune/or réservé au boss
   enemyElite: "#c86bff", // difficile (violet)
   boss: "#ffcc33", // or — jamais réutilisé ailleurs
   bossWeakOn: "#fff44a", // jaune vif — doit trancher net avec la coque du boss
@@ -89,7 +89,7 @@ export function bulletSpeedFactor(wave) {
 
 // Bonus temporaires lâchés par les ennemis détruits. "power" : dégâts
 // renforcés, tir plus lent. "rapid" : tir très rapide, dégâts réduits.
-// "shield" : absorbe un nombre fixe de coups (shieldHits), pas temporisé.
+// "shotgun" : cône de plombs. "shield" : absorbe un nombre fixe de coups (shieldHits), pas temporisé.
 // NOVA n'est pas un bonus : ressource rechargée par le graze (voir NOVA plus bas).
 export const POWERUP = {
   duration: 20, // secondes d'effet une fois ramassé (sans effet sur "shield")
@@ -118,6 +118,8 @@ export const BOSS = {
   weakPointsMin: 4,
   weakPointsMax: 6,
   weakPointHp: 5,
+  weakPointScore: 300, // autant qu'un ennemi élite
+  victoryScore: 1000, // nettement au-dessus d'un point faible, pour marquer l'accomplissement
   phaseSpeedupFactor: 1.35, // patterns plus denses par point faible détruit
   bulletSpeed: 90,
   // 1er combat de boss (isFirstBoss() dans boss.js) volontairement plus
@@ -168,6 +170,7 @@ export const HIT_STOP = {
   elite: 0.08,
   weakPoint: 0.13,
   bossVictory: 0.14,
+  playerHit: 0.08,
 };
 
 // Frôlement des tirs ennemis (graze.js) : récompense l'esquive serrée plutôt
@@ -176,7 +179,7 @@ export const GRAZE = {
   // Tailles de chaîne saluées par un son à part (playGrazeMilestone) — à ajuster au ressenti.
   milestones: [5, 10, 15],
   // Rayon depuis le centre du vaisseau : bien plus grand que
-  // PLAYER.hitboxRadius, proche de la moitié de la largeur du sprite, pour que
+  // PLAYER.hitboxRadius, proche de la moitié de la hauteur du sprite, pour que
   // le frôlement se déclenche au ras de la silhouette visible.
   radius: 7,
   // Le corps d'un ennemi (tous types, voir updateGraze dans graze.js — le

@@ -42,8 +42,10 @@ export function open(g) {
   });
 }
 
-// Le score entre-t-il dans le top ? Serveur injoignable : non, il ne pourrait pas y être envoyé.
+// Le score entre-t-il dans le top ? Jamais un score nul. Serveur injoignable :
+// non, il ne pourrait pas y être envoyé.
 async function qualifiesForTop(score) {
+  if (score <= 0) return false;
   try {
     const top = await fetchTopScores();
     return top.length < TOP_SIZE || score > Math.min(...top.map((s) => s.score));
@@ -124,8 +126,7 @@ export function drawGameOverOverlay(c2d, g) {
 }
 
 export function drawNameEntry(c2d, g) {
-  hud.drawGameOverScreen(c2d, g.score, g.wave, g.enemiesKilled, g.distanceTraveled);
-  hud.drawNameEntry(c2d, g.nameEntry, Math.floor(performance.now() / 400) % 2 === 0);
+  hud.drawNameEntry(c2d, g.nameEntry, Math.floor(performance.now() / 400) % 2 === 0, g.score, g.wave, g.enemiesKilled);
 }
 
 export function handleTapGameOver(g, engine, x, y) {

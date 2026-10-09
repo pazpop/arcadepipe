@@ -1,6 +1,6 @@
 // Synthèse audio 100% Web Audio API — aucun fichier son. Chaque effet crée
-// ses propres oscillateurs/noeuds à la volée puis les jette. Rampes de gain
-// de 5-10ms pour éviter tout clic au démarrage/arrêt.
+// ses propres oscillateurs/noeuds à la volée puis les jette. De courtes rampes
+// de gain évitent les clics au démarrage et à l'arrêt.
 import { STORAGE_KEYS } from "../config.js";
 import { loadUnitFloat, saveItem } from "../storage.js";
 
@@ -18,9 +18,10 @@ export class AudioEngine {
   }
 
   // Le contexte doit être repris depuis un geste utilisateur (règle des
-  // navigateurs) : appelé à chaque clic, tap ou touche (voir main.js).
+  // navigateurs) : appelé à chaque clic, tap ou touche (voir main.js). Tout
+  // état autre que "running" : iOS en a un de plus, "interrupted", après un appel.
   ensure() {
-    if (this.ctx.state === "suspended") this.ctx.resume();
+    if (this.ctx.state !== "running") this.ctx.resume();
   }
 
   setMuted(muted) {
@@ -70,6 +71,8 @@ export class AudioEngine {
 
   // `delay` (secondes) et `release` : pour enchaîner plusieurs notes.
   _tone({ type = "square", startFreq, endFreq = startFreq, duration, gain = 0.15, delay = 0, release = 0.01 }) {
+    // Contexte pas encore repris : son ignoré, sinon il jouerait en retard, au premier geste.
+    if (this.ctx.state !== "running") return;
     const now = this.ctx.currentTime + delay;
     const osc = this.ctx.createOscillator();
     const g = this._envGain(duration, gain, 0.005, release, now);
@@ -210,7 +213,7 @@ export class AudioEngine {
   // Frôlement (graze.js) : "tic" aigu et très bref, la hauteur monte avec le
   // palier de chaîne (plafonné côté appelant) — une chaîne qui s'enchaîne se
   // ressent au son, pas juste au score qui défile.
-  playGraze(tier = 1) {
+  playGraze(tier) {
     const freq = 900 + Math.min(tier, 8) * 90;
     this._tone({ type: "sine", startFreq: freq, endFreq: freq * 1.15, duration: 0.045, gain: 0.05 });
   }
@@ -225,7 +228,7 @@ export class AudioEngine {
 
   // Anneau du niveau bonus (bonusLevel.js) réussi : note franche, un peu plus
   // riche que le "tic" du graze — un vrai petit succès à chaque passage.
-  playRingPass(tier = 1) {
+  playRingPass(tier) {
     const freq = 700 + Math.min(tier, 10) * 40;
     this._tone({ type: "triangle", startFreq: freq, endFreq: freq * 1.3, duration: 0.09, gain: 0.09 });
   }

@@ -8,7 +8,7 @@ const PLAYER_POOL_SIZE = 60;
 const ENEMY_POOL_SIZE = 400;
 const PELLET_POOL_SIZE = 40;
 
-function makePool(size, radius, color, shape = "dot") {
+function makePool(size, radius, color, shape) {
   return {
     radius,
     color,
@@ -23,6 +23,7 @@ function makePool(size, radius, color, shape = "dot") {
       damage: 1,
       maxDamage: 0, // >0 seulement pour les plombs (dégâts décroissants) — voir firePlayerPellets/updateProjectiles/drawPool
       turnRate: 0, // rad/s — courbe la trajectoire (tirs ennemis uniquement, voir fireEnemyBullet)
+      turnTime: 0, // secondes de courbe restantes : ensuite le tir file droit
       grazed: false, // pool ennemi uniquement (voir graze.js) — un tir ne graze qu'une fois pendant toute sa vie
     })),
   };
@@ -42,7 +43,7 @@ export function createProjectiles() {
   };
 }
 
-function spawnInto(pool, x, y, vx, vy, colorOverride = null, damage = 1, turnRate = 0) {
+function spawnInto(pool, x, y, vx, vy, colorOverride, damage, turnRate = 0) {
   const b = acquireSlot(pool);
   if (!b) return null;
   b.active = true;
@@ -53,6 +54,7 @@ function spawnInto(pool, x, y, vx, vy, colorOverride = null, damage = 1, turnRat
   b.colorOverride = colorOverride;
   b.damage = damage;
   b.turnRate = turnRate;
+  b.turnTime = CURVE_DURATION;
   b.grazed = false;
   return b;
 }
@@ -66,20 +68,26 @@ export function firePlayerBullet(projectiles, x, y, speed, damage, color) {
 // un peu plus du tiers de l'écran) : fort à bout portant, négligeable au-delà.
 const PELLET_DAMAGE_DECAY = 3;
 
-// Cône de plombs (bonus CHEVROTINE) : `count` plombs répartis sur `spreadRad`
-// radians autour de l'axe horizontal. Dégâts décroissants gérés dans
-// updateProjectiles ; le fondu visuel (drawPool) suit la même valeur, donc
-// toujours synchronisé avec la perte de puissance réelle.
-export function firePlayerPellets(projectiles, x, y, speed, damage, color, count = 6, spreadRad = Math.PI / 4) {
-  const start = -spreadRad / 2;
-  for (let i = 0; i < count; i++) {
-    const a = count === 1 ? 0 : start + (spreadRad * i) / (count - 1);
+// Cône de plombs (bonus CHEVROTINE) : PELLET_COUNT plombs répartis sur
+// PELLET_SPREAD radians autour de l'axe horizontal. Dégâts décroissants gérés
+// dans updateProjectiles ; le fondu visuel (drawPool) suit la même valeur,
+// donc toujours synchronisé avec la perte de puissance réelle.
+const PELLET_COUNT = 6;
+const PELLET_SPREAD = Math.PI / 4;
+
+export function firePlayerPellets(projectiles, x, y, speed, damage, color) {
+  for (let i = 0; i < PELLET_COUNT; i++) {
+    const a = -PELLET_SPREAD / 2 + (PELLET_SPREAD * i) / (PELLET_COUNT - 1);
     const p = spawnInto(projectiles.pellet, x, y, Math.cos(a) * speed, Math.sin(a) * speed, color, damage);
     if (p) p.maxDamage = damage;
   }
 }
 
-// turnRate (rad/s, optionnel) : courbe la trajectoire (patternFan/patternRing). 0 par défaut.
+// turnRate (rad/s, optionnel) : courbe la trajectoire (patternFan/patternRing)
+// pendant CURVE_DURATION secondes. Limitée dans le temps : un tir qui
+// tournerait sans fin décrirait un cercle et ne quitterait jamais l'écran.
+const CURVE_DURATION = 1;
+
 export function fireEnemyBullet(projectiles, x, y, vx, vy, color = null, turnRate = 0) {
   spawnInto(projectiles.enemy, x, y, vx, vy, color, 1, turnRate);
 }
@@ -87,13 +95,13 @@ export function fireEnemyBullet(projectiles, x, y, vx, vy, color = null, turnRat
 export function updateProjectiles(projectiles, dt) {
   for (const b of projectiles.player.items) {
     if (!b.active) continue;
-    b.x += b.vx * dt;
-    b.y += b.vy * dt;
+    b.x += b.vx * dt; // toujours à l'horizontale
     if (b.x > RES_W + 10) b.active = false;
   }
   for (const b of projectiles.enemy.items) {
     if (!b.active) continue;
-    if (b.turnRate) {
+    if (b.turnRate && b.turnTime > 0) {
+      b.turnTime -= dt;
       const speed = Math.hypot(b.vx, b.vy);
       const angle = Math.atan2(b.vy, b.vx) + b.turnRate * dt;
       b.vx = Math.cos(angle) * speed;

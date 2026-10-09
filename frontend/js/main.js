@@ -60,7 +60,9 @@ for (const type of ["pointerdown", "pointerup", "keydown"]) window.addEventListe
 let pointerDownMode = null;
 canvas.addEventListener("pointerdown", () => (pointerDownMode = game.mode));
 canvas.addEventListener("pointerup", (e) => {
-  if (pointerDownMode !== game.mode) return;
+  const sameScreen = pointerDownMode === game.mode;
+  pointerDownMode = null;
+  if (!sameScreen) return;
   const p = canvasToLogical(canvas, e.clientX, e.clientY);
   game.handleTap(p.x, p.y);
 });
@@ -84,6 +86,7 @@ let panelCollapsed = loadItem(STORAGE_KEYS.panelCollapsed) !== "0";
 function applyPanelState() {
   mcWrap.classList.toggle("collapsed", panelCollapsed);
   mcToggle.textContent = panelCollapsed ? "⚙" : "◀";
+  mcToggle.setAttribute("aria-expanded", String(!panelCollapsed));
 }
 applyPanelState();
 mcToggle.addEventListener("click", () => {
@@ -92,8 +95,9 @@ mcToggle.addEventListener("click", () => {
   saveItem(STORAGE_KEYS.panelCollapsed, panelCollapsed ? "1" : "0");
 });
 
-// Sans effet hors partie.
-$("pause-btn").addEventListener("click", () => game.pause());
+// Pause, sans effet hors partie. pointerdown et non click : pendant qu'un doigt
+// pilote le vaisseau, un second doigt sur un bouton ne produit aucun "click".
+$("pause-btn").addEventListener("pointerdown", () => game.pause());
 
 // --- Musique : stop/lecture, piste suivante, volume.
 const musicStopBtn = $("music-stop-btn");
@@ -152,8 +156,9 @@ speedBtn.addEventListener("click", () => {
 });
 
 // --- Bouton NOVA (tactile) : lu par le jeu comme une touche (states/playing.js).
+// pointerdown, comme le bouton Pause.
 const novaBtn = $("nova-btn");
-novaBtn.addEventListener("click", () => input.justPressed.add("NovaTrigger"));
+novaBtn.addEventListener("pointerdown", () => input.justPressed.add("NovaTrigger"));
 
 // --- Bouton Partager (fin de partie) : image PNG du résultat (shareCard.js),
 // toujours téléchargée, et copiée dans le presse-papier si le navigateur le permet.
@@ -219,7 +224,12 @@ function checkKonami(key) {
 
 // --- Saisie du pseudo : un champ caché reçoit la frappe (et ouvre le clavier
 // virtuel sur mobile) ; le jeu affiche sa valeur, nettoyée, et la lui renvoie.
-nameInputEl.addEventListener("input", () => (nameInputEl.value = game.setNameEntryText(nameInputEl.value)));
+// Le champ n'est réécrit que si le nettoyage a changé quelque chose : réécrire
+// à chaque frappe perturbe la saisie prédictive des claviers Android.
+nameInputEl.addEventListener("input", () => {
+  const cleaned = game.setNameEntryText(nameInputEl.value);
+  if (cleaned !== nameInputEl.value) nameInputEl.value = cleaned;
+});
 
 // --- Onglet en arrière-plan : le jeu se met en pause (pas de vie perdue
 // pendant l'absence) et la musique s'interrompt. Au retour, reprise du contexte
@@ -234,6 +244,7 @@ document.addEventListener("visibilitychange", () => {
 const MAX_STEP = 1 / 60;
 let lastTime = 0;
 function loop(timestamp) {
+  requestAnimationFrame(loop); // demandée d'abord : une erreur dans une image ne fige pas le jeu
   // Temps écoulé borné à 50 ms : après un onglet gelé, le jeu ne fait pas un bond.
   const dt = Math.min(0.05, (timestamp - lastTime) / 1000);
   lastTime = timestamp;
@@ -247,6 +258,5 @@ function loop(timestamp) {
   const { mode, MODE } = game;
   novaBtn.classList.toggle("hidden", !(mode === MODE.PLAYING && game.novaStock > 0 && !game.inBonusLevel));
   shareBtn.classList.toggle("hidden", mode !== MODE.GAME_OVER && mode !== MODE.NAME_ENTRY);
-  requestAnimationFrame(loop);
 }
 requestAnimationFrame(loop);

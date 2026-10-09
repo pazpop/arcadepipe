@@ -7,7 +7,7 @@ export default {
   "lang.flags": "fr qc",
 
   // --- Panneau de réglages (HTML, bas à gauche) ---
-  "panel.pause.title": "Menu pause",
+  "panel.pause.title": "Pause",
   "panel.music": "MUSIQUE (by Mall-E)",
   "panel.music.stop": "Stop / lecture",
   "panel.music.next": "Piste suivante",
@@ -19,8 +19,8 @@ export default {
   "panel.autofire": "Tir automatique",
   "panel.crt": "Filtre rétro",
   "panel.help": "Aide",
-  "panel.fullscreen": "⛶ Plein écran",
-  "panel.fullscreen.exit": "⛶ Quitter le plein écran",
+  "panel.fullscreen": "Plein écran",
+  "panel.fullscreen.exit": "Quitter le plein écran",
   "panel.cookies": "Cookies",
   "panel.cookies.title": "Changer mon choix de cookies",
   "panel.lang.title": "Changer de langue",
@@ -33,7 +33,7 @@ export default {
 
   // --- Bandeau de consentement ---
   "cookie.aria": "Consentement aux cookies",
-  "cookie.text": "Ce site utilise Google Analytics (cookies de mesure d'audience) pour comprendre comment le jeu est utilisé.",
+  "cookie.text": "Acceptes-tu Google Analytics (cookies de mesure d'audience) ? Il sert à compter les visites.",
   "cookie.more": "En savoir plus",
   "cookie.accept": "Accepter",
   "cookie.decline": "Refuser",
@@ -52,7 +52,7 @@ export default {
   "hud.intact": "INTACT +{bonus}",
   "hud.controlHint": "MAINTIENS CLIC / DOIGT POUR TIRER",
   "bonus.intro.title": "NIVEAU BONUS DÉBLOQUÉ !",
-  "bonus.intro.line1": "Score suffisant atteint pour le découvrir",
+  "bonus.intro.line1": "Ton score l'a débloqué",
   "bonus.intro.line2": "Traverse les anneaux pour charger ta jauge NOVA !",
 
   // --- Bannières ---
@@ -91,7 +91,7 @@ export default {
   "help.fire.detail": 'Automatique. Décoche "Tir automatique" (bas à gauche) pour tirer en maintenant le clic ou le doigt',
   "help.nova": "NOVA",
   "help.nova.detail":
-    "Frôle (sans le toucher) un tir ennemi ou un vaisseau ennemi — pas le boss — pour charger la jauge NOVA en haut à gauche, prends des risques ! Une fois pleine, ESPACE (ou le bouton tactile en bas à droite) détruit tous les ennemis à l'écran et leurs tirs, jamais le boss. Jusqu'à 2 charges en réserve dès le 2e combat de boss (1 seule avant), à déclencher quand tu veux.",
+    "Frôle (sans le toucher) un tir ennemi ou un vaisseau ennemi — pas le boss — pour charger la jauge NOVA en haut à gauche : prends des risques ! Une fois pleine, ESPACE (ou le bouton tactile en bas à droite) détruit tous les ennemis à l'écran et leurs tirs, jamais le boss. Jusqu'à 2 charges en réserve dès le 2e combat de boss (1 seule avant), à déclencher quand tu veux.",
   "help.boss": "BOSS",
   "help.boss.detail": "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie",
   "help.music": "MUSIQUE",
@@ -102,7 +102,7 @@ export default {
   "help.next": "SUIV. ▶",
   "help.continue": "▶ CONTINUER",
   "enemy.normal": "FACILE — 1 PV, pas de tir, ligne droite",
-  "enemy.gunner": "MOYEN — 2 PV, tir visé (vague 5+)",
+  "enemy.gunner": "MOYEN — 2 PV, tir visé (vague 6+)",
   "enemy.elite": "ÉLITE — 3 PV, tir visé, ondule (vague 3+)",
   "enemy.kamikaze": "KAMIKAZE — 1 PV, fonce sur toi (vague 4+)",
 
@@ -114,13 +114,13 @@ export default {
   "gameover.enterName": "ENTRER MON PSEUDO",
   "gameover.top": "TU ENTRES DANS LE TOP {size} !",
   "name.title": "TU ENTRES DANS LE CLASSEMENT !",
-  "name.prompt": "ENTRE TON NOM (8 CAR. MAX)",
+  "name.prompt": "ENTRE TON PSEUDO (8 CAR. MAX)",
   "name.validate": "▶ VALIDER",
 
   // --- Classement ---
-  "board.games": "{count} PARTIES JOUÉES",
+  "board.games": "PARTIES JOUÉES : {count}",
   "board.rank": "RANG",
-  "board.name": "NOM",
+  "board.name": "PSEUDO",
   "board.score": "SCORE",
   "board.wave": "VAGUE",
   "board.kills": "TUÉS",

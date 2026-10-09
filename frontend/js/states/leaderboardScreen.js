@@ -5,8 +5,8 @@ import { fetchTopScores, fetchGamesPlayedCount } from "../api.js";
 import * as hud from "../hud.js";
 import { MODE } from "./mode.js";
 
-// Numéro de l'ouverture en cours : une réponse arrivée après une ouverture
-// plus récente (double tap) est ignorée.
+// Numéro de l'ouverture en cours : la réponse d'une ouverture précédente,
+// arrivée après coup, est ignorée.
 let token = 0;
 
 export async function open(g) {
@@ -18,7 +18,8 @@ export async function open(g) {
   g.scoresRevealTimer = 0;
   let scores = null;
   try {
-    scores = await fetchTopScores();
+    const answer = await fetchTopScores();
+    if (Array.isArray(answer)) scores = answer; // toute autre réponse : classement indisponible
   } catch {
     /* scores reste null : "classement indisponible" */
   }

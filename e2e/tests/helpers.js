@@ -3,7 +3,20 @@
 // les clics passent par ces conversions, jamais par des coordonnées écran.
 //
 // Forcer une constante (taux de drop, difficulté...) pour un test : voir e2e/README.md.
-import { expect } from "@playwright/test";
+import { test as base, expect } from "@playwright/test";
+
+export { expect };
+
+// Le `test` de toute la suite : une erreur JavaScript non interceptée dans la
+// page fait échouer le test, quel que soit ce qu'il vérifie par ailleurs.
+export const test = base.extend({
+  page: async ({ page }, use) => {
+    const pageErrors = [];
+    page.on("pageerror", (e) => pageErrors.push(String(e)));
+    await use(page);
+    expect(pageErrors).toEqual([]);
+  },
+});
 
 const RES_W = 480;
 const RES_H = 270;
@@ -91,14 +104,16 @@ export function collectErrors(page) {
   return errors;
 }
 
-// Vagues d'un seul ennemi et boss dès la vague 2 ; tire jusqu'à l'arrivée du boss.
-export async function reachBoss(page) {
-  await page.evaluate(async () => {
+// Boss dès la vague 1 (aucun ennemi ordinaire, donc aucun coup pris au hasard
+// avant lui) ; tire jusqu'à son arrivée. bossWave = 2 : une première vague
+// d'un seul ennemi, pour arriver au boss avec un score non nul.
+export async function reachBoss(page, bossWave = 1) {
+  await page.evaluate(async (wave) => {
     const { DIFFICULTY } = await import("/js/config.js");
-    DIFFICULTY.bossWaveEvery = 2;
+    DIFFICULTY.bossWaveEvery = wave;
     DIFFICULTY.baseWaveKills = 1;
     DIFFICULTY.waveKillsStep = 0;
-  });
+  }, bossWave);
   const { startRun, toPage } = canvasHelpers(page);
   await startRun();
   await page.mouse.down();

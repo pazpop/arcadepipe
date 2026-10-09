@@ -1,10 +1,7 @@
-// Le jeu est rendu entièrement en canvas (pas de DOM inspectable pour son
-// texte) — ces tests valident donc surtout que les séquences d'interactions
-// réelles (clic souris, clavier) ne lèvent aucune erreur JS, plutôt que le
-// contenu pixel exact. Les captures d'écran restent le moyen de vérifier
-// visuellement (voir test-results/ après un run, ou joue au jeu directement).
-import { test, expect } from "@playwright/test";
-import { canvasHelpers, collectErrors, gameState, skipHints, waitForMode } from "./helpers.js";
+// Menus, pause, aide, crédits, panneau de réglages : le texte du jeu est dessiné
+// dans le canvas, donc ces tests suivent l'écran courant (mode) et laissent des
+// captures dans test-results/ pour la vérification à l'œil.
+import { test, expect, canvasHelpers, collectErrors, gameState, skipHints, waitForMode } from "./helpers.js";
 
 test("le menu se charge sans erreur et les contrôles musique sont visibles", async ({ page }) => {
   const errors = collectErrors(page);
@@ -107,6 +104,27 @@ test("l'aide est accessible depuis le menu principal et depuis la pause", async 
   expect(errors).toEqual([]);
 });
 
+test("toutes les pages de l'aide et les crédits s'affichent", async ({ page }) => {
+  await page.goto("/");
+  const { canvas, clickLogical } = canvasHelpers(page);
+
+  await clickLogical(240, 151.2 + 2 * 22); // AIDE
+  await waitForMode(page, "help");
+  for (let pageNumber = 2; pageNumber <= 4; pageNumber++) {
+    await clickLogical(326, 210); // SUIV.
+    await canvas.screenshot({ path: `test-results/help-page-${pageNumber}.png` });
+  }
+  await clickLogical(240, 232); // CONTINUER
+  await waitForMode(page, "menu");
+
+  await clickLogical(240, 151.2 + 3 * 22); // CRÉDITS
+  await waitForMode(page, "credits");
+  await page.waitForTimeout(1000); // le temps que le texte défile à l'écran
+  await canvas.screenshot({ path: "test-results/credits.png" });
+  await page.keyboard.press("Escape");
+  await waitForMode(page, "menu");
+});
+
 test("le bouton Aide du panneau (bas gauche) ouvre l'aide directement, au menu et en jeu", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");
@@ -175,7 +193,7 @@ test("panneau replié : ses réglages ne se parcourent plus au clavier", async (
   await expect(page.locator("#music-volume")).toBeHidden();
   for (let i = 0; i < 4; i++) {
     await page.keyboard.press("Tab");
-    expect(await page.evaluate(() => document.activeElement.closest("#music-controls"))).toBeNull();
+    expect(await page.evaluate(() => document.activeElement.closest("#music-controls") === null)).toBe(true);
   }
 });
 

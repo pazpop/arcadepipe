@@ -3,10 +3,9 @@
 // fait subir à l'image. Décodé avec jsQR dans la page (pas de vrai téléphone).
 // jsQR est tolérant : les pixels noir/blanc au centre d'un module sont aussi
 // vérifiés directement (une ombre laissée active teinterait le QR).
-import { test, expect } from "@playwright/test";
 import fs from "fs";
 import { createRequire } from "module";
-import { collectErrors } from "./helpers.js";
+import { test, expect, collectErrors } from "./helpers.js";
 
 const require = createRequire(import.meta.url);
 const JSQR_SRC = fs.readFileSync(require.resolve("jsqr/dist/jsQR.js"), "utf8");

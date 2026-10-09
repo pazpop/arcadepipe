@@ -36,21 +36,25 @@ export function applyShield(player, hits) {
   player.shield = hits;
 }
 
-export function updatePlayer(player, input, projectiles, dt, onShotFired, canFire) {
-  // Suivi progressif de la cible (pas un snap brutal) — lisible même à haute fréquence de mouvement.
-  const dx = input.x - player.x;
-  const dy = input.y - player.y;
+// Suivi progressif d'une cible (pas un snap brutal), sans sortir de l'écran.
+export function moveToward(player, x, y, dt) {
+  const dx = x - player.x;
+  const dy = y - player.y;
   const maxStep = PLAYER.speed * dt;
   const dist = Math.hypot(dx, dy);
   if (dist <= maxStep) {
-    player.x = input.x;
-    player.y = input.y;
+    player.x = x;
+    player.y = y;
   } else {
     player.x += (dx / dist) * maxStep;
     player.y += (dy / dist) * maxStep;
   }
   player.x = Math.max(6, Math.min(RES_W - 6, player.x));
   player.y = Math.max(6, Math.min(RES_H - 6, player.y));
+}
+
+export function updatePlayer(player, input, projectiles, dt, onShotFired, canFire) {
+  moveToward(player, input.x, input.y, dt);
 
   if (player.buff) {
     // Gelé pendant le saut spatial (canFire=false, voir plus bas) : sinon la

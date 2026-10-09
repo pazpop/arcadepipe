@@ -1,8 +1,7 @@
 // Classement avec le vrai backend (lancé par playwright.config.js sur le port
 // 8001, base vide). Le jeu appelle le port 8000 en développement : ses requêtes
 // sont redirigées ici vers ce backend de test.
-import { test, expect } from "@playwright/test";
-import { canvasHelpers, gameState, reachBoss, skipHints, waitForMode } from "./helpers.js";
+import { test, expect, canvasHelpers, gameState, reachBoss, skipHints, waitForMode } from "./helpers.js";
 
 const API = "http://localhost:8001";
 
@@ -19,7 +18,7 @@ const names = async (page) => ((await gameState(page)).scores || []).map((s) => 
 test("le classement affiche les scores du serveur, du meilleur au moins bon", async ({ page, request }) => {
   for (const [player_name, score] of [["ALPHA", 500], ["BETA", 900]]) {
     // Autre adresse IP que celle du jeu : ces deux envois ne comptent pas dans
-    // son quota de cinq scores par minute, que le test suivant utilise en entier.
+    // son quota de cinq scores par minute, entamé par le test suivant.
     const headers = { "X-Forwarded-For": "203.0.113.9" };
     expect((await request.post(`${API}/api/scores`, { data: { player_name, score }, headers })).status()).toBe(201);
   }
@@ -44,7 +43,7 @@ test("fin de partie : top annoncé ; score inscrit en rejouant, au tap sur VALID
 
   // Joue jusqu'au boss, fonce dans sa coque, et attend l'annonce du top (moins de dix scores en base).
   async function dieAndQualify() {
-    await reachBoss(page);
+    await reachBoss(page, 2); // un kill avant le boss : un score nul n'entre pas au classement
     await page.mouse.up();
     const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
     await page.mouse.move(hull.x, hull.y);
@@ -62,7 +61,7 @@ test("fin de partie : top annoncé ; score inscrit en rejouant, au tap sur VALID
   await dieAndQualify();
   await clickLogical(240, 187.4);
   await waitForMode(page, "name_entry");
-  await clickLogical(240, 183.6);
+  await clickLogical(240, 118); // VALIDER
   await waitForMode(page, "leaderboard");
   await expect.poll(async () => (await serverNames()).filter((n) => n === "AAA").length).toBe(2);
   await clickLogical(240, 135); // retour au menu

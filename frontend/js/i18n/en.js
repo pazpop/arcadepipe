@@ -6,7 +6,7 @@ export default {
   "lang.flags": "us gb",
 
   // --- Settings panel (HTML, bottom left) ---
-  "panel.pause.title": "Pause menu",
+  "panel.pause.title": "Pause",
   "panel.music": "MUSIC (by Mall-E)",
   "panel.music.stop": "Stop / play",
   "panel.music.next": "Next track",
@@ -18,8 +18,8 @@ export default {
   "panel.autofire": "Auto-fire",
   "panel.crt": "Retro filter",
   "panel.help": "Help",
-  "panel.fullscreen": "⛶ Fullscreen",
-  "panel.fullscreen.exit": "⛶ Exit fullscreen",
+  "panel.fullscreen": "Fullscreen",
+  "panel.fullscreen.exit": "Exit fullscreen",
   "panel.cookies": "Cookies",
   "panel.cookies.title": "Change my cookie preferences",
   "panel.lang.title": "Change language",
@@ -32,13 +32,13 @@ export default {
 
   // --- Consent banner ---
   "cookie.aria": "Cookie consent",
-  "cookie.text": "This site uses Google Analytics (analytics cookies) to understand how the game is played.",
+  "cookie.text": "Allow Google Analytics (analytics cookies)? It is used to count visits.",
   "cookie.more": "Learn more",
   "cookie.accept": "Accept",
   "cookie.decline": "Decline",
 
   // --- Main menu ---
-  "menu.lore": "The galaxy is dying under enemy fleets —\nalone at the controls of the last free fighter,\nyou are its only hope of survival.",
+  "menu.lore": "The galaxy is falling to enemy fleets —\nalone at the controls of the last free fighter,\nyou are its last hope.",
   "menu.play": "PLAY",
   "menu.leaderboard": "LEADERBOARD",
   "menu.help": "HELP",
@@ -87,7 +87,7 @@ export default {
   "help.move": "MOVEMENT",
   "help.move.detail": "Mouse or finger: steer the ship",
   "help.fire": "FIRE",
-  "help.fire.detail": 'Automatic. Untick "Auto-fire" (bottom left) to fire by holding the mouse button or your finger',
+  "help.fire.detail": 'Automatic. Uncheck "Auto-fire" (bottom left) to fire only while you hold the mouse button or keep a finger down',
   "help.nova": "NOVA",
   "help.nova.detail":
     "Graze (without touching) an enemy shot or an enemy ship — not the boss — to charge the NOVA gauge at the top left: take risks! Once full, SPACE (or the touch button at the bottom right) destroys every enemy on screen and their shots, never the boss. Up to 2 charges in reserve from the 2nd boss fight (only 1 before). Use them whenever you like.",
@@ -101,7 +101,7 @@ export default {
   "help.next": "NEXT ▶",
   "help.continue": "▶ CONTINUE",
   "enemy.normal": "EASY — 1 HP, no shots, straight line",
-  "enemy.gunner": "MEDIUM — 2 HP, aimed shots (wave 5+)",
+  "enemy.gunner": "MEDIUM — 2 HP, aimed shots (wave 6+)",
   "enemy.elite": "ELITE — 3 HP, aimed shots, weaves (wave 3+)",
   "enemy.kamikaze": "KAMIKAZE — 1 HP, charges at you (wave 4+)",
 
@@ -110,14 +110,14 @@ export default {
   "gameover.stats": "SCORE {score}  ·  WAVE {wave}  ·  {kills} KILLS",
   "gameover.distance": "{distance} LIGHT-YEARS TRAVELED",
   "gameover.replay": "PLAY AGAIN",
-  "gameover.enterName": "ENTER MY NAME",
+  "gameover.enterName": "ENTER YOUR NAME",
   "gameover.top": "YOU MADE THE TOP {size}!",
   "name.title": "YOU MADE THE LEADERBOARD!",
   "name.prompt": "ENTER YOUR NAME (8 CHARS MAX)",
   "name.validate": "▶ CONFIRM",
 
   // --- Leaderboard ---
-  "board.games": "{count} GAMES PLAYED",
+  "board.games": "GAMES PLAYED: {count}",
   "board.rank": "RANK",
   "board.name": "NAME",
   "board.score": "SCORE",

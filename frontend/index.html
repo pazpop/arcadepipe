@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>ArcadePipe — Starfighter</title>
 <meta name="description" content="ArcadePipe Starfighter — jeu d'arcade spatial rétro gratuit, jouable directement dans le navigateur, sans installation. Vagues d'ennemis, boss, bonus et classement en ligne." />
-<meta name="robots" content="index, follow" />
 <link rel="canonical" href="https://arcadepipe.pazpop.net/" />
 <!-- Dessiné d'après le sprite du vaisseau (PLAYER_ROWS, js/assets.js). -->
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
@@ -25,25 +24,25 @@
 </head>
 <body>
   <div id="game-container">
-    <canvas id="game-canvas"></canvas>
+    <canvas id="game-canvas" role="img" aria-label="ArcadePipe — Starfighter"></canvas>
     <div id="crt-overlay" aria-hidden="true"></div>
     <!-- tabindex="-1" : jamais atteint par Tab, seul le jeu lui donne le focus. -->
-    <input id="name-input" type="text" maxlength="8" autocomplete="off" autocapitalize="characters" tabindex="-1" />
+    <input id="name-input" type="text" maxlength="8" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="characters" enterkeyhint="done" tabindex="-1" data-i18n-aria="name.prompt" />
 
     <div id="mc-wrap">
       <div id="music-controls">
         <div class="mc-section">
           <div class="mc-label" data-i18n="panel.music"></div>
           <div class="mc-row">
-            <button id="music-stop-btn" type="button" data-i18n-title="panel.music.stop">⏹</button>
-            <button id="music-next-btn" type="button" data-i18n-title="panel.music.next">⏭</button>
-            <input id="music-volume" type="range" min="0" max="100" step="1" data-i18n-title="panel.music.volume" />
+            <button id="music-stop-btn" type="button" data-i18n-title="panel.music.stop" data-i18n-aria="panel.music.stop">⏹</button>
+            <button id="music-next-btn" type="button" data-i18n-title="panel.music.next" data-i18n-aria="panel.music.next">⏭</button>
+            <input id="music-volume" type="range" min="0" max="100" step="1" data-i18n-title="panel.music.volume" data-i18n-aria="panel.music.volume" />
           </div>
         </div>
         <div class="mc-section">
           <div class="mc-label" data-i18n="panel.sfx"></div>
           <div class="mc-row">
-            <input id="sfx-volume" type="range" min="0" max="100" step="1" data-i18n-title="panel.sfx.volume" />
+            <input id="sfx-volume" type="range" min="0" max="100" step="1" data-i18n-title="panel.sfx.volume" data-i18n-aria="panel.sfx.volume" />
           </div>
         </div>
         <div class="mc-section">
@@ -71,15 +70,15 @@
              suivante (js/main.js). -->
         <div class="mc-section mc-row">
           <button id="cookie-btn" type="button" class="mc-btn hidden" data-i18n="panel.cookies" data-i18n-title="panel.cookies.title"></button>
-          <button id="lang-btn" type="button" class="mc-btn" data-i18n-title="panel.lang.title"></button>
+          <button id="lang-btn" type="button" class="mc-btn" data-i18n-title="panel.lang.title" data-i18n-aria="panel.lang.title"></button>
         </div>
         <div class="mc-section mc-version"><span id="version-label"></span> · <a class="privacy-link" data-i18n="panel.privacy" href="privacy.html" target="_blank" rel="noopener"></a></div>
       </div>
       <!-- Hors du panneau qui se replie, donc toujours visibles : Pause (seul
            moyen de mettre en pause au tactile) et l'onglet du panneau. -->
       <div id="mc-tabs">
-        <button id="pause-btn" type="button" data-i18n-title="panel.pause.title">⏸</button>
-        <button id="mc-toggle" type="button" data-i18n-title="panel.toggle.title"></button>
+        <button id="pause-btn" type="button" data-i18n-title="panel.pause.title" data-i18n-aria="panel.pause.title">⏸</button>
+        <button id="mc-toggle" type="button" data-i18n-title="panel.toggle.title" data-i18n-aria="panel.toggle.title"></button>
       </div>
     </div>
 

@@ -1,5 +1,5 @@
 # Dépendances de développement/test uniquement — jamais dans l'image Docker
 # (voir requirements.txt pour les dépendances réellement nécessaires en prod).
-pytest
-httpx2   # nécessaire pour fastapi.testclient.TestClient
-ruff
+pytest==9.1.1
+httpx2==2.13.1   # nécessaire pour fastapi.testclient.TestClient
+ruff==0.16.9

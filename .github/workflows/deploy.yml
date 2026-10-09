@@ -31,7 +31,7 @@ jobs:
           python-version: "3.13"
       - name: ruff check (backend)
         run: |
-          pip install ruff
+          pip install -r backend/requirements-dev.txt
           ruff check backend
       # pip-audit : une CVE connue dans les dépendances Python bloque le build.
       - name: pip-audit (backend)

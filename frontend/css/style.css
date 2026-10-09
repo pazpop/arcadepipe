@@ -10,6 +10,8 @@ html, body {
   overscroll-behavior: none;
 }
 
+/* touch-action: none : ni zoom ni défilement de la page au doigt, y compris
+   sur les bandes noires autour du jeu. */
 #game-container {
   position: relative;
   width: 100%;
@@ -18,13 +20,10 @@ html, body {
   align-items: center;
   justify-content: center;
   background: #000;
+  touch-action: none;
 }
 
 #game-canvas {
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
-  touch-action: none;
   cursor: pointer;
   background: #05060f;
 }
@@ -66,10 +65,11 @@ html, body {
    (téléphone en paysage), ces commandes tiennent dans la bande noire de gauche,
    et les boutons NOVA et Partager dans celle de droite.
 
-   env(safe-area-inset-*) : la largeur de l'encoche d'un téléphone, 0 ailleurs. */
+   env(safe-area-inset-*) : la place prise par l'encoche ou la barre d'accueil
+   d'un téléphone, 0 ailleurs. */
 #mc-wrap {
   position: absolute;
-  bottom: 8px;
+  bottom: calc(8px + env(safe-area-inset-bottom));
   left: env(safe-area-inset-left);
   display: flex;
   align-items: flex-end;
@@ -95,6 +95,7 @@ html, body {
   max-height: calc(100vh - 16px);
   max-height: calc(100dvh - 16px);
   overflow: hidden auto;
+  touch-action: pan-y; /* le panneau, lui, défile au doigt */
   transition: max-width 0.25s ease, opacity 0.2s ease, margin-left 0.25s ease, padding 0.25s ease, visibility 0.25s;
 }
 
@@ -238,9 +239,9 @@ html, body {
 /* Numéro de version et lien vers la page de confidentialité, discrets. */
 .mc-version {
   text-align: center;
-  font-size: 8px;
+  font-size: 10px;
   color: #cfe8ff;
-  opacity: 0.6;
+  opacity: 0.7;
 }
 .mc-version a {
   color: inherit;
@@ -252,7 +253,7 @@ html, body {
 .nova-btn,
 .share-btn {
   position: absolute;
-  bottom: 8px;
+  bottom: calc(8px + env(safe-area-inset-bottom));
   right: calc(8px + env(safe-area-inset-right));
   z-index: 2;
   background: rgba(5, 6, 15, 0.7);

@@ -14,7 +14,7 @@ export function grazeScoreForChain(chain) {
 // Dérivé de bossWaveEvery (même convention que isFirstBoss dans boss.js)
 // plutôt qu'un numéro de vague en dur.
 export function novaMaxForWave(wave) {
-  return wave >= DIFFICULTY.bossWaveEvery * NOVA.extraStockFromBossCount ? 2 : NOVA.baseMaxStock;
+  return wave >= DIFFICULTY.bossWaveEvery * NOVA.extraStockFromBossCount ? NOVA.baseMaxStock + 1 : NOVA.baseMaxStock;
 }
 
 function registerGraze(g, particles, audio, x, y) {
@@ -30,8 +30,7 @@ function registerGraze(g, particles, audio, x, y) {
   }
   if (g.novaStock >= g.novaMax) g.novaProgress = 0; // jauge pleine : pas de trop-plein visuel sur la barre de progression
   spawnSpark(particles, x, y, 2);
-  // Palier plafonné : sans ça, une chaîne longue en fin de vague chargée
-  // donnerait un son de plus en plus aigu jusqu'à l'insupportable.
+  // Le son monte avec la chaîne, jusqu'à un plafond : au-delà, il deviendrait insupportable.
   if (GRAZE.milestones.includes(g.grazeChain)) audio.playGrazeMilestone();
   else audio.playGraze(Math.min(g.grazeChain, 8));
 }

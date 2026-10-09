@@ -49,13 +49,14 @@ export function createInput(canvas) {
   window.addEventListener("mouseup", () => (input.fireHeld = false));
 
   // Tactile : le doigt pilote le vaisseau, décalé vers l'avant (droite)
-  // plutôt que caché sous le doigt. `touch-action: none` (CSS) empêche le
+  // plutôt que caché sous le doigt. targetTouches : les doigts posés sur le
+  // jeu, pas un pouce resté sur un bouton. `touch-action: none` (CSS) empêche le
   // scroll/zoom pendant qu'on joue.
   function handleTouch(e) {
-    if (e.touches.length === 0) return;
+    if (e.targetTouches.length === 0) return;
     input.isTouch = true;
     input.fireHeld = true;
-    const t = e.touches[0];
+    const t = e.targetTouches[0];
     const p = canvasToLogical(canvas, t.clientX, t.clientY);
     input.x = Math.max(0, Math.min(RES_W, p.x + INPUT.touchXOffset));
     input.y = p.y;
@@ -79,7 +80,7 @@ export function createInput(canvas) {
   // Doigt levé, ou geste annulé par le système (notification, geste d'accueil).
   function handleTouchEnd(e) {
     e.preventDefault();
-    if (e.touches.length === 0) input.fireHeld = false;
+    if (e.targetTouches.length === 0) input.fireHeld = false;
   }
   canvas.addEventListener("touchend", handleTouchEnd, { passive: false });
   canvas.addEventListener("touchcancel", handleTouchEnd, { passive: false });

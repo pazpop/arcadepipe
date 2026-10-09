@@ -1,10 +1,10 @@
 // État "playing" : la partie elle-même (mouvement, tirs, ennemis, collisions,
 // vagues, boss, niveau bonus, NOVA). drawScene() sert aussi à la pause et à
 // GAME OVER, qui affichent la scène figée derrière leur écran (voir game.js).
-import { RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE, HIT_STOP } from "../config.js";
+import { RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE, HIT_STOP, BOSS } from "../config.js";
 import { loadItem, saveItem } from "../storage.js";
 import { updateStarfield, triggerBossBackdropLeave } from "../stars.js";
-import { resetPlayer, updatePlayer, hitPlayer, drawPlayer, applyPowerup, applyShield, canReceivePowerup } from "../player.js";
+import { resetPlayer, updatePlayer, moveToward, hitPlayer, drawPlayer, applyPowerup, applyShield, canReceivePowerup } from "../player.js";
 import { updateProjectiles, drawProjectiles } from "../projectiles.js";
 import { updateParticles, drawParticles, spawnExplosion, spawnFlashBurst, spawnSpark } from "../particles.js";
 import { spawnEnemy, updateEnemies, damageEnemy, pointsFor, drawEnemies, enemyGlowColor } from "../enemies.js";
@@ -13,6 +13,7 @@ import { spawnPowerup, updatePowerups, drawPowerups } from "../powerups.js";
 import { updateGraze } from "../graze.js";
 import { drawBonusLevel } from "../bonusLevel.js";
 import { circlesOverlap } from "../collisions.js";
+import { deactivateAll } from "../pool.js";
 import { consumeJustPressed } from "../input.js";
 import * as hud from "../hud.js";
 import { MODE } from "./mode.js";
@@ -72,12 +73,9 @@ export function startRun(g, engine) {
   const { music, player, projectiles, enemies, particles, powerups } = engine;
   music.playRandom();
   resetPlayer(player);
-  for (const b of projectiles.player.items) b.active = false;
-  for (const b of projectiles.enemy.items) b.active = false;
-  for (const b of projectiles.pellet.items) b.active = false;
-  for (const e of enemies.items) e.active = false;
-  for (const p of particles.items) p.active = false;
-  for (const pu of powerups.items) pu.active = false;
+  for (const pool of [projectiles.player, projectiles.enemy, projectiles.pellet, enemies, particles, powerups]) {
+    deactivateAll(pool);
+  }
   g.score = 0;
   g.enemiesKilled = 0;
   g.maxGrazeChain = 0;
@@ -127,9 +125,7 @@ function resolveCollisions(g, engine) {
         b.active = false;
         const destroyed = damageEnemy(en, particles, b.damage);
         if (destroyed) {
-          g.score += pointsFor(en);
-          g.waveKills += 1;
-          g.enemiesKilled += 1;
+          countKill(g, en);
           audio.playExplosion();
           // Ni shake ni micro-gel sur un kill "classique" (réservés aux
           // élites, coups encaissés et boss), sinon l'effet se banalise.
@@ -137,10 +133,10 @@ function resolveCollisions(g, engine) {
           // Un seul bonus au sol à la fois, et jamais un bonus dont le joueur
           // profite déjà (canReceivePowerup).
           const dropChance = en.type === "elite" ? POWERUP.dropChanceElite : POWERUP.dropChanceNormal;
-          const type = pickPowerupType();
           const noneOnScreen = !powerups.items.some((pu) => pu.active);
-          if (noneOnScreen && canReceivePowerup(player, type) && Math.random() < dropChance) {
-            spawnPowerup(powerups, en.x, en.y, type);
+          if (noneOnScreen && Math.random() < dropChance) {
+            const type = pickPowerupType();
+            if (canReceivePowerup(player, type)) spawnPowerup(powerups, en.x, en.y, type);
           }
         } else {
           audio.playBossHit();
@@ -159,12 +155,12 @@ function resolveCollisions(g, engine) {
         if (res) {
           b.active = false;
           if (res === true) {
-            g.score += 300; // autant qu'un ennemi élite
+            g.score += BOSS.weakPointScore;
             triggerShake(g, 6);
             triggerHitStop(g, HIT_STOP.weakPoint);
             audio.playExplosion();
             if (g.boss.victory) {
-              g.score += 1000; // bonus de victoire, nettement au-dessus d'un point faible pour marquer l'accomplissement
+              g.score += BOSS.victoryScore;
               player.lives = Math.min(PLAYER.maxLives, player.lives + 1); // récompense de victoire, plafonnée
               g.flash = Math.max(g.flash, 0.6);
               triggerShake(g, 14);
@@ -226,6 +222,13 @@ function resolveCollisions(g, engine) {
   }
 }
 
+// Un ennemi abattu : points, compteur de la vague et total de la partie.
+function countKill(g, en) {
+  g.score += pointsFor(en);
+  g.waveKills += 1;
+  g.enemiesKilled += 1;
+}
+
 // NOVA (Espace ou bouton tactile) : dépense une charge et détruit les ennemis
 // actifs et leurs tirs en vol, jamais le boss.
 function useNova(g, engine) {
@@ -236,9 +239,7 @@ function useNova(g, engine) {
     if (!en.active) continue;
     en.active = false;
     spawnExplosion(particles, en.x, en.y, en.type === "elite" ? 20 : 12, enemyGlowColor(en));
-    g.score += pointsFor(en);
-    g.waveKills += 1;
-    g.enemiesKilled += 1;
+    countKill(g, en);
   }
   for (const eb of projectiles.enemy.items) {
     if (!eb.active) continue;
@@ -263,7 +264,7 @@ function onPlayerHit(g, engine) {
   if (!g.tookDamageThisWave) g.intactBlink = 1; // le rappel "INTACT" du HUD clignote 1 s avant de disparaître
   g.tookDamageThisWave = true; // casse l'éligibilité au bonus DIFFICULTY.noDamageWaveBonus — un coup absorbé par le bouclier (onShieldHit) ne compte pas, lui
   triggerShake(g, 10);
-  triggerHitStop(g, 0.08);
+  triggerHitStop(g, HIT_STOP.playerHit);
   vibrate(40);
   audio.playExplosion();
   spawnExplosion(particles, player.x, player.y, 18, PALETTE.player);
@@ -290,14 +291,14 @@ function applyHitToPlayer(g, engine) {
 // `timer` compte à rebours vers 0 ; ease-out cubique = ralentit en
 // approchant la position finale, comme un vrai vaisseau qui freine.
 function easeInFromLeft(timer, duration, startX, targetX) {
-  const t = Math.min(1, 1 - Math.max(0, timer) / duration);
-  const eased = 1 - Math.pow(1 - t, 3);
+  const progress = 1 - Math.max(0, timer) / duration;
+  const eased = 1 - Math.pow(1 - progress, 3);
   return startX + (targetX - startX) * eased;
 }
 
 // Glissée d'entrée (vague 1) : interpole la position directement (pas via
-// updatePlayer) pour qu'un mouvement de souris ne la court-circuite pas.
-// input.x/y n'est pas touché, donc le contrôle reprend sans saut à la fin.
+// updatePlayer) pour qu'un mouvement de souris ne la court-circuite pas. À la
+// fin, le vaisseau rejoint la souris ou le doigt.
 function updateShipIntro(g, engine, dt) {
   g.shipIntroTimer -= dt;
   engine.player.x = easeInFromLeft(g.shipIntroTimer, SHIP_INTRO_DURATION, PLAYER.entryX, PLAYER.restX);
@@ -312,21 +313,14 @@ function updateShipIntro(g, engine, dt) {
 // doigt comme en jeu normal.
 function updateBonusLevelShip(g, engine, dt) {
   const { player, input } = engine;
-  const targetX = PLAYER.restX;
   const bl = g.bonusLevel;
   if (bl.introTimer > 0) {
-    // y immobile pendant la glissée — le contrôle reprend sans saut une
-    // fois l'intro terminée (voir easeInFromLeft ci-dessus).
-    player.x = easeInFromLeft(bl.introTimer, BONUS_LEVEL.introDuration, PLAYER.entryX, targetX);
+    // y immobile pendant la glissée (voir easeInFromLeft ci-dessus).
+    player.x = easeInFromLeft(bl.introTimer, BONUS_LEVEL.introDuration, PLAYER.entryX, PLAYER.restX);
     player.y = RES_H / 2;
     return;
   }
-  const dx = targetX - player.x;
-  const maxStep = PLAYER.speed * dt;
-  player.x = Math.abs(dx) <= maxStep ? targetX : player.x + Math.sign(dx) * maxStep;
-  const dy = input.y - player.y;
-  player.y = Math.abs(dy) <= maxStep ? input.y : player.y + Math.sign(dy) * maxStep;
-  player.y = Math.max(6, Math.min(RES_H - 6, player.y));
+  moveToward(player, PLAYER.restX, input.y, dt);
 }
 
 export function update(g, engine, dt) {

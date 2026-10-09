@@ -71,7 +71,7 @@ def insert_score(player_name: str, score: int, wave: int = 1, kills: int = 0) ->
     with get_connection() as conn:
         row = conn.execute(
             "INSERT INTO scores (player_name, score, wave, kills) VALUES (?, ?, ?, ?) "
-            "RETURNING id, player_name, score, wave, kills, created_at",
+            "RETURNING player_name, score, wave, kills",
             (player_name, score, wave, kills),
         ).fetchone()
         # Ne garde que les MAX_STORED_SCORES meilleurs (le nouveau score compris, s'il en fait partie).
@@ -87,7 +87,7 @@ def insert_score(player_name: str, score: int, wave: int = 1, kills: int = 0) ->
 def get_top_scores(limit: int = 10) -> list[dict]:
     with get_connection() as conn:
         rows = conn.execute(
-            "SELECT id, player_name, score, wave, kills, created_at FROM scores "
+            "SELECT player_name, score, wave, kills FROM scores "
             "ORDER BY score DESC, id LIMIT ?",  # à égalité : le premier arrivé reste devant
             (limit,),
         ).fetchall()

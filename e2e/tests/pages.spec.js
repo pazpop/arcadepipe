@@ -1,5 +1,5 @@
 // Pages annexes : confidentialité et kit presse.
-import { test, expect } from "@playwright/test";
+import { test, expect } from "./helpers.js";
 
 test("page de confidentialité : le lien du panneau mène à la section de la langue du jeu", async ({ page }) => {
   await page.goto("/");

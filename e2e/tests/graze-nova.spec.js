@@ -3,8 +3,7 @@
 // combat de boss dès la vague 1 (tire vite, garanti) et un rayon de
 // frôlement/jauge généreux via import dynamique de config.js (voir helpers.js
 // et powerups-boss.spec.js pour le même principe).
-import { test, expect } from "@playwright/test";
-import { canvasHelpers, collectErrors, gameState, skipHints } from "./helpers.js";
+import { test, expect, canvasHelpers, collectErrors, gameState, skipHints } from "./helpers.js";
 
 test("graze : la jauge NOVA se remplit, le bouton tactile apparaît et NOVA efface les tirs", async ({ page }) => {
   const errors = collectErrors(page);

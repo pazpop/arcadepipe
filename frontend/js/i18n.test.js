@@ -9,6 +9,7 @@ import { LANGS, lang, t } from "./i18n.js";
 const params = (str) => (str.match(/\{\w+\}/g) || []).sort();
 
 for (const [code, strings] of Object.entries(LANGS)) {
+  if (code === "fr") continue; // la référence
   test(`${code} : mêmes clés que fr`, () => {
     assert.deepEqual(Object.keys(strings).sort(), Object.keys(LANGS.fr).sort());
   });

@@ -2,8 +2,7 @@
 // (taux de drop faible, plusieurs vagues avant le premier boss). Constantes
 // forcées via un import dynamique de config.js (voir helpers.js) ; chaque
 // test repart d'une page fraîche.
-import { test, expect } from "@playwright/test";
-import { canvasHelpers, collectErrors, gameState, reachBoss, skipHints } from "./helpers.js";
+import { test, expect, canvasHelpers, collectErrors, gameState, reachBoss, skipHints } from "./helpers.js";
 
 // Tire en balayant la hauteur jusqu'à un drop, puis va chercher le bonus au
 // sol, jusqu'à ce que `picked(state)` soit vrai.
@@ -68,6 +67,10 @@ test("bouclier et arme bonus : actifs en même temps", async ({ page }) => {
   await page.goto("/");
   await skipHints(page);
   await forceDrops(page, { power: 0, rapid: 0, shotgun: 0, shield: 1 });
+  await page.evaluate(async () => {
+    const { POWERUP } = await import("/js/config.js");
+    POWERUP.shieldHits = 99; // le bouclier tient jusqu'au ramassage de l'arme, quels que soient les coups pris
+  });
 
   const { canvas, startRun } = canvasHelpers(page);
   await startRun();
@@ -86,7 +89,7 @@ test("bouclier et arme bonus : actifs en même temps", async ({ page }) => {
   expect(errors).toEqual([]);
 });
 
-test("premier combat de boss : coque + points faibles s'affichent, pas d'erreur", async ({ page }) => {
+test("premier boss : invulnérable pendant son entrée, puis il tire", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);
@@ -94,10 +97,11 @@ test("premier combat de boss : coque + points faibles s'affichent, pas d'erreur"
   // Boss dès la vague 2 et 1 kill par vague : le combat arrive en quelques
   // secondes au lieu de plusieurs minutes.
   await page.evaluate(async () => {
-    const { DIFFICULTY } = await import("/js/config.js");
+    const { DIFFICULTY, BOSS } = await import("/js/config.js");
     DIFFICULTY.bossWaveEvery = 2;
     DIFFICULTY.baseWaveKills = 1;
     DIFFICULTY.waveKillsStep = 0;
+    BOSS.firstBossHpMul = 0.01; // points faibles à 1 PV : sans invulnérabilité, le premier tir en détruirait un
   });
 
   const { canvas, startRun, toPage } = canvasHelpers(page);
@@ -111,7 +115,7 @@ test("premier combat de boss : coque + points faibles s'affichent, pas d'erreur"
   const wave = async () => (await gameState(page)).wave;
   for (let i = 0; i < 40 && (await wave()) < 2; i++) {
     await page.mouse.move(ship.x, (await toPage(90, 30 + (i % 8) * 30)).y);
-    await page.waitForTimeout(500);
+    await page.waitForTimeout(200);
   }
   expect(await wave()).toBe(2);
 
@@ -176,7 +180,7 @@ test("boss vaincu : une vie de plus, puis la vague suivante", async ({ page }) =
     await page.waitForTimeout(200);
   }
   await page.mouse.up();
-  await expect.poll(async () => (await gameState(page)).wave, { timeout: 10000 }).toBe(3);
+  await expect.poll(async () => (await gameState(page)).wave, { timeout: 10000 }).toBe(2);
   expect((await gameState(page)).lives).toBe(4);
   expect(errors).toEqual([]);
 });

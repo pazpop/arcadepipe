@@ -217,7 +217,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     get inBonusLevel() {
       return g.bonusLevel !== null;
     },
-    // Position du vaisseau, vies, scores du classement, tirs du joueur, bonus actif, bouclier, bonus au sol, boss et ses tirs : lus par la suite e2e (e2e/tests/helpers.js).
+    // Les accesseurs qui suivent, jusqu'à bossBulletsOnScreen, ne servent qu'à la suite e2e (e2e/tests/helpers.js).
     get playerPosition() {
       return { x: player.x, y: player.y };
     },

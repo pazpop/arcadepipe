@@ -1,13 +1,4 @@
-"""
-ArcadePipe — API backend
-
-Endpoints:
-  GET  /api/health         -> vérifie que l'API tourne
-  GET  /api/scores         -> top scores (leaderboard)
-  POST /api/scores         -> enregistre un nouveau score
-  GET  /api/games/count    -> nombre total de parties jouées
-  POST /api/games          -> enregistre qu'une partie vient de se terminer
-"""
+"""ArcadePipe — API du classement. Les routes sont décrites dans README.md."""
 import os
 from contextlib import asynccontextmanager
 from typing import Annotated
@@ -46,8 +37,10 @@ app.add_middleware(
 def get_client_ip(request: Request) -> str:
     # On lit la DERNIÈRE IP de X-Forwarded-For : c'est celle que le reverse-proxy
     # de confiance (Traefik en prod, Caddy en autonome) a ajoutée ou imposée,
-    # jamais une valeur envoyée par le client. Sans proxy devant (accès direct
-    # au port 8000), cette fonction n'est pas fiable — déploiement non supporté.
+    # jamais une valeur envoyée par le client. Ce proxy doit être celui qui
+    # reçoit les joueurs : sans proxy (accès direct au port 8000), l'en-tête est
+    # falsifiable ; avec un second proxy devant le premier, tous les joueurs
+    # partageraient la même adresse, donc le même quota. Non supportés.
     forwarded = request.headers.get("x-forwarded-for")
     if forwarded:
         return forwarded.split(",")[-1].strip()

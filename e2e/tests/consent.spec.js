@@ -1,8 +1,7 @@
 // Mesure d'audience (frontend/js/consent.js) : désactivée sans identifiant, et
 // avec un identifiant, jamais chargée avant "Accepter". Le réseau est
 // intercepté (aucune vraie requête vers googletagmanager.com).
-import { test, expect } from "@playwright/test";
-import { collectErrors, enableAnalytics } from "./helpers.js";
+import { test, expect, collectErrors, enableAnalytics } from "./helpers.js";
 
 const GTM = /googletagmanager\.com/;
 
@@ -48,6 +47,7 @@ test("Refuser : bandeau masqué, rien chargé, choix mémorisé au rechargement"
   await page.click("#cookie-decline");
   await expect(page.locator("#cookie-banner")).toBeHidden();
   await page.reload();
+  await expect(page.locator("#cookie-btn")).toBeVisible(); // le choix mémorisé a été relu
   await expect(page.locator("#cookie-banner")).toBeHidden();
   await page.waitForTimeout(300);
   expect(gtm).toEqual([]);
@@ -95,6 +95,7 @@ test("bouton Cookies : retirer son accord coupe Analytics, efface ses cookies, e
   expect(state.cookies).not.toContain("_ga");
 
   await page.reload();
+  await expect(page.locator("#cookie-btn")).toBeVisible(); // le choix mémorisé a été relu
   await expect(page.locator("#cookie-banner")).toBeHidden();
   await page.waitForTimeout(300);
   expect(gtm.length).toBe(1); // rien de plus après le rechargement

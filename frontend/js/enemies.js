@@ -74,9 +74,9 @@ function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
   en.grazeCooldown = 0;
 }
 
-// Dès la vague 5, une partie des ennemis normaux devient "gunner" et tire
-// aussi (plus lent/moins fréquent qu'une élite).
-const GUNNER_MIN_WAVE = 5;
+// Dès la vague 6 (la 5 est un boss), une partie des ennemis normaux devient
+// "gunner" et tire aussi (plus lent/moins fréquent qu'une élite).
+const GUNNER_MIN_WAVE = 6;
 const GUNNER_CHANCE = 0.22;
 // +1 PV par rapport à un normal (1 -> 2) — encaisse un coup de plus pour
 // justifier qu'il tire, sans être aussi résistant qu'une élite (3 PV).
@@ -175,8 +175,10 @@ export function setEnemiesLeaving(pool) {
 // être une vraie menace, assez lent pour rester esquivable en bougeant.
 const KAMIKAZE_TURN_RATE = 2.6;
 
+const BULLET_SPEED = 70; // px/s en vague 1 ; accélère ensuite (bulletSpeedFactor)
+
 export function updateEnemies(pool, dt, projectiles, target, wave, warp = 1) {
-  const bulletSpeed = 70 * bulletSpeedFactor(wave);
+  const bulletSpeed = BULLET_SPEED * bulletSpeedFactor(wave);
   for (const en of pool.items) {
     if (!en.active) continue;
     en.elapsed += dt;
@@ -244,14 +246,15 @@ export function pointsFor(en) {
   return TYPE_STATS[en.type].points;
 }
 
-// Gunner et élite encaissent plus d'un coup : dès le premier, leur sprite
-// passe à sa variante ternie (fadedPalette, assets.js), seul repère de dégâts.
+// Un ennemi touché mais pas détruit passe à la variante ternie de son sprite
+// (fadedPalette, assets.js), seul repère de dégâts. Même un ennemi à 1 PV peut
+// survivre à un tir : RAFALE et les plombs lointains font moins d'un point de dégâts.
 function spriteFor(en, sprites) {
   const damaged = en.hp < en.maxHp;
   if (en.type === "elite") return damaged ? sprites.enemyEliteDamaged : sprites.enemyElite;
-  if (en.type === "kamikaze") return sprites.enemyKamikaze;
+  if (en.type === "kamikaze") return damaged ? sprites.enemyKamikazeDamaged : sprites.enemyKamikaze;
   if (en.gunner) return damaged ? sprites.enemyGunnerDamaged : sprites.enemyGunner;
-  return sprites.enemyNormal;
+  return damaged ? sprites.enemyNormalDamaged : sprites.enemyNormal;
 }
 
 export function drawEnemies(ctx, pool) {

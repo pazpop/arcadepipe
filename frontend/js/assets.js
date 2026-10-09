@@ -171,15 +171,15 @@ export function buildSprites() {
     player: pixelsToCanvas(PLAYER_ROWS, PLAYER_PALETTE, 1),
     enemyNormal: pixelsToCanvas(ENEMY_NORMAL_ROWS, ENEMY_NORMAL_PALETTE, 1),
     enemyGunner: pixelsToCanvas(ENEMY_NORMAL_ROWS, ENEMY_GUNNER_PALETTE, 1),
-    // Variantes "endommagées" (couleurs ternies) : gunner et élite encaissent
-    // plus d'un coup (voir GUNNER_HP_BONUS et TYPE_STATS.elite dans
-    // enemies.js) — un seul palier visuel dès le premier coup pris plutôt
-    // qu'un dégradé par PV, largement suffisant vu leur nombre de PV réduit
-    // (2 et 3) et plus simple à suivre du coin de l'œil en plein combat.
+    // Variantes "endommagées" (couleurs ternies), affichées dès le premier coup
+    // encaissé (spriteFor, enemies.js) : un seul palier, plus simple à suivre
+    // du coin de l'œil qu'un dégradé par PV.
+    enemyNormalDamaged: pixelsToCanvas(ENEMY_NORMAL_ROWS, fadedPalette(ENEMY_NORMAL_PALETTE), 1),
     enemyGunnerDamaged: pixelsToCanvas(ENEMY_NORMAL_ROWS, fadedPalette(ENEMY_GUNNER_PALETTE), 1),
     enemyElite: pixelsToCanvas(ENEMY_ELITE_ROWS, ENEMY_ELITE_PALETTE, 1),
     enemyEliteDamaged: pixelsToCanvas(ENEMY_ELITE_ROWS, fadedPalette(ENEMY_ELITE_PALETTE), 1),
     enemyKamikaze: pixelsToCanvas(ENEMY_KAMIKAZE_ROWS, ENEMY_KAMIKAZE_PALETTE, 1),
+    enemyKamikazeDamaged: pixelsToCanvas(ENEMY_KAMIKAZE_ROWS, fadedPalette(ENEMY_KAMIKAZE_PALETTE), 1),
     bossHull: pixelsToCanvas(BOSS_HULL_ROWS, BOSS_HULL_PALETTE, 2),
   };
   return cache;

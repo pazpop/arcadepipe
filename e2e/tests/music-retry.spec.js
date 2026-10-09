@@ -1,7 +1,6 @@
 // Un 429 sur les pistes ne doit pas déclencher de rafale de requêtes : retry
 // différé, délai plafonné (audio/music.js, _retryLater).
-import { test, expect } from "@playwright/test";
-import { skipHints } from "./helpers.js";
+import { test, expect, skipHints } from "./helpers.js";
 
 test("429 sur les fichiers musique : pas de rafale de requêtes", async ({ page }) => {
   const pageErrors = [];

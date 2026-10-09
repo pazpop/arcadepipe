@@ -11,9 +11,9 @@ const FALLBACK = "en"; // navigateur dans une langue non traduite
 // Langue choisie (mémorisée), sinon celle du navigateur si elle est traduite.
 function detectLang() {
   const saved = loadItem(STORAGE_KEYS.lang);
-  if (saved in LANGS) return saved;
+  if (Object.hasOwn(LANGS, saved)) return saved;
   const browser = (globalThis.navigator?.language || "").slice(0, 2).toLowerCase();
-  return browser in LANGS ? browser : FALLBACK;
+  return Object.hasOwn(LANGS, browser) ? browser : FALLBACK;
 }
 
 export const lang = detectLang();

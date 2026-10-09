@@ -107,7 +107,7 @@ export function updateBoss(boss, dt, projectiles, target) {
     const countMul = firstBoss ? BOSS.firstBossBulletCountMul : 1;
     const destroyed = destroyedCount(boss);
     if (destroyed % 3 === 0) {
-      // courbe légère : les bords de l'éventail s'ouvrent en "fleur", le centre reste droit.
+      // courbe légère (0,6 rad/s aux bords) : l'éventail s'ouvre en "fleur", le centre reste droit.
       patternFan(projectiles, boss.x - 20, boss.y, target, speed, Math.max(3, Math.round((5 + destroyed) * countMul)), Math.PI / 2.2, 0.6);
     } else if (destroyed % 3 === 1) {
       boss.spiralAngle += 0.4;

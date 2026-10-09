@@ -63,12 +63,16 @@ export class MusicPlayer {
         return;
       }
       this.audio.src = file;
-      // Lecture refusée faute de geste du joueur : le prochain geste relancera
-      // start(). Les échecs de chargement, eux, passent par l'événement "error".
-      this.audio.play().catch((e) => {
-        if (e.name === "NotAllowedError") this.started = false;
-      });
+      this._play();
     }, FADE_S * 1000);
+  }
+
+  // Lecture refusée faute de geste du joueur : le prochain geste relancera
+  // start(). Les échecs de chargement, eux, passent par l'événement "error".
+  _play() {
+    this.audio.play().catch((e) => {
+      if (e.name === "NotAllowedError") this.started = false;
+    });
   }
 
   // Reprise après un arrêt ou un passage en arrière-plan.
@@ -77,7 +81,7 @@ export class MusicPlayer {
       this._pendingTrack = false;
       this._load();
     } else {
-      this.audio.play().catch(() => {});
+      this._play();
     }
   }
 

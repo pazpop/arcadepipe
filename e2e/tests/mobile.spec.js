@@ -1,14 +1,15 @@
 // Téléphone en paysage (écran plus large que le 16:9 du jeu) : les commandes
 // tactiles se rangent dans les bandes noires, sans recouvrir le jeu.
-import { test, expect } from "@playwright/test";
-import { canvasHelpers, gameState, skipHints, waitForMode } from "./helpers.js";
+import { test, expect, canvasHelpers, gameState, skipHints, waitForMode } from "./helpers.js";
 
 // storageState vide : le panneau garde son état par défaut (replié).
 test.use({ viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, storageState: { cookies: [], origins: [] } });
 
-test("téléphone en paysage : panneau replié, Pause et NOVA dans les bandes, le vaisseau suit le doigt", async ({ page }) => {
+test("téléphone en paysage : commandes dans les bandes, vaisseau piloté et tir au doigt, Pause d'un second doigt", async ({ page }) => {
   await page.goto("/");
   await skipHints(page);
+  await page.evaluate(() => localStorage.setItem("arcadepipe_autofire", "0")); // tir au doigt maintenu
+  await page.reload();
 
   // Le jeu garde son format 16:9, centré.
   const canvas = await page.locator("#game-canvas").boundingBox();
@@ -44,9 +45,19 @@ test("téléphone en paysage : panneau replié, Pause et NOVA dans les bandes, l
   await page.touchscreen.tap(finger.x, finger.y);
   await expect.poll(async () => Math.round((await gameState(page)).player.y), { timeout: 8000 }).toBe(60);
   expect((await gameState(page)).player.x).toBeGreaterThan(150);
+  expect((await gameState(page)).playerBullets).toBe(0); // doigt levé : pas de tir
+
+  // Doigt maintenu : le vaisseau tire. Un second doigt sur Pause met en pause
+  // (deux doigts à la fois : hors de portée de page.touchscreen, d'où le protocole du navigateur).
+  const cdp = await page.context().newCDPSession(page);
+  const steer = { ...finger, id: 1 };
+  const pauseBox = await page.locator("#pause-btn").boundingBox();
+  const thumb = { x: pauseBox.x + pauseBox.width / 2, y: pauseBox.y + pauseBox.height / 2, id: 2 };
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [steer] });
   await expect.poll(async () => (await gameState(page)).playerBullets).toBeGreaterThan(0);
-  await page.locator("#pause-btn").tap();
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [steer, thumb] });
   await waitForMode(page, "paused");
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] });
 
   // Le bouton ⚙ ouvre le panneau, qui tient dans la hauteur de l'écran.
   await page.locator("#mc-toggle").tap();

@@ -1,18 +1,22 @@
-// localStorage tolérant : stockage indisponible (navigation privée, accès
-// bloqué) -> lecture = null/repli, écriture ignorée. Jamais bloquant.
+// Préférences dans localStorage. Stockage bloqué (navigation privée, jeu
+// embarqué dans une autre page avec les cookies tiers refusés) : elles sont
+// gardées en mémoire, le temps de la visite. Jamais bloquant.
+const memory = new Map();
+
 export function loadItem(key) {
   try {
-    return localStorage.getItem(key);
+    return localStorage.getItem(key) ?? memory.get(key) ?? null;
   } catch {
-    return null;
+    return memory.get(key) ?? null;
   }
 }
 
 export function saveItem(key, value) {
+  memory.set(key, String(value));
   try {
     localStorage.setItem(key, String(value));
   } catch {
-    /* indisponible — pas bloquant */
+    /* stockage indisponible : la valeur reste en mémoire */
   }
 }
 

@@ -1,7 +1,6 @@
 // Langue du jeu (frontend/js/i18n.js) : suit le navigateur au premier
 // lancement, puis le choix fait avec le bouton du panneau est mémorisé.
-import { test, expect } from "@playwright/test";
-import { collectErrors, enableAnalytics } from "./helpers.js";
+import { test, expect, collectErrors, enableAnalytics } from "./helpers.js";
 
 test.describe("navigateur en anglais", () => {
   test.use({ locale: "en-US" });

@@ -7,3 +7,7 @@ export function acquireSlot(pool) {
   }
   return null; // pool saturé : on ignore silencieusement plutôt que de faire grandir le tableau
 }
+
+export function deactivateAll(pool) {
+  for (const item of pool.items) item.active = false;
+}

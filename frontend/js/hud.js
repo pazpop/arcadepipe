@@ -108,7 +108,6 @@ export function drawGameHud(ctx, s, lives) {
 // maximum monte en cours de partie, voir novaMaxForWave dans graze.js) et une
 // fine barre de progression vers la prochaine charge. Pâle sans charge, vive dès qu'une est prête.
 export function drawNovaGauge(ctx, stock, max, progress) {
-  if (max <= 0) return;
   const color = NOVA.color;
   const y = 20;
   text(ctx, `NOVA ${stock}/${max}`, 8, y, {
@@ -136,7 +135,7 @@ export function drawNovaGauge(ctx, stock, max, progress) {
 // classique, facile à surveiller du coin de l'œil en esquivant). Rouge
 // (PALETTE.danger), distinct du jaune/or de sa coque et de ses points faibles.
 export function drawBossHealthBar(ctx, boss) {
-  if (!boss || boss.victory) return;
+  if (boss.victory) return;
   const frac = bossHealthFraction(boss);
   const margin = 6;
   const h = 5;
@@ -313,15 +312,12 @@ export function drawLeaderboardScreen(ctx, scores, failed, revealCount, gamesPla
     const size = isMedal ? 10 : 8;
     const y = startY + i * rowH;
     const rank = `${String(i + 1).padStart(2, "0")}.`;
-    const name = (sc.player_name || "---").toUpperCase().slice(0, 8);
-    const wave = sc.wave != null ? String(sc.wave) : "-";
-    const kills = sc.kills != null ? String(sc.kills) : "-";
     const glow = isMedal ? color : null;
     text(ctx, rank, COL.rank, y, { size, align: "left", color, glow });
-    text(ctx, name, COL.name, y, { size, align: "left", color, glow });
+    text(ctx, sc.player_name, COL.name, y, { size, align: "left", color, glow });
     text(ctx, String(sc.score), COL.score, y, { size, align: "right", color, glow });
-    text(ctx, wave, COL.wave, y, { size, align: "right", color, glow });
-    text(ctx, kills, COL.kills, y, { size, align: "right", color, glow });
+    text(ctx, String(sc.wave), COL.wave, y, { size, align: "right", color, glow });
+    text(ctx, String(sc.kills), COL.kills, y, { size, align: "right", color, glow });
   });
 
   text(ctx, t("board.back"), RES_W / 2, RES_H - 12, { size: 7, align: "center", alpha: 0.7 });
@@ -554,7 +550,7 @@ export function drawInfoScreen(ctx, content, page, pageCount) {
 
 // --- Game over / saisie du nom ---
 
-export function drawGameOverScreen(ctx, score, wave, kills, distance) {
+function drawGameOverScreen(ctx, score, wave, kills, distance) {
   text(ctx, t("gameover.title"), RES_W / 2, RES_H * 0.28, { size: 20, align: "center", color: PALETTE.danger, glow: PALETTE.danger });
   text(ctx, t("gameover.stats", { score, wave, kills }), RES_W / 2, RES_H * 0.28 + 22, { size: 10, align: "center" });
   text(ctx, t("gameover.distance", { distance: Math.round(distance) }), RES_W / 2, RES_H * 0.28 + 34, { size: 7, align: "center", alpha: 0.8 });
@@ -592,21 +588,26 @@ export function drawDeathScreen(ctx, score, wave, kills, distance, selected, top
   ctx.restore();
 }
 
+// Saisie du pseudo : tout tient dans la moitié haute de l'écran, que le
+// clavier virtuel d'un téléphone en paysage ne recouvre pas.
+const NAME_ENTRY_Y = 34;
+
 // Bouton tactile pour valider le nom — indispensable sur mobile où le
 // clavier virtuel n'apparaît pas toujours (goToLeaderboard dans states/endOfRun.js).
 function nameEntryValidateRect() {
-  return { x: RES_W / 2, y: RES_H * 0.48 + 54, w: 200, h: 18 };
+  return { x: RES_W / 2, y: NAME_ENTRY_Y + 84, w: 200, h: 18 };
 }
 
 export function hitTestNameEntryValidate(x, y) {
   return pointInRect(x, y, nameEntryValidateRect());
 }
 
-export function drawNameEntry(ctx, name, cursorVisible) {
-  text(ctx, t("name.title"), RES_W / 2, RES_H * 0.48, { size: 10, align: "center", color: PALETTE.bulletPlayer });
-  text(ctx, t("name.prompt"), RES_W / 2, RES_H * 0.48 + 16, { size: 7, align: "center", alpha: 0.8 });
+export function drawNameEntry(ctx, name, cursorVisible, score, wave, kills) {
+  text(ctx, t("name.title"), RES_W / 2, NAME_ENTRY_Y, { size: 12, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
+  text(ctx, t("gameover.stats", { score, wave, kills }), RES_W / 2, NAME_ENTRY_Y + 20, { size: 9, align: "center" });
+  text(ctx, t("name.prompt"), RES_W / 2, NAME_ENTRY_Y + 42, { size: 7, align: "center", alpha: 0.8 });
   const shown = name + (cursorVisible ? "_" : " ");
-  text(ctx, shown.padEnd(8, "·"), RES_W / 2, RES_H * 0.48 + 34, { size: 14, align: "center", color: PALETTE.hud, glow: PALETTE.hud });
+  text(ctx, shown.padEnd(8, "·"), RES_W / 2, NAME_ENTRY_Y + 60, { size: 14, align: "center", glow: PALETTE.hud });
   const r = nameEntryValidateRect();
   text(ctx, t("name.validate"), r.x, r.y, { size: 11, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
 }

@@ -42,24 +42,20 @@ Deux objets, créés une fois par `createGame()`, circulent partout :
 - **`g`** : l'état du jeu (écran courant, score, vague, jauge NOVA...), dans un seul objet.
 - **`engine`** : ce dont un écran a besoin (`input`, `audio`, `music`, le joueur, les ennemis, les projectiles...), plus `engine.actions.startRun`, qui lance une partie sans import circulaire.
 
-Un écran expose jusqu'à trois fonctions : `update` (fait avancer l'écran d'une image), `draw` (le dessine) et `handleTap` (traite un clic ou un tap). `endOfRun.js` regroupe deux écrans (game over et saisie du pseudo) et nomme donc ses fonctions `updateGameOver`, `drawNameEntry`, etc.
+Un écran expose en général trois fonctions : `update` (fait avancer l'écran d'une image), `draw` (le dessine) et `handleTap` (traite un clic ou un tap), plus `open` quand il a quelque chose à préparer en s'ouvrant. `endOfRun.js` regroupe deux écrans (game over et saisie du pseudo) et nomme donc ses fonctions `updateGameOver`, `drawNameEntry`, etc.
 
 Tout le jeu dessine en coordonnées logiques 480×270 (`RES_W`, `RES_H`) ; `renderer.js` les convertit à la taille réelle de l'écran.
 
 ## Lancer en local
 
-```bash
-python -m http.server 5500   # http://localhost:5500
-```
-
-Le classement n'apparaît que si le [backend](../backend/README.md) tourne aussi, et seulement à cette adresse exacte (`localhost`, port 5500).
+Les commandes sont dans le [README principal](../README.md#lancer-en-local). Le classement n'apparaît que si le [backend](../backend/README.md) tourne aussi, et seulement à cette adresse exacte (`localhost`, port 5500).
 
 ## Tests et lint
 
 Node 22 ou plus récent. Chaque commande part de la racine du dépôt :
 
 ```bash
-cd frontend/js && node --test                # logique pure : collisions, frôlement, bonus, ennemis, traductions, cache de l'API
+cd frontend/js && node --test                # logique pure : collisions, frôlement, bonus, ennemis, boss, tirs courbes, traductions, cache de l'API
 cd frontend && npm install && npm run lint   # ESLint
 ```
 

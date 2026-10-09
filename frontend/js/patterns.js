@@ -10,36 +10,32 @@ export function patternAimed(projectiles, x, y, target, speed) {
   fireEnemyBullet(projectiles, x, y, (dx / dist) * speed, (dy / dist) * speed);
 }
 
-// curve (rad/s, optionnel) : les tirs aux extrémités s'incurvent vers
-// l'extérieur (centre droit) — effet "fleur qui s'ouvre". Couleur "directe"
-// par défaut (PALETTE.bulletBossDirect) — seul le boss utilise ce pattern.
-export function patternFan(projectiles, x, y, target, speed, count = 5, spreadRad = Math.PI / 3, curve = 0, color = PALETTE.bulletBossDirect) {
-  const dx = target.x - x;
-  const dy = target.y - y;
-  const baseAngle = Math.atan2(dy, dx);
-  const start = baseAngle - spreadRad / 2;
+// Éventail de `count` tirs (2 au moins) visant la cible, en couleur "directe".
+// curve (rad/s) : les tirs s'incurvent vers l'extérieur, de plus en plus en
+// s'éloignant du centre (qui reste droit) — effet "fleur qui s'ouvre".
+export function patternFan(projectiles, x, y, target, speed, count, spreadRad, curve) {
+  const baseAngle = Math.atan2(target.y - y, target.x - x);
   for (let i = 0; i < count; i++) {
-    const a = count === 1 ? baseAngle : start + (spreadRad * i) / (count - 1);
-    const offsetFromCenter = count === 1 ? 0 : i - (count - 1) / 2;
-    fireEnemyBullet(projectiles, x, y, Math.cos(a) * speed, Math.sin(a) * speed, color, curve * offsetFromCenter);
+    const side = (2 * i) / (count - 1) - 1; // de -1 (un bord de l'éventail) à 1 (l'autre)
+    const a = baseAngle + (spreadRad / 2) * side;
+    fireEnemyBullet(projectiles, x, y, Math.cos(a) * speed, Math.sin(a) * speed, PALETTE.bulletBossDirect, curve * side);
   }
 }
 
-// Spirale : angle tourne d'un pas fixe à chaque appel — l'appelant incrémente
-// `angle` lui-même (boss.spiralAngle). Couleur "circulaire" par défaut (tous les bras,
-// pas juste le premier — un pattern dense doit rester lisible d'un bloc).
-export function patternSpiralStep(projectiles, x, y, angle, speed, arms = 3, color = PALETTE.bulletBossCircular) {
+// Spirale : l'angle tourne d'un pas fixe à chaque appel — l'appelant incrémente
+// `angle` lui-même (boss.spiralAngle). Couleur "circulaire" sur tous les bras.
+export function patternSpiralStep(projectiles, x, y, angle, speed, arms) {
   for (let i = 0; i < arms; i++) {
     const a = angle + (Math.PI * 2 * i) / arms;
-    fireEnemyBullet(projectiles, x, y, Math.cos(a) * speed, Math.sin(a) * speed, color);
+    fireEnemyBullet(projectiles, x, y, Math.cos(a) * speed, Math.sin(a) * speed, PALETTE.bulletBossCircular);
   }
 }
 
-// curve (rad/s, optionnel) : l'anneau tourne en s'étendant — effet
-// "pinwheel". Couleur "circulaire" par défaut, comme patternSpiralStep.
-export function patternRing(projectiles, x, y, speed, count = 12, curve = 0, color = PALETTE.bulletBossCircular) {
+// curve (rad/s) : l'anneau tourne en s'étendant — effet "pinwheel". Couleur
+// "circulaire", comme patternSpiralStep.
+export function patternRing(projectiles, x, y, speed, count, curve) {
   for (let i = 0; i < count; i++) {
     const a = (Math.PI * 2 * i) / count;
-    fireEnemyBullet(projectiles, x, y, Math.cos(a) * speed, Math.sin(a) * speed, color, curve);
+    fireEnemyBullet(projectiles, x, y, Math.cos(a) * speed, Math.sin(a) * speed, PALETTE.bulletBossCircular, curve);
   }
 }

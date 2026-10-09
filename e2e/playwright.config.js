@@ -27,11 +27,13 @@ export default defineConfig({
   // Un seul worker suffit largement pour la taille de cette suite.
   workers: 1,
   retries: 0,
+  forbidOnly: !!process.env.CI, // un test.only oublié ferait passer la CI avec un seul test
   reporter: "list",
   timeout: 60000,
   use: {
     baseURL: "http://localhost:5500",
     screenshot: "only-on-failure",
+    trace: "retain-on-failure",
     // Français (langue de référence) : le jeu suit la langue du navigateur,
     // anglaise par défaut sous Playwright (voir i18n.spec.js pour l'anglais).
     locale: "fr-FR",

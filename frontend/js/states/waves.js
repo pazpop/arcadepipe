@@ -6,6 +6,7 @@ import { spawnBoss } from "../boss.js";
 import { novaMaxForWave } from "../graze.js";
 import { createBonusLevel, updateBonusLevel, bonusLevelRewardFraction } from "../bonusLevel.js";
 import { setEnemiesLeaving } from "../enemies.js";
+import { deactivateAll } from "../pool.js";
 import { t } from "../i18n.js";
 
 function isBossWave(wave) {
@@ -70,6 +71,9 @@ export function updateWaveTransition(g, engine, dt) {
     if (g.bonusLevel.finished) {
       const frac = bonusLevelRewardFraction(g.bonusLevel);
       const passed = g.bonusLevel.passedCount;
+      // Le maximum de la vague qui suit : c'est avant la vague 10 que la
+      // seconde charge devient possible, la récompense doit pouvoir la remplir.
+      g.novaMax = novaMaxForWave(g.wave + 1);
       applyNovaReward(g, frac);
       g.bonusLevel = null;
       g.banner = { text: t("banner.bonusDone", { passed, total: BONUS_LEVEL.ringCount, percent: Math.round(frac * 100) }) };
@@ -85,8 +89,8 @@ export function updateWaveTransition(g, engine, dt) {
   // gauche comme le fond.
   g.clearingScreen = true;
   setEnemiesLeaving(enemies);
-  for (const b of projectiles.enemy.items) b.active = false;
-  for (const pu of powerups.items) pu.active = false;
+  deactivateAll(projectiles.enemy);
+  deactivateAll(powerups);
   if (g.tookDamageThisWave) {
     g.banner = { text: t("banner.waveDone", { wave: g.wave }) };
   } else {

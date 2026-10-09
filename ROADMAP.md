@@ -8,7 +8,7 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 - [ ] **Valider en jouant les réglages par défaut** : micro-gel à l'impact (`HIT_STOP`) et paliers sonores du frôlement (`GRAZE.milestones`), dans `config.js`.
 - [ ] **Faire relire l'anglais** (`frontend/js/i18n/en.js`).
 - [ ] **Cinquième morceau de mall-e** : l'ajouter à `AUDIO.tracks` (`config.js`) et au README.
-- [ ] **Tester le partage en conditions réelles** (Twitter, Discord) : l'image s'affiche, le QR code se lit.
+- [ ] **Tester le partage en conditions réelles** (Twitter, Discord) : coller l'adresse du jeu et vérifier que l'image d'aperçu s'affiche ; partager une image de score et vérifier que le QR code se lit.
 - [ ] **Première minute** : mesurer le délai avant le premier bonus sur dix parties ; s'il dépasse 30 s, augmenter les chances de drop en vague 1.
 
 ## Jeu
@@ -34,7 +34,7 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 
 - [ ] **Score authentifié** : jeton signé émis au début de la partie, exigé à l'envoi. Le score non authentifié est un risque assumé (voir [docs/securite.md](docs/securite.md)).
 - [ ] **Rate limiting en IPv6** : compter par préfixe /64 plutôt que par adresse (`get_client_ip`, `backend/main.py`), si l'instance publique est joignable en IPv6.
-- [ ] **Tests e2e** : les réglages du panneau (volumes, vitesse), le bouton Partager ; Firefox et WebKit en plus de Chromium (`e2e/playwright.config.js`) ; les lancer dans la CI.
+- [ ] **Tests e2e** : les réglages du panneau (volumes, vitesse), le bouton Partager ; Firefox et WebKit en plus de Chromium (`e2e/playwright.config.js`).
 - [ ] **Dépendances de développement épinglées** (`backend/requirements-dev.txt`, et `ruff`, `pip-audit` dans la CI).
 - [ ] **Scan des images construites** ([Trivy](https://trivy.dev/)) en CI : `pip-audit` ne couvre pas les paquets système de l'image.
 - [ ] **Infra** (Traefik ou Caddy, copie distante et alertes des sauvegardes) : suivi dans le README de [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner).

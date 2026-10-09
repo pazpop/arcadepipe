@@ -1,6 +1,6 @@
 name: Build & Deploy
 
-# Lint et tests aussi sur les PR (Dependabot compris) ; build et déploiement seulement sur main.
+# Lint et tests (e2e compris) aussi sur les PR (Dependabot compris) ; build et déploiement seulement sur main.
 on:
   push:
     branches: [main]
@@ -41,8 +41,7 @@ jobs:
           npm ci
           npm run lint
 
-  # Tests de logique pure (quelques secondes) : backend (pytest) et frontend
-  # (node --test). Les tests e2e (Playwright, ~2 min) restent lancés à la main.
+  # Tests de logique pure (quelques secondes) : backend (pytest) et frontend (node --test).
   tests:
     runs-on: ubuntu-latest
     permissions:
@@ -64,9 +63,37 @@ jobs:
         working-directory: frontend/js
         run: node --test
 
+  # Tests bout-en-bout (Playwright, quelques minutes) : le jeu piloté dans un
+  # vrai navigateur, avec le backend lancé à côté pour les tests du classement
+  # (voir e2e/README.md).
+  e2e:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.13"
+      # backend/venv : là où e2e/playwright.config.js cherche le backend.
+      - name: Environnement du backend
+        working-directory: backend
+        run: |
+          python -m venv venv
+          venv/bin/pip install -r requirements.txt
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: Playwright
+        working-directory: e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+
   build-and-push:
     if: github.event_name == 'push'
-    needs: [lint, tests]
+    needs: [lint, tests, e2e]
     runs-on: ubuntu-latest
     permissions:
       contents: read

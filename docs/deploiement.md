@@ -29,7 +29,7 @@ C'est le seul fichier de déploiement Docker de ce repo. Celui qui ajoute Traefi
 flowchart TD
     PR["Pull request"] --> checks
     push["Push sur main"] --> checks
-    checks["Lint (ruff, eslint), audit (pip-audit),<br/>tests (pytest, node --test)"]
+    checks["Lint (ruff, eslint), audit (pip-audit),<br/>tests (pytest, node --test, Playwright)"]
     checks -->|échec| stop["Arrêt : rien n'est construit ni déployé"]
     checks -->|"succès, push sur main seulement"| build["Construction des images<br/>backend et frontend"]
     vars["Variable du dépôt GA_MEASUREMENT_ID,<br/>numéro de version (nombre de commits)"] -.-> build
@@ -40,12 +40,11 @@ flowchart TD
 
 Une pull request s'arrête après les vérifications : seul un push sur `main` construit et déploie.
 
-`.github/workflows/deploy.yml` : sur chaque PR et chaque push vers `main`, lint backend (`ruff`), audit des dépendances (`pip-audit`), lint frontend (`eslint`), tests backend (`pytest`) et frontend (`node --test`), puis, sur `main` seulement, build et push des images vers GHCR (`:latest` et `:<sha>`, public). Les PR de Dependabot sont donc testées avant fusion.
+`.github/workflows/deploy.yml` : sur chaque PR et chaque push vers `main`, lint backend (`ruff`), audit des dépendances (`pip-audit`), lint frontend (`eslint`), tests backend (`pytest`), frontend (`node --test`) et bout-en-bout (Playwright), puis, sur `main` seulement, build et push des images vers GHCR (`:latest` et `:<sha>`, public). Les PR de Dependabot sont donc testées avant fusion.
 
 - Actions GitHub épinglées par SHA de commit, images de base épinglées par digest : un tag peut être redéplacé, un SHA ou un digest non.
 - [Dependabot](../.github/dependabot.yml) ouvre une PR à chaque mise à jour (`pip`, `npm`, `github-actions`, `docker`).
 - Un test en échec bloque le build, donc le déploiement.
-- **Choix assumé : les tests e2e (Playwright, ~2 min) ne tournent pas en CI**, ils sont lancés à la main avant de pousser. À reconsidérer si le rythme ou le nombre de contributeurs augmente.
 
 Ce repo ne connaît ni VPS ni serveur cible. L'instance `arcadepipe.pazpop.net` est déployée par [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner), notifié par un événement `repository_dispatch` une fois les images publiées. Un fork n'a pas ce déclenchement (secret absent) et n'en a pas besoin : voir la section Docker ci-dessus.
 

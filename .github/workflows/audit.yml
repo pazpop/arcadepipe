@@ -1,0 +1,32 @@
+name: Audit des dépendances
+
+# Chaque lundi, et à la demande (onglet Actions, « Run workflow ») : une faille
+# publiée entre deux pushs serait sinon ignorée jusqu'au push suivant. En cas
+# d'échec, GitHub prévient par courriel.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # lundi, 6 h UTC
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      # Actions épinglées par SHA (voir docs/deploiement.md).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.13"
+      - name: pip-audit (backend)
+        run: |
+          pip install pip-audit==2.10.1
+          pip-audit -r backend/requirements.txt
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: "22"
+      - name: npm audit (frontend, e2e)
+        run: |
+          npm audit --prefix frontend
+          npm audit --prefix e2e

@@ -36,9 +36,10 @@ services:
     tmpfs:
       # /config,/data : XDG_CONFIG_HOME/XDG_DATA_HOME de Caddy (autosave de
       # config, cache) — pas de certificats : pas de TLS en autonome.
+      # uid/gid : ceux de caddyuser (frontend/Dockerfile), sinon Caddy ne peut pas y écrire.
       - /tmp
-      - /config
-      - /data
+      - /config:uid=1000,gid=1000
+      - /data:uid=1000,gid=1000
     cap_drop:
       - ALL
     # NET_BIND_SERVICE : indispensable pour que le Caddy non-root (voir

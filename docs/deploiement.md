@@ -48,6 +48,7 @@ Tout est dans `.github/workflows/deploy.yml`. Une pull request (celles de Depend
 
 - Actions GitHub épinglées par SHA de commit, images de base épinglées par digest : un tag peut être redéplacé, un SHA ou un digest non.
 - [Dependabot](../.github/dependabot.yml) ouvre une PR à chaque mise à jour (`pip`, `npm`, `github-actions`, `docker`).
+- `.github/workflows/audit.yml` relance l'audit des dépendances (`pip-audit`, `npm audit`) chaque lundi : une faille publiée entre deux pushs fait échouer ce workflow, et GitHub prévient par courriel.
 
 Ce repo ne connaît ni VPS ni serveur cible. L'instance `arcadepipe.pazpop.net` est déployée par [`terraform-infra-pazpop-hetzner`](https://github.com/pazpop/terraform-infra-pazpop-hetzner), notifié par un événement `repository_dispatch` une fois les images publiées. Un fork n'a pas ce déclenchement (l'étape ne s'exécute que dans ce dépôt) et n'en a pas besoin : voir la section Docker ci-dessus.
 

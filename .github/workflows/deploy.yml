@@ -36,7 +36,7 @@ jobs:
       # pip-audit : une CVE connue dans les dépendances Python bloque le build.
       - name: pip-audit (backend)
         run: |
-          pip install pip-audit
+          pip install pip-audit==2.10.1
           pip-audit -r backend/requirements.txt
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:

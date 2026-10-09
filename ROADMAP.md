@@ -43,5 +43,4 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 - [ ] **Score authentifié** : jeton signé émis au début de la partie, exigé à l'envoi. Le score non authentifié est un risque assumé (voir [docs/securite.md](docs/securite.md)).
 - [ ] **Rate limiting en IPv6** : compter par préfixe /64 plutôt que par adresse (`get_client_ip`, `backend/main.py`), si l'instance publique est joignable en IPv6.
 - [ ] **Tests e2e** : le score (un kill le fait monter, bonus INTACT, valeurs envoyées au classement), un tir ennemi encaissé et le bouclier qui absorbe trois coups, la pause quand l'onglet passe en arrière-plan ; les réglages du panneau (volumes, vitesse), le bouton Partager ; Firefox et WebKit en plus de Chromium (`e2e/playwright.config.js`).
-- [ ] **`pip-audit` épinglé** dans la CI, et relancé chaque semaine (aujourd'hui seulement à chaque push).
 - [ ] **Scan des images construites** ([Trivy](https://trivy.dev/)) en CI : `pip-audit` ne couvre pas les paquets système de l'image.

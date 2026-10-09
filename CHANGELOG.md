@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.147] - 2026-10-09
+- Audit des dépendances relancé chaque lundi par un workflow dédié ; Caddy peut écrire dans ses dossiers temporaires (plus d'erreurs au démarrage).
+
 ## [2.146] - 2026-10-09
 - Image du frontend allégée de 48 Mo (les fichiers n'y sont plus copiés deux fois).
 

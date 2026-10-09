@@ -1,5 +1,5 @@
-// Fin de partie : écran "game_over" (REJOUER ou CLASSEMENT), puis, pour un
-// score qui entre dans le top, "name_entry" (saisie du pseudo) avant le classement.
+// Fin de partie : écran "game_over" (rejouer, ou aller au classement), puis,
+// pour un score qui entre dans le top, "name_entry" (saisie du pseudo) avant le classement.
 import { STORAGE_KEYS } from "../config.js";
 import { loadItem, saveItem } from "../storage.js";
 import { consumeJustPressed, clearJustPressed } from "../input.js";
@@ -20,21 +20,31 @@ function lastPlayerName() {
 // sont ignorés jusqu'à sa réponse (pas de double envoi de score).
 let busy = false;
 
+// Numéro de la fin de partie en cours : une réponse du serveur arrivée après
+// qu'une autre partie s'est terminée est ignorée.
+let opened = 0;
+
 // Appelée par states/playing.js à la fin du ralenti de mort. La partie est
-// comptée ici, quel que soit le choix du joueur ensuite ; un échec réseau est ignoré.
+// comptée ici, quel que soit le choix du joueur ensuite ; un échec réseau est
+// ignoré. L'écran annonce l'entrée dans le classement dès que le serveur a répondu.
 export function open(g) {
   g.mode = MODE.GAME_OVER;
   g.gameOverSelected = 0;
+  g.scoreQualifies = false;
   recordGamePlayed().catch(() => {});
+  const current = ++opened;
+  qualifiesForTop(g.score).then((qualifies) => {
+    if (current === opened) g.scoreQualifies = qualifies;
+  });
 }
 
-// Le score entre-t-il dans le top ? Backend injoignable : oui, on tente quand même.
+// Le score entre-t-il dans le top ? Serveur injoignable : non, il ne pourrait pas y être envoyé.
 async function qualifiesForTop(score) {
   try {
     const top = await fetchTopScores();
     return top.length < TOP_SIZE || score > Math.min(...top.map((s) => s.score));
   } catch {
-    return true;
+    return false;
   }
 }
 
@@ -49,7 +59,7 @@ function replay(g, engine) {
   engine.actions.startRun();
 }
 
-// CLASSEMENT : saisie du pseudo si le score entre dans le top, sinon le classement directement.
+// Seconde option : saisie du pseudo si le score entre dans le top, sinon le classement directement.
 async function goToLeaderboard(g, engine) {
   busy = true;
   const qualifies = await qualifiesForTop(g.score);
@@ -109,7 +119,7 @@ export function updateGameOver(g, engine) {
 // Dessiné par-dessus la scène de jeu figée (voir game.js, draw) ; l'écran de
 // saisie du nom, lui, a son propre fond.
 export function drawGameOverOverlay(c2d, g) {
-  hud.drawDeathScreen(c2d, g.score, g.wave, g.enemiesKilled, g.distanceTraveled, g.gameOverSelected);
+  hud.drawDeathScreen(c2d, g.score, g.wave, g.enemiesKilled, g.distanceTraveled, g.gameOverSelected, g.scoreQualifies ? TOP_SIZE : 0);
 }
 
 export function drawNameEntry(c2d, g) {

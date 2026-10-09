@@ -111,6 +111,8 @@ export default {
   "gameover.stats": "SCORE {score}  ·  VAGUE {wave}  ·  {kills} ENNEMIS",
   "gameover.distance": "{distance} ANNÉES-LUMIÈRE PARCOURUES",
   "gameover.replay": "REJOUER",
+  "gameover.enterName": "ENTRER MON PSEUDO",
+  "gameover.top": "TU ENTRES DANS LE TOP {size} !",
   "name.title": "NOUVEAU MEILLEUR SCORE !",
   "name.prompt": "ENTRE TON NOM (8 CAR. MAX)",
   "name.validate": "▶ VALIDER",

@@ -71,6 +71,7 @@ export function gameState(page) {
       playerBullets: game.playerBulletsOnScreen,
       lives: game.lives,
       scores: game.scores,
+      scoreQualifies: game.scoreQualifies,
       kills: game.getRunSummary().kills,
       wave: game.getRunSummary().wave,
       inBonusLevel: game.inBonusLevel,

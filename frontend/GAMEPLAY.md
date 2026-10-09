@@ -68,7 +68,8 @@ Les trois armes durent 20 secondes ; le décompte est en pause pendant un saut s
 ## Fin de partie et classement
 
 - À la dernière vie perdue, l'écran GAME OVER propose **REJOUER** (une nouvelle partie aussitôt) ou **CLASSEMENT**.
-- Un score qui entre dans le top 10 est enregistré dans les deux cas. Par CLASSEMENT, le joueur choisit son pseudo (8 caractères) ; par REJOUER, c'est le dernier pseudo saisi, ou « AAA ».
+- Si le score entre dans le top 10, l'écran l'annonce et la seconde option devient **ENTRER MON PSEUDO** (8 caractères). Le score est enregistré dans les deux cas : en rejouant, c'est sous le dernier pseudo saisi, ou « AAA ».
+- Si le serveur du classement ne répond pas, le score n'est pas enregistré.
 - Le bouton Partager crée une image du résultat (score, vague, ennemis abattus, meilleure chaîne, distance) avec un QR code vers le jeu.
 
 ## Réglages et accessibilité

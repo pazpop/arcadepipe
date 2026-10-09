@@ -27,7 +27,8 @@ test("le classement affiche les scores du serveur, du meilleur au moins bon", as
   await expect.poll(() => names(page)).toEqual(["BETA", "ALPHA"]);
 });
 
-test("fin de partie : pseudo tapé au clavier, validé par Entrée, score inscrit au classement", async ({ page }) => {
+test("fin de partie : top annoncé ; score inscrit en rejouant, au tap sur VALIDER, puis au clavier", async ({ page, request }) => {
+  test.setTimeout(120000); // trois parties jusqu'au premier boss
   await page.goto("/");
   await skipHints(page);
   await page.evaluate(async () => {
@@ -35,23 +36,44 @@ test("fin de partie : pseudo tapé au clavier, validé par Entrée, score inscri
     PLAYER.startingLives = 1;
     BOSS.bulletSpeed = 0; // seule la coque du boss peut toucher
   });
-  await reachBoss(page);
-  await page.mouse.up();
-
-  // Foncer dans la coque du boss : partie terminée.
   const { toPage, clickLogical } = canvasHelpers(page);
-  const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
-  await page.mouse.move(hull.x, hull.y);
-  await waitForMode(page, "game_over", 15000);
+  const serverNames = async () => (await (await request.get(`${API}/api/scores?limit=100`)).json()).map((s) => s.player_name);
 
-  // CLASSEMENT : le score entre dans le top (moins de dix scores), d'où la saisie du pseudo.
+  // Joue jusqu'au boss, fonce dans sa coque, et attend l'annonce du top (moins de dix scores en base).
+  async function dieAndQualify() {
+    await reachBoss(page);
+    await page.mouse.up();
+    const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
+    await page.mouse.move(hull.x, hull.y);
+    await waitForMode(page, "game_over", 15000);
+    await expect.poll(async () => (await gameState(page)).scoreQualifies).toBe(true);
+  }
+
+  // 1. REJOUER : nouvelle partie aussitôt, score envoyé en arrière-plan sous le pseudo par défaut.
+  await dieAndQualify();
+  await clickLogical(240, 167.4);
+  await waitForMode(page, "playing");
+  await expect.poll(serverNames).toContain("AAA");
+
+  // 2. ENTRER MON PSEUDO, validé au tap sur VALIDER sans rien taper (téléphone sans clavier).
+  await dieAndQualify();
+  await clickLogical(240, 187.4);
+  await waitForMode(page, "name_entry");
+  await clickLogical(240, 183.6);
+  await waitForMode(page, "leaderboard");
+  await expect.poll(async () => (await serverNames()).filter((n) => n === "AAA").length).toBe(2);
+  await clickLogical(240, 135); // retour au menu
+
+  // 3. ENTRER MON PSEUDO, tapé au clavier et validé par Entrée.
+  await waitForMode(page, "menu");
+  await dieAndQualify();
   await clickLogical(240, 187.4);
   await waitForMode(page, "name_entry");
   for (let i = 0; i < 3; i++) await page.keyboard.press("Backspace"); // efface "AAA"
-  await page.keyboard.type("zoé 7"); // minuscules passées en majuscules, accent refusé
+  await page.keyboard.type("zoé m7"); // minuscules passées en majuscules, accent refusé
+  expect(await page.evaluate(async () => (await import("/js/main.js")).music.muted)).toBe(false); // M est du texte ici
   await page.keyboard.press("Enter");
   await waitForMode(page, "leaderboard");
-
-  await expect.poll(() => names(page)).toContain("ZO 7");
+  await expect.poll(() => names(page)).toContain("ZO M7");
   expect((await gameState(page)).mode).toBe("leaderboard"); // l'Entrée de validation ne l'a pas refermé
 });

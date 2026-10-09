@@ -110,6 +110,8 @@ export default {
   "gameover.stats": "SCORE {score}  ·  WAVE {wave}  ·  {kills} KILLS",
   "gameover.distance": "{distance} LIGHT-YEARS TRAVELED",
   "gameover.replay": "PLAY AGAIN",
+  "gameover.enterName": "ENTER MY NAME",
+  "gameover.top": "YOU MADE THE TOP {size}!",
   "name.title": "NEW HIGH SCORE!",
   "name.prompt": "ENTER YOUR NAME (8 CHARS MAX)",
   "name.validate": "▶ CONFIRM",

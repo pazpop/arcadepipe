@@ -576,22 +576,32 @@ export function drawGameOverScreen(ctx, score, wave, kills, distance) {
 // --- Écran "GAME OVER" (après le ralenti de mort) : rejouer aussitôt, ou
 // passer par la saisie du nom/le classement ---
 
-const GAME_OVER_OPTIONS = [t("gameover.replay"), t("menu.leaderboard")];
-
-function gameOverOptionRects() {
-  return verticalOptionRects(GAME_OVER_OPTIONS, RES_H * 0.62, 20, 200, 18);
+// La seconde option mène à la saisie du pseudo quand le score entre dans le
+// classement (qualifies), sinon au classement.
+function gameOverOptionRects(qualifies) {
+  const labels = [t("gameover.replay"), t(qualifies ? "gameover.enterName" : "menu.leaderboard")];
+  return verticalOptionRects(labels, RES_H * 0.62, 20, 200, 18);
 }
 
 export function hitTestGameOver(x, y) {
-  return hitTestRects(x, y, gameOverOptionRects());
+  return hitTestRects(x, y, gameOverOptionRects(false));
 }
 
-export function drawDeathScreen(ctx, score, wave, kills, distance, selected) {
+// topSize : la taille du classement si le score y entre (pour l'annoncer), 0 sinon.
+export function drawDeathScreen(ctx, score, wave, kills, distance, selected, topSize) {
   ctx.save();
   ctx.fillStyle = "rgba(0,0,0,0.55)";
   ctx.fillRect(0, 0, RES_W, RES_H);
   drawGameOverScreen(ctx, score, wave, kills, distance);
-  drawOptionList(ctx, gameOverOptionRects(), selected, 12);
+  if (topSize) {
+    text(ctx, t("gameover.top", { size: topSize }), RES_W / 2, RES_H * 0.51, {
+      size: 10,
+      align: "center",
+      color: PALETTE.bulletPlayer,
+      glow: PALETTE.bulletPlayer,
+    });
+  }
+  drawOptionList(ctx, gameOverOptionRects(topSize > 0), selected, 12);
   ctx.restore();
 }
 

@@ -1,5 +1,5 @@
 import { test, expect } from "@playwright/test";
-import { canvasHelpers, collectErrors, gameState, skipHints, waitForMode } from "./helpers.js";
+import { canvasHelpers, collectErrors, gameState, reachBoss, skipHints, waitForMode } from "./helpers.js";
 
 test("tir automatique par défaut : le vaisseau tire sans clic", async ({ page }) => {
   await page.goto("/");
@@ -70,86 +70,39 @@ test("fin de vague : la vague 2 démarre après le saut spatial, sans erreur", a
   expect(errors).toEqual([]);
 });
 
-test("game over : REJOUER relance en un clic ; CLASSEMENT -> nom pré-rempli + VALIDER tactile (sans clavier)", async ({ page }) => {
-  // Sur mobile, le clavier virtuel ne s'ouvre pas toujours : le pseudo est
-  // pré-rempli (DEFAULT_NAME, states/endOfRun.js) et le bouton VALIDER permet
-  // de valider au tap seul, ce que ce test vérifie.
-  test.setTimeout(120000); // deux parties jusqu'au premier boss
+test("fin de partie sans serveur : rien n'annonce le top, la seconde option mène au classement", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);
-
-  // Mourir vite et à coup sûr : 1 vie, 1 kill par vague jusqu'au premier boss,
-  // puis foncer dans sa coque (position connue, voir dieOnFirstBoss).
   await page.evaluate(async () => {
-    const { PLAYER, DIFFICULTY } = await import("/js/config.js");
+    const { PLAYER, BOSS } = await import("/js/config.js");
     PLAYER.startingLives = 1;
-    DIFFICULTY.baseWaveKills = 1;
-    DIFFICULTY.waveKillsStep = 0;
+    BOSS.bulletSpeed = 0; // seule la coque du boss peut toucher
   });
 
   // Requêtes vers l'API : coupées (un backend de développement peut tourner à
   // côté), mais elles partent, et le jeu doit s'en accommoder.
   await page.route("**/api/**", (route) => route.abort());
   const apiCalls = [];
-  const postedNames = [];
   page.on("request", (r) => {
     if (r.url().includes("/api/")) apiCalls.push(`${r.method()} ${new URL(r.url()).pathname}`);
-    if (r.postData()) postedNames.push(JSON.parse(r.postData()).player_name);
   });
 
-  const { canvas, startRun, toPage, clickLogical } = canvasHelpers(page);
-  await startRun();
-  await dieOnFirstBoss();
-  await canvas.screenshot({ path: "test-results/name-entry-game-over.png" });
+  // Foncer dans la coque du boss : partie terminée, comptée, top consulté.
+  await reachBoss(page);
+  await page.mouse.up();
+  const { toPage, clickLogical } = canvasHelpers(page);
+  const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
+  await page.mouse.move(hull.x, hull.y);
+  await waitForMode(page, "game_over", 15000);
+  await expect.poll(() => apiCalls).toEqual(["POST /api/games", "GET /api/scores"]);
+  expect((await gameState(page)).scoreQualifies).toBe(false);
 
-  // REJOUER (1re option) : nouvelle partie aussitôt, sans saisie du nom ; la
-  // partie est comptée et le score envoyé en arrière-plan (voir replay()
-  // dans states/endOfRun.js).
-  await clickLogical(240, 167.4);
-  await waitForMode(page, "playing");
-  expect((await gameState(page)).wave).toBe(1);
-  await expect.poll(() => apiCalls).toEqual(["POST /api/games", "GET /api/scores", "POST /api/scores"]);
-  expect(postedNames).toEqual(["AAA"]); // aucun pseudo jamais saisi : nom par défaut
-
-  await dieOnFirstBoss();
-
-  // CLASSEMENT (2e option) : saisie du nom, le backend injoignable étant traité comme un score qui entre dans le top.
+  // Seconde option : pas de saisie de pseudo, le classement directement.
   await clickLogical(240, 187.4);
-  await waitForMode(page, "name_entry");
-  await canvas.screenshot({ path: "test-results/name-entry-prefilled.png" });
-
-  // M est du texte pendant la saisie du pseudo : le son n'est pas coupé.
-  await page.keyboard.type("é!"); // refusés : ne comptent pas dans les 8 caractères
-  await page.keyboard.press("KeyM");
-  await page.keyboard.press("KeyC");
-  expect(await page.evaluate(async () => (await import("/js/main.js")).music.muted)).toBe(false);
-
-  // Valide au tap uniquement (bouton VALIDER), jamais via le clavier caché.
-  await clickLogical(240, 183.6);
   await waitForMode(page, "leaderboard");
-  expect(postedNames).toEqual(["AAA", "AAAMC"]); // pseudo pré-rempli, plus les deux lettres tapées
-  await canvas.screenshot({ path: "test-results/name-entry-validated.png" });
+  expect(apiCalls.filter((c) => c === "POST /api/scores")).toEqual([]);
 
   // Les requêtes coupées laissent un message réseau dans la console, pas une erreur JS.
-  const realErrors = errors.filter((e) => !e.includes("net::ERR_"));
-  expect(realErrors).toEqual([]);
-
-  async function dieOnFirstBoss() {
-    // Tire en balayant la hauteur (1 kill par vague) jusqu'à l'arrivée du premier boss.
-    await page.mouse.down();
-    for (let i = 0; i < 150 && !(await gameState(page)).boss?.arrived; i++) {
-      const p = await toPage(90, 30 + (i % 8) * 30);
-      await page.mouse.move(p.x, p.y);
-      await page.waitForTimeout(300);
-    }
-    await page.mouse.up();
-    expect((await gameState(page)).boss?.arrived).toBe(true);
-
-    // Fonce dans la coque du boss : contact garanti (voir hitsBossHull dans boss.js).
-    const { weakPoints } = (await gameState(page)).boss;
-    const ram = await toPage(weakPoints[0].x, 135);
-    await page.mouse.move(ram.x, ram.y);
-    await waitForMode(page, "game_over", 15000);
-  }
+  expect(errors.filter((e) => !e.includes("net::ERR_"))).toEqual([]);
 });

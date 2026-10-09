@@ -55,6 +55,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     menuTwinkleStars: createTwinkleStars(10),
     pauseSelected: 0,
     gameOverSelected: 0, // REJOUER par défaut — remis à 0 à chaque mort (states/endOfRun.js)
+    scoreQualifies: false, // le score de la partie terminée entre dans le classement (states/endOfRun.js)
     pauseStage: "menu", // "menu" | "confirmQuit"
     confirmQuitSelected: 1, // par défaut sur NON — un Entrée accidentel ne doit pas faire perdre la partie
     helpReturnTo: MODE.MENU, // où revenir en fermant l'aide (MODE.MENU, MODE.PAUSED ou MODE.PLAYING)
@@ -224,6 +225,9 @@ export function createGame({ input, audio, music, nameInputEl }) {
     },
     get scores() {
       return g.scores;
+    },
+    get scoreQualifies() {
+      return g.scoreQualifies;
     },
     get playerBulletsOnScreen() {
       return projectiles.player.items.filter((b) => b.active).length;

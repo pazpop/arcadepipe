@@ -101,7 +101,7 @@ export function startRun(g, engine) {
   g.novaProgress = 0;
   g.bonusLevel = null;
   g.mode = MODE.PLAYING;
-  g.controlHint = 4;
+  g.controlHint = engine.input.autoFire ? 0 : 4; // rappel "maintiens pour tirer", inutile en tir automatique
   startWave(g, engine, 1);
 
   // Entrée en douceur (vague 1 uniquement) — voir SHIP_INTRO_DURATION.

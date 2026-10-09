@@ -1,4 +1,4 @@
-// Régénère les captures d'écran et la vidéo du kit presse (frontend/press/).
+// Régénère les captures d'écran, la vidéo et la couverture itch.io du kit presse (frontend/press/).
 // Le jeu est joué pour de vrai dans un navigateur ; seuls quelques réglages sont
 // forcés pour atteindre vite chaque situation (vagues courtes, bonus garanti).
 //
@@ -17,12 +17,15 @@ const server = spawn("python", ["-m", "http.server", String(PORT), "--directory"
 await new Promise((resolve) => setTimeout(resolve, 1500));
 const browser = await chromium.launch();
 
-// Ouvre le jeu en anglais, sans l'aide de bienvenue ni le panneau de réglages.
+// Ouvre le jeu en anglais, sans l'aide de bienvenue, le panneau de réglages ni le tir automatique.
 async function openGame(contextOptions = {}) {
   const context = await browser.newContext({ viewport: SIZE, locale: "en-US", ...contextOptions });
   const page = await context.newPage();
   await page.goto(`http://localhost:${PORT}/`);
-  await page.evaluate(() => localStorage.setItem("arcadepipe_seen_intro", "1"));
+  await page.evaluate(() => {
+    localStorage.setItem("arcadepipe_seen_intro", "1");
+    localStorage.setItem("arcadepipe_autofire", "0"); // les scènes décident quand le vaisseau tire
+  });
   await page.reload();
   await page.addStyleTag({ content: "#mc-wrap { display: none; }" });
   await page.waitForTimeout(500);
@@ -137,6 +140,25 @@ const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png
   const [file] = fs.readdirSync(videoDir);
   fs.renameSync(path.join(videoDir, file), path.join(OUT, "gameplay.webm"));
   fs.rmSync(videoDir, { recursive: true });
+}
+
+// 7. Couverture pour itch.io (630x500) : le titre du jeu sur la capture du boss
+{
+  const { context, page } = await openGame({ viewport: { width: 1200, height: 675 } });
+  const title = await page.screenshot({ clip: { x: 300, y: 96, width: 600, height: 170 } }); // titre et sous-titre
+  const dataUrl = (png) => `data:image/png;base64,${png.toString("base64")}`;
+  const boss = fs.readFileSync(path.join(OUT, "screenshot-boss.png"));
+  const fade = "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent), linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent)";
+  await page.setViewportSize({ width: 630, height: 500 });
+  await page.setContent(`<body style="margin:0;width:630px;height:500px;background:#05060f;overflow:hidden;position:relative;font-family:monospace">
+    <img src="${dataUrl(boss)}" style="position:absolute;left:-250px;top:60px;height:520px;image-rendering:pixelated">
+    <div style="position:absolute;left:0;right:0;top:0;height:230px;background:linear-gradient(to bottom, rgba(5,6,15,.96) 55%, rgba(5,6,15,0))"></div>
+    <img src="${dataUrl(title)}" style="position:absolute;left:15px;top:22px;width:600px;mix-blend-mode:screen;-webkit-mask-image:${fade};-webkit-mask-composite:source-in;mask-image:${fade};mask-composite:intersect">
+    <div style="position:absolute;left:0;right:0;bottom:18px;text-align:center;color:#ffe66d;font-size:19px;text-shadow:0 0 10px #ffe66d, 0 0 3px #000">FREE RETRO SPACE SHOOTER</div>
+  </body>`);
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: path.join(OUT, "itch-cover.png") });
+  await context.close();
 }
 
 await browser.close();

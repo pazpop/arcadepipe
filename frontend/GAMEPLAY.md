@@ -5,7 +5,7 @@ Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/confi
 ## Le vaisseau
 
 - Il suit la souris ou le doigt. Au tactile, il vole un peu en avant du doigt, pour ne pas être caché dessous.
-- Tir en maintenant le clic ou le doigt, ou en continu avec la case « Tir automatique ».
+- Tir automatique par défaut ; en décochant la case « Tir automatique », on tire en maintenant le clic ou le doigt.
 - 3 vies. Après un coup, le vaisseau clignote et reste invulnérable un court instant.
 - La zone qui encaisse les coups est minuscule (le cockpit), bien plus petite que le sprite.
 

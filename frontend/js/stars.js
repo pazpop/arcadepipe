@@ -234,24 +234,40 @@ function drawCelestial(ctx, c) {
 // Silhouette dessinée au canvas (pas un sprite), cohérent avec planètes/
 // galaxies ci-dessus. Teintes grises très désaturées (S=12%, même principe
 // que drawCelestial : jamais assez vif pour rivaliser avec le gameplay).
-// La coque du boss (sprite d'assets.js), agrandie et presque éteinte : assez
-// terne pour rester un décor, jamais confondue avec le boss ni avec un tir.
-function drawBossBackdrop(ctx, backdrop) {
+// Silhouette du vaisseau-mère : la coque du boss (sprite d'assets.js), assombrie
+// jusqu'à n'être presque plus qu'une ombre, mais opaque pour cacher ce qui
+// passe derrière. Préparée une fois, hors de l'écran.
+let mothership = null;
+function mothershipSprite() {
+  if (mothership) return mothership;
   const hull = buildSprites().bossHull;
-  const w = hull.width * backdrop.scale;
-  const h = hull.height * backdrop.scale;
-  // Fondu seulement en sortie : il est déjà là au début du combat.
-  const fade = backdrop.leaving ? Math.max(0, Math.min(1, (backdrop.x + w / 2) / w)) : 1;
+  mothership = document.createElement("canvas");
+  mothership.width = hull.width;
+  mothership.height = hull.height;
+  const ctx = mothership.getContext("2d");
+  ctx.drawImage(hull, 0, 0);
+  ctx.globalCompositeOperation = "source-atop"; // ne peint que sur les pixels de la coque
+  ctx.fillStyle = "rgba(5, 6, 15, 0.8)";
+  ctx.fillRect(0, 0, hull.width, hull.height);
+  return mothership;
+}
+
+function drawBossBackdrop(ctx, backdrop) {
+  const sprite = mothershipSprite();
+  const w = sprite.width * backdrop.scale;
+  const h = sprite.height * backdrop.scale;
   ctx.save();
-  ctx.globalAlpha = 0.22 * fade;
-  ctx.drawImage(hull, backdrop.x - w / 2, backdrop.y - h / 2, w, h);
+  // Fondu seulement en sortie : il est déjà là au début du combat.
+  ctx.globalAlpha = backdrop.leaving ? Math.max(0, Math.min(1, (backdrop.x + w / 2) / w)) : 1;
+  ctx.drawImage(sprite, backdrop.x - w / 2, backdrop.y - h / 2, w, h);
   ctx.restore();
 }
 
+// Décor, du plus lointain au plus proche : les étoiles, puis une planète (ou
+// galaxie, trou noir), puis le vaisseau-mère des combats de boss. Le jeu
+// lui-même est dessiné ensuite, par-dessus (game.js).
 export function drawStarfield(ctx, field, warp) {
   ctx.save();
-  if (field.bossBackdrop) drawBossBackdrop(ctx, field.bossBackdrop);
-  if (field.celestial) drawCelestial(ctx, field.celestial);
   ctx.fillStyle = PALETTE.star;
   for (const layer of field.layers) {
     ctx.globalAlpha = layer.alpha;
@@ -264,5 +280,8 @@ export function drawStarfield(ctx, field, warp) {
       }
     }
   }
+  ctx.globalAlpha = 1;
+  if (field.celestial) drawCelestial(ctx, field.celestial);
+  if (field.bossBackdrop) drawBossBackdrop(ctx, field.bossBackdrop);
   ctx.restore();
 }

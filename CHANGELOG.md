@@ -2,6 +2,10 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.137] - 2026-10-09
+- **Tir automatique activé par défaut** ; en le décochant, on tire en maintenant le clic ou le doigt.
+- **Décor en couches** : les étoiles, puis la planète de passage, puis le vaisseau-mère des boss, désormais opaque, qui cache ce qui passe derrière lui.
+
 ## [2.136] - 2026-10-09
 - **Nouveau décor des combats de boss** : le vaisseau-mère ennemi, une très grande silhouette sombre, à la place de la sphère précédente.
 - Fix : la teinte de la coque du boss débordait en rectangle sur le décor derrière elle.

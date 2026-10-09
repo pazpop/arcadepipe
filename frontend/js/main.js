@@ -109,9 +109,9 @@ const sfxVolumeEl = $("sfx-volume");
 sfxVolumeEl.value = String(Math.round(audio.masterVolume * 100));
 sfxVolumeEl.addEventListener("input", () => audio.setMasterVolume(Number(sfxVolumeEl.value) / 100));
 
-// --- Tir automatique (case à cocher) : sinon il faut maintenir le clic.
+// --- Tir automatique (case à cocher), actif par défaut ; décoché, il faut maintenir le clic.
 const autoFireToggle = $("autofire-toggle");
-autoFireToggle.checked = loadItem(STORAGE_KEYS.autoFire) === "1";
+autoFireToggle.checked = loadItem(STORAGE_KEYS.autoFire) !== "0";
 input.autoFire = autoFireToggle.checked;
 autoFireToggle.addEventListener("change", () => {
   input.autoFire = autoFireToggle.checked;

@@ -88,7 +88,7 @@ export default {
   "help.move": "DÉPLACEMENT",
   "help.move.detail": "Souris ou doigt : dirige le vaisseau",
   "help.fire": "TIR",
-  "help.fire.detail": 'Maintiens le clic, ou coche "Tir automatique" (bas à gauche)',
+  "help.fire.detail": 'Automatique. Décoche "Tir automatique" (bas à gauche) pour tirer en maintenant le clic ou le doigt',
   "help.nova": "NOVA",
   "help.nova.detail":
     "Frôle (sans le toucher) un tir ennemi ou un vaisseau ennemi — pas le boss — pour charger la jauge NOVA en haut à gauche, prends des risques ! Une fois pleine, ESPACE (ou le bouton tactile en bas à droite) détruit tous les ennemis à l'écran et leurs tirs, jamais le boss. Jusqu'à 2 charges en réserve dès le 2e combat de boss (1 seule avant), à déclencher quand tu veux.",

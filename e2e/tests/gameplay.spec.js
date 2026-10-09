@@ -1,10 +1,21 @@
 import { test, expect } from "@playwright/test";
 import { canvasHelpers, collectErrors, gameState, skipHints, waitForMode } from "./helpers.js";
 
-test("le tir est manuel : aucune balle sans clic maintenu, tir dès qu'on maintient", async ({ page }) => {
+test("tir automatique par défaut : le vaisseau tire sans clic", async ({ page }) => {
+  await page.goto("/");
+  await skipHints(page);
+  await expect(page.locator("#autofire-toggle")).toBeChecked();
+  const { startRun, moveLogical } = canvasHelpers(page);
+  await startRun();
+  await moveLogical(90, 135);
+  await expect.poll(async () => (await gameState(page)).playerBullets).toBeGreaterThan(0);
+});
+
+test("tir automatique décoché : aucun tir sans clic maintenu, et le choix tient au rechargement", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");
   await skipHints(page);
+  await page.locator("#autofire-toggle").uncheck();
   const { startRun, moveLogical } = canvasHelpers(page);
   await startRun();
   await moveLogical(90, 135);
@@ -17,21 +28,10 @@ test("le tir est manuel : aucune balle sans clic maintenu, tir dès qu'on mainti
   await page.mouse.down();
   await expect.poll(async () => (await gameState(page)).playerBullets).toBeGreaterThan(0);
   await page.mouse.up();
-  expect(errors).toEqual([]);
-});
-
-test("la case 'Tir automatique' tire sans clic, et reste cochée après rechargement", async ({ page }) => {
-  await page.goto("/");
-  await skipHints(page);
-  const { startRun, moveLogical } = canvasHelpers(page);
-
-  await page.locator("#autofire-toggle").check();
-  await startRun();
-  await moveLogical(90, 135);
-  await expect.poll(async () => (await gameState(page)).playerBullets).toBeGreaterThan(0);
 
   await page.reload();
-  await expect(page.locator("#autofire-toggle")).toBeChecked();
+  await expect(page.locator("#autofire-toggle")).not.toBeChecked();
+  expect(errors).toEqual([]);
 });
 
 test("playRandom ne rejoue jamais la même piste deux fois de suite", async ({ page }) => {

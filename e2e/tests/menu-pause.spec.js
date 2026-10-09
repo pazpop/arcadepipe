@@ -170,9 +170,9 @@ test("la souris immobile sur une option n'empêche pas de choisir au clavier", a
 test("un réglage cliqué ne garde pas le focus : Espace ne le rebascule pas", async ({ page }) => {
   await page.goto("/");
   await skipHints(page);
-  await page.click("#autofire-toggle");
+  await page.click("#autofire-toggle"); // décoche (le tir automatique est actif par défaut)
   await page.keyboard.press("Space");
-  await expect(page.locator("#autofire-toggle")).toBeChecked();
+  await expect(page.locator("#autofire-toggle")).not.toBeChecked();
 
   // Bouton Pause cliqué en partie, reprise au clavier : Espace ne remet pas en pause.
   const { startRun } = canvasHelpers(page);

@@ -87,7 +87,7 @@ export default {
   "help.move": "MOVEMENT",
   "help.move.detail": "Mouse or finger: steer the ship",
   "help.fire": "FIRE",
-  "help.fire.detail": 'Hold the mouse button, or tick "Auto-fire" (bottom left)',
+  "help.fire.detail": 'Automatic. Untick "Auto-fire" (bottom left) to fire by holding the mouse button or your finger',
   "help.nova": "NOVA",
   "help.nova.detail":
     "Graze (without touching) an enemy shot or an enemy ship — not the boss — to charge the NOVA gauge at the top left: take risks! Once full, SPACE (or the touch button at the bottom right) destroys every enemy on screen and their shots, never the boss. Up to 2 charges in reserve from the 2nd boss fight (only 1 before). Use them whenever you like.",

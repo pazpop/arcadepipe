@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : le résultat de `git rev-list --count HEAD`, plus un. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.158] - 2026-10-09
+- Dépendances Python : `pydantic_core` n'est plus épinglé à part (pydantic impose déjà sa version exacte), ce qui faisait échouer les mises à jour proposées par Dependabot.
+
 ## [2.157] - 2026-10-09
 - Kit presse : la page des descriptions n'annonce plus une sélection au clic, que la politique de sécurité du site bloquait.
 

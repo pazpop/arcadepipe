@@ -3,7 +3,7 @@ updates:
   # PR à chaque nouvelle version (pip-audit, lui, ne signale qu'une CVE publiée).
   # Une seule PR pour toutes les dépendances Python : elles sont toutes épinglées
   # (backend/requirements.txt), et certaines ne s'installent qu'ensemble
-  # (pydantic et pydantic_core, fastapi et starlette).
+  # (fastapi et starlette).
   - package-ecosystem: "pip"
     directory: "/backend"
     schedule:

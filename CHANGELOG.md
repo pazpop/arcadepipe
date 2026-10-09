@@ -2,6 +2,10 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : le résultat de `git rev-list --count HEAD`, plus un. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.150] - 2026-10-09
+- **Niveau bonus** : chaque anneau a sa propre nuance, tirée au hasard entre le vert d'eau et le bleu.
+- Charge NOVA comptée en frôlements entiers : elle arrive exactement au nombre prévu, quel que soit le réglage.
+
 ## [2.148] - 2026-10-09
 - **Classement protégé d'un score sans effort** : les anneaux du boss partent d'un angle différent à chaque salve (leurs couloirs sûrs ne sont plus fixes), et le multiplicateur de frôlement est plafonné à 20.
 - **Niveau bonus toujours offert** avant les vagues 10, 20, 30... : le seuil de score, toujours atteint en pratique, est retiré. Son dernier anneau reste visible jusqu'à sa sortie de l'écran.

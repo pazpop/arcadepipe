@@ -1,9 +1,9 @@
 // Vagues : démarrage d'une vague (boss ou non) et transition entre deux
 // vagues (saut spatial, niveau bonus).
-import { RES_H, DIFFICULTY, BONUS_LEVEL, PLAYER } from "../config.js";
+import { RES_H, DIFFICULTY, BONUS_LEVEL, PLAYER, GRAZE } from "../config.js";
 import { spawnBossBackdrop } from "../stars.js";
 import { spawnBoss } from "../boss.js";
-import { novaMaxForWave } from "../graze.js";
+import { novaMaxForWave, addNovaGrazes } from "../graze.js";
 import { createBonusLevel, updateBonusLevel, bonusLevelRewardFraction } from "../bonusLevel.js";
 import { setEnemiesLeaving } from "../enemies.js";
 import { deactivateAll } from "../pool.js";
@@ -38,15 +38,6 @@ export function startWave(g, engine, wave) {
   }
 }
 
-// Récompense du niveau bonus (bonusLevel.js) : ajoutée à la jauge NOVA en
-// cours, plafonnée au max courant.
-function applyNovaReward(g, frac) {
-  const max = g.novaMax;
-  const units = Math.min(max, g.novaStock + g.novaProgress + frac * max);
-  g.novaStock = Math.floor(units);
-  g.novaProgress = units - g.novaStock;
-}
-
 // Appelée à chaque frame de la partie. Trois phases qui s'excluent : le saut
 // spatial entre deux vagues (g.waveBreak), le niveau bonus (g.bonusLevel), et
 // la vague elle-même, dont on guette la fin. g.clearingScreen est vrai pendant
@@ -74,7 +65,8 @@ export function updateWaveTransition(g, engine, dt) {
       // Le maximum de la vague qui suit : c'est avant la vague 10 que la
       // seconde charge devient possible, la récompense doit pouvoir la remplir.
       g.novaMax = novaMaxForWave(g.wave + 1);
-      applyNovaReward(g, frac);
+      // Récompense : la fraction d'anneaux réussis, en part de la réserve NOVA entière.
+      addNovaGrazes(g, Math.round(frac * g.novaMax * GRAZE.grazePerCharge));
       g.bonusLevel = null;
       g.banner = { text: t("banner.bonusDone", { passed, total: BONUS_LEVEL.ringCount, percent: Math.round(frac * 100) }) };
       startWaveBreak(g, audio, DIFFICULTY.waveBreakDuration);

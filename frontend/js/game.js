@@ -72,7 +72,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     maxGrazeChain: 0, // meilleure chaîne de la partie entière — reset dans startRun (pas startWave), voir graze.js
     distanceTraveled: 0, // années-lumière, accumulé pendant PLAYING — reset dans startRun, voir DISTANCE dans config.js
     novaStock: 0, // rechargé par le graze, dépensé par useNova() (states/playing.js)
-    novaProgress: 0, // 0..1, progression vers la prochaine charge
+    novaGrazes: 0, // frôlements acquis pour la prochaine charge (voir addNovaGrazes, graze.js)
     novaMax: 1, // recalculé dans startWave (novaMaxForWave)
     spawnTimer: 0,
     spawnInterval: DIFFICULTY.baseSpawnInterval,

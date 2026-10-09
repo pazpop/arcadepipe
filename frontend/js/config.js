@@ -219,6 +219,11 @@ export const BONUS_LEVEL = {
   ringSpawnInterval: 1.3,
   ringOuterRadius: 22,
   ringInnerRadius: 13,
+  // Teinte (degrés HSL) d'un anneau, tirée au hasard entre ces bornes : du vert
+  // d'eau au bleu, de part et d'autre du cyan du vaisseau, loin de l'or et du
+  // rouge réservés au résultat.
+  ringHueMin: 150,
+  ringHueMax: 230,
   // Rétrécit légèrement à chaque anneau — une petite montée en difficulté dans
   // le niveau bonus lui-même, pas juste une suite de portes identiques.
   ringTighten: 0.6,

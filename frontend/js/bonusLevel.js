@@ -37,6 +37,8 @@ function spawnRing(bl) {
     y: 30 + Math.random() * (RES_H - 60),
     innerRadius,
     outerRadius: BONUS_LEVEL.ringOuterRadius,
+    // Teinte tirée au hasard autour du cyan : chaque anneau a sa nuance.
+    hue: BONUS_LEVEL.ringHueMin + Math.random() * (BONUS_LEVEL.ringHueMax - BONUS_LEVEL.ringHueMin),
     resolved: false,
     passed: false,
   });
@@ -44,7 +46,7 @@ function spawnRing(bl) {
 }
 
 // Fraction d'anneaux réussis sur le total — c'est elle qui détermine combien
-// la jauge NOVA se remplit (voir applyNovaReward dans states/waves.js).
+// la jauge NOVA se remplit (voir updateWaveTransition dans states/waves.js).
 export function bonusLevelRewardFraction(bl) {
   return bl.passedCount / BONUS_LEVEL.ringCount;
 }
@@ -89,7 +91,8 @@ export function updateBonusLevel(bl, dt, player, particles, audio) {
 }
 
 function drawRing(ctx, ring) {
-  const color = ring.resolved ? (ring.passed ? PALETTE.gold : PALETTE.danger) : PALETTE.player;
+  // Sa nuance tant qu'il approche ; or s'il est réussi, rouge s'il est raté.
+  const color = ring.resolved ? (ring.passed ? PALETTE.gold : PALETTE.danger) : `hsl(${ring.hue}, 100%, 65%)`;
   ctx.save();
   ctx.globalAlpha = ring.resolved ? 0.4 : 0.9;
   ctx.strokeStyle = color;

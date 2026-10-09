@@ -19,18 +19,23 @@ export function novaMaxForWave(wave) {
   return wave >= DIFFICULTY.bossWaveEvery * NOVA.extraStockFromBossCount ? NOVA.baseMaxStock + 1 : NOVA.baseMaxStock;
 }
 
+// Ajoute des frôlements à la jauge NOVA : chaque tranche de GRAZE.grazePerCharge
+// donne une charge, dans la limite de g.novaMax. g.novaGrazes compte ceux déjà
+// acquis pour la charge suivante (0 quand la réserve est pleine).
+export function addNovaGrazes(g, count) {
+  const perCharge = GRAZE.grazePerCharge;
+  const total = Math.min(g.novaMax * perCharge, g.novaStock * perCharge + g.novaGrazes + count);
+  g.novaStock = Math.floor(total / perCharge);
+  g.novaGrazes = total % perCharge;
+}
+
 function registerGraze(g, particles, audio, x, y) {
   g.grazeChain += 1;
   // Sur toute la partie (pas remise à zéro par vague comme grazeChain) —
   // affichée en fin de run sur la carte de partage (voir shareCard.js).
   g.maxGrazeChain = Math.max(g.maxGrazeChain, g.grazeChain);
   g.score += grazeScoreForChain(g.grazeChain);
-  g.novaProgress += 1 / GRAZE.grazePerCharge;
-  while (g.novaProgress >= 1 && g.novaStock < g.novaMax) {
-    g.novaProgress -= 1;
-    g.novaStock += 1;
-  }
-  if (g.novaStock >= g.novaMax) g.novaProgress = 0; // jauge pleine : pas de trop-plein visuel sur la barre de progression
+  addNovaGrazes(g, 1);
   spawnSpark(particles, x, y, 2);
   // Le son monte avec la chaîne, jusqu'à un plafond : au-delà, il deviendrait insupportable.
   if (GRAZE.milestones.includes(g.grazeChain)) audio.playGrazeMilestone();

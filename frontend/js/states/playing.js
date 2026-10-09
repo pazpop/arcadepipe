@@ -1,7 +1,7 @@
 // État "playing" : la partie elle-même (mouvement, tirs, ennemis, collisions,
 // vagues, boss, niveau bonus, NOVA). drawScene() sert aussi à la pause et à
 // GAME OVER, qui affichent la scène figée derrière leur écran (voir game.js).
-import { RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE, HIT_STOP, BOSS } from "../config.js";
+import { RES_H, PALETTE, DIFFICULTY, PLAYER, POWERUP, BONUS_LEVEL, STORAGE_KEYS, DISTANCE, HIT_STOP, BOSS, GRAZE } from "../config.js";
 import { loadItem, saveItem } from "../storage.js";
 import { updateStarfield, triggerBossBackdropLeave } from "../stars.js";
 import { resetPlayer, updatePlayer, moveToward, hitPlayer, drawPlayer, applyPowerup, applyShield, canReceivePowerup } from "../player.js";
@@ -87,7 +87,7 @@ export function startRun(g, engine) {
   g.deathTimer = 0;
   g.warp = 1;
   g.novaStock = 0; // vide au début d'une partie — la première charge doit être gagnée (voir graze.js)
-  g.novaProgress = 0;
+  g.novaGrazes = 0;
   g.bonusLevel = null;
   g.mode = MODE.PLAYING;
   g.controlHint = engine.input.autoFire ? 0 : 4; // rappel "maintiens pour tirer", inutile en tir automatique
@@ -435,7 +435,7 @@ export function drawScene(c2d, g, engine) {
   drawProjectiles(c2d, projectiles);
   drawPlayer(c2d, player);
   hud.drawGameHud(c2d, g, player.lives);
-  hud.drawNovaGauge(c2d, g.novaStock, g.novaMax, g.novaProgress);
+  hud.drawNovaGauge(c2d, g.novaStock, g.novaMax, g.novaGrazes / GRAZE.grazePerCharge);
   if (g.boss) hud.drawBossHealthBar(c2d, g.boss);
   hud.drawBuffIndicator(c2d, player.buff);
   hud.drawShieldIndicator(c2d, player.shield);

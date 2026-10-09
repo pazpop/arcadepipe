@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-import { grazeScoreForChain, novaMaxForWave, updateGraze } from "./graze.js";
+import { addNovaGrazes, grazeScoreForChain, novaMaxForWave, updateGraze } from "./graze.js";
 import { GRAZE, DIFFICULTY } from "./config.js";
 import { createParticlePool } from "./particles.js";
 
@@ -30,7 +30,7 @@ test("dès la vague du 2e boss : deux charges NOVA max", () => {
 // Garde de updateGraze() pendant g.clearingScreen (niveau bonus, saut
 // spatial) : sans elle, ce scénario graze bien (voir le test de contrôle).
 function makeGrazeFixture() {
-  const g = { grazeChain: 0, maxGrazeChain: 0, score: 0, novaProgress: 0, novaStock: 0, novaMax: 1, clearingScreen: false };
+  const g = { grazeChain: 0, maxGrazeChain: 0, score: 0, novaGrazes: 0, novaStock: 0, novaMax: 1, clearingScreen: false };
   const player = { alive: true, invuln: 0, x: 0, y: 0 };
   // Même position que le joueur : chevauchement garanti quel que soit le rayon.
   const projectiles = { enemy: { items: [{ active: true, grazed: false, x: 0, y: 0 }], radius: 1 } };
@@ -45,7 +45,7 @@ test("le graze ne progresse pas pendant clearingScreen (niveau bonus/saut spatia
   g.clearingScreen = true;
   updateGraze(g, 0.016, player, projectiles, enemies, particles, audio);
   assert.equal(g.grazeChain, 0);
-  assert.equal(g.novaProgress, 0);
+  assert.equal(g.novaGrazes, 0);
   assert.equal(projectiles.enemy.items[0].grazed, false);
 });
 
@@ -65,4 +65,27 @@ test("un seuil de chaîne (GRAZE.milestones) joue le son de palier, pas le tic h
   projectiles.enemy.items[0].grazed = false; // même tir, frôlé une 2e fois
   updateGraze(g, 0.016, player, projectiles, enemies, particles, audio);
   assert.deepEqual(played, ["tic", "palier"]);
+});
+
+// Charge NOVA : comptée en frôlements entiers, quel que soit GRAZE.grazePerCharge.
+for (const perCharge of [10, 12]) {
+  test(`${perCharge} frôlements par charge : la charge arrive au ${perCharge}e, pas avant ni après`, () => {
+    const saved = GRAZE.grazePerCharge;
+    GRAZE.grazePerCharge = perCharge;
+    try {
+      const { g, player, projectiles, enemies, particles, audio } = makeGrazeFixture();
+      for (let i = 1; i <= perCharge; i++) {
+        projectiles.enemy.items[0].grazed = false;
+        updateGraze(g, 0.016, player, projectiles, enemies, particles, audio);
+        assert.equal(g.novaStock, i === perCharge ? 1 : 0, `après ${i} frôlements`);
+      }
+    } finally {
+      GRAZE.grazePerCharge = saved;
+    }
+  });
+}
+test("la jauge NOVA ne dépasse jamais sa réserve maximale", () => {
+  const g = { novaStock: 1, novaGrazes: 5, novaMax: 2 };
+  addNovaGrazes(g, 10 * GRAZE.grazePerCharge);
+  assert.deepEqual([g.novaStock, g.novaGrazes], [2, 0]);
 });

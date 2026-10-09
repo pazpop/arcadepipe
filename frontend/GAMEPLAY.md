@@ -63,7 +63,7 @@ Les trois armes durent 20 secondes ; le décompte est en pause pendant un saut s
 ## Le niveau bonus
 
 - Offert avant les vagues 10, 20, 30...
-- Dix anneaux à traverser : le vaisseau ne se déplace que de haut en bas, aucune vie ne peut être perdue.
+- Dix anneaux à traverser, chacun d'une nuance tirée au hasard entre le vert d'eau et le bleu ; il devient or s'il est réussi, rouge s'il est raté. Le vaisseau ne se déplace que de haut en bas, aucune vie ne peut être perdue.
 - Récompense : la jauge NOVA se remplit en proportion des anneaux réussis.
 
 ## Fin de partie et classement

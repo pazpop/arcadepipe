@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ArcadePipe — Confidentialité / Privacy</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<style>
+  body {
+    margin: 0 auto;
+    padding: 24px 16px 48px;
+    max-width: 720px;
+    background: #05060f;
+    color: #cfe8ff;
+    font-family: monospace;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  h1 { color: #ffe66d; font-size: 24px; }
+  h2 { color: #4ee1ff; font-size: 17px; margin-top: 28px; }
+  a { color: #4ee1ff; }
+  hr { border: none; border-top: 1px solid rgba(78, 225, 255, 0.35); margin: 40px 0; }
+  .lang-links { font-size: 13px; }
+</style>
+</head>
+<body>
+  <p class="lang-links"><a href="index.html">← ArcadePipe</a> · <a href="#fr">Français</a> · <a href="#en">English</a></p>
+
+  <section id="fr" lang="fr">
+    <h1>Confidentialité</h1>
+    <p>ArcadePipe se joue sans compte et sans inscription. Voici tout ce que le jeu enregistre.</p>
+
+    <h2>Le classement</h2>
+    <p>Quand un score entre dans le classement, le jeu envoie au serveur le pseudo choisi (8 caractères au plus, « AAA » par défaut), le score, la vague atteinte et le nombre d'ennemis abattus. Le serveur y ajoute la date et l'heure. Ces informations sont publiques, puisque le classement est visible par tous, et sont gardées tant que le score reste parmi les 10 000 meilleurs.</p>
+    <p>Chaque partie terminée ajoute aussi une unité à un compteur global de parties jouées, sans aucune information sur le joueur.</p>
+
+    <h2>Adresse IP</h2>
+    <p>Le serveur lit l'adresse IP uniquement pour limiter le nombre de requêtes par minute. Elle est gardée en mémoire une minute et n'est jamais enregistrée.</p>
+
+    <h2>Mesure d'audience</h2>
+    <p>Sur le site officiel, le jeu peut utiliser Google Analytics pour compter les visites. Rien n'est chargé et aucun cookie n'est déposé avant que tu aies cliqué sur « Accepter » dans le bandeau. Tu peux changer d'avis à tout moment avec le bouton « Cookies » du panneau de réglages : un refus arrête la mesure et efface ses cookies. Les autres versions du jeu (itch.io, copies hébergées par d'autres) n'ont pas de mesure d'audience, sauf si leur hébergeur l'active.</p>
+
+    <h2>Sur ton appareil</h2>
+    <p>Le jeu garde tes réglages dans le stockage local du navigateur : volumes, son coupé, dernière piste, tir automatique, vitesse du jeu, filtre rétro, panneau replié, langue, dernier pseudo, choix sur les cookies, aide déjà vue. Ils ne quittent pas ton appareil ; vider les données du site les efface.</p>
+
+    <h2>Faire retirer un score</h2>
+    <p>Pour faire retirer un pseudo ou un score du classement, ou pour toute question, ouvre une demande sur <a href="https://github.com/pazpop/arcadepipe/issues" target="_blank" rel="noopener">la page GitHub du projet</a>. Le code du jeu et du serveur y est public.</p>
+  </section>
+
+  <hr />
+
+  <section id="en" lang="en">
+    <h1>Privacy</h1>
+    <p>ArcadePipe needs no account and no sign-up. Here is everything the game records.</p>
+
+    <h2>The leaderboard</h2>
+    <p>When a score enters the leaderboard, the game sends the server the chosen name (up to 8 characters, "AAA" by default), the score, the wave reached and the number of enemies destroyed. The server adds the date and time. This information is public, since anyone can see the leaderboard, and it is kept for as long as the score stays among the 10,000 best.</p>
+    <p>Each finished game also adds one to a global count of games played, with no information about the player.</p>
+
+    <h2>IP address</h2>
+    <p>The server reads the IP address only to limit the number of requests per minute. It is kept in memory for one minute and never stored.</p>
+
+    <h2>Analytics</h2>
+    <p>On the official site, the game may use Google Analytics to count visits. Nothing is loaded and no cookie is set until you click "Accept" in the banner. You can change your mind at any time with the "Cookies" button in the settings panel: declining stops the measurement and deletes its cookies. Other versions of the game (itch.io, copies hosted by others) have no analytics unless their host turns it on.</p>
+
+    <h2>On your device</h2>
+    <p>The game keeps your settings in the browser's local storage: volumes, mute, last track, auto-fire, game speed, retro filter, collapsed panel, language, last name used, cookie choice, help already seen. They never leave your device; clearing the site's data removes them.</p>
+
+    <h2>Removing a score</h2>
+    <p>To have a name or a score removed from the leaderboard, or for any question, open a request on <a href="https://github.com/pazpop/arcadepipe/issues" target="_blank" rel="noopener">the project's GitHub page</a>. The code of the game and of the server is public there.</p>
+  </section>
+</body>
+</html>

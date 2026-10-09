@@ -2,8 +2,9 @@
 // les autres fichiers de ce dossier (vérifié par i18n.test.js).
 // {nom} est remplacé par une valeur au moment de l'affichage : à garder tel quel.
 export default {
-  // Texte du bouton qui propose de passer à cette langue, à côté de son drapeau (.flag-fr, css/style.css).
-  "lang.switch": "Changer",
+  // Drapeaux du bouton qui propose de passer à cette langue : un nom par
+  // drapeau, dessiné par la classe .flag-<nom> de css/style.css.
+  "lang.flags": "fr qc",
 
   // --- Panneau de réglages (HTML, bas à gauche) ---
   "panel.pause.title": "Menu pause",
@@ -23,6 +24,7 @@ export default {
   "panel.cookies": "Cookies",
   "panel.cookies.title": "Changer mon choix de cookies",
   "panel.lang.title": "Changer de langue",
+  "panel.privacy": "Confidentialité",
   "panel.toggle.title": "Afficher/masquer le menu",
   "nova.title": "Déclencher NOVA (Espace)",
   "share.button": "📤 Partager",

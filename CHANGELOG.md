@@ -2,6 +2,13 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.134] - 2026-10-09
+- Bouton de langue : drapeaux seuls (États-Unis et Royaume-Uni pour l'anglais, France et Québec pour le français).
+- **Page de confidentialité** (`privacy.html`), en français et en anglais, accessible depuis le panneau de réglages et le bandeau de cookies.
+- **Kit presse** (`/press/`) : présentation dans les deux langues, fiche technique, quatre captures et une vidéo de jeu, refaites par `npm run presskit`.
+- **itch.io** : l'adresse de l'API du classement devient réglable (`apiBase`, `site-config.json`) et `tools/build_itch.py` construit l'archive à déposer.
+- CI : les tests bout-en-bout (Playwright) tournent avant la construction des images.
+
 ## [2.131] - 2026-10-09
 - **Image d'aperçu des liens partagés** (`og-image.png`) : le titre du jeu sur une capture de partie, affichée par Discord, X, Facebook...
 - **Filtre rétro** : une case dans le panneau de réglages, donc réglable sur téléphone. Le raccourci C est retiré.

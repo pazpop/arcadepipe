@@ -13,15 +13,16 @@ RUN apk add --no-cache libcap \
     && apk del libcap
 
 COPY Caddyfile /etc/caddy/Caddyfile
-COPY index.html /usr/share/caddy/
+COPY index.html privacy.html /usr/share/caddy/
 COPY robots.txt /usr/share/caddy/
 COPY favicon.svg og-image.png /usr/share/caddy/
 COPY css/ /usr/share/caddy/css/
 COPY js/ /usr/share/caddy/js/
 COPY lib/ /usr/share/caddy/lib/
 COPY music/ /usr/share/caddy/music/
+COPY press/ /usr/share/caddy/press/
 
-# Réglages de ce déploiement, lus par le jeu au chargement (js/consent.js).
+# Réglages de ce déploiement, lus par le jeu au chargement (js/siteConfig.js).
 # GA_MEASUREMENT_ID : identifiant Google Analytics ; vide par défaut, donc
 # aucune mesure d'audience (voir docs/deploiement.md).
 ARG GA_MEASUREMENT_ID=""

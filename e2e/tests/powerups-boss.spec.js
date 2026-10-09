@@ -47,16 +47,17 @@ test("arme bonus active : aucune autre arme n'apparaît tant qu'elle dure", asyn
   expect(s.buff).toBe("power");
   await canvas.screenshot({ path: "test-results/powerup-collected.png" });
 
-  // Les kills continuent (tir maintenu, 100 % de drop) sans qu'aucun bonus ne tombe.
-  for (let i = 0; i < 12; i++) {
+  // Tir maintenu jusqu'à deux kills de plus (100 % de drop) : aucun bonus ne tombe.
+  let st = s;
+  for (let i = 0; i < 80 && st.kills < s.kills + 2; i++) {
     const p = await toPage(90, 30 + (i % 8) * 30);
     await page.mouse.move(p.x, p.y);
     await page.waitForTimeout(250);
-    const st = await gameState(page);
+    st = await gameState(page);
     expect(st.buff).toBe("power");
     expect(st.powerups).toEqual([]);
   }
-  expect((await gameState(page)).kills).toBeGreaterThan(s.kills);
+  expect(st.kills).toBeGreaterThanOrEqual(s.kills + 2);
 
   await page.mouse.up();
   expect(errors).toEqual([]);

@@ -24,6 +24,7 @@ npm test                   # ou : npx playwright test --headed
 - `i18n` — langue du navigateur par défaut, changement de langue mémorisé
 - `mobile` — téléphone en paysage : commandes dans les bandes noires, jeu au doigt
 - `leaderboard` — avec le vrai backend : scores du serveur triés, pseudo saisi puis score inscrit
+- `pages` — page de confidentialité et kit presse
 - `share-qr` — le QR de la carte de partage se décode après recompression JPEG ; contraste vérifié au pixel
 
 ## Attendre un état, pas un délai

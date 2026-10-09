@@ -206,31 +206,41 @@ html, body {
   accent-color: #4ee1ff;
 }
 
-/* Drapeau du bouton de langue, dessiné en CSS : les emojis drapeau ne
-   s'affichent pas sous Windows. Une classe par langue (.flag-<code>). */
+/* Drapeaux du bouton de langue : de petites images SVG écrites ici (les emojis
+   drapeau ne s'affichent pas sous Windows). Une classe par drapeau, nommée
+   dans "lang.flags" des fichiers de langue ; %23 est le # d'une couleur. */
 .flag {
   display: inline-block;
-  width: 15px;
-  height: 10px;
-  margin-left: 6px;
+  width: 18px;
+  height: 12px;
+  margin: 0 3px;
   vertical-align: -1px;
+  background-size: 100% 100%;
 }
 .flag-fr {
-  background: linear-gradient(to right, #0055a4 33.3%, #ffffff 33.3% 66.6%, #ef4135 66.6%);
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 3 2'><path fill='%230055a4' d='M0 0h1v2H0z'/><path fill='%23fff' d='M1 0h1v2H1z'/><path fill='%23ef4135' d='M2 0h1v2H2z'/></svg>");
 }
-/* États-Unis, simplifié : sept bandes et le rectangle bleu, sans étoiles. */
-.flag-en {
-  background:
-    linear-gradient(#3c3b6e, #3c3b6e) top left / 45% 57% no-repeat,
-    repeating-linear-gradient(to bottom, #b22234 0 14.3%, #ffffff 14.3% 28.6%);
+/* Québec : croix blanche sur fond bleu, les fleurs de lys réduites à des losanges. */
+.flag-qc {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 18 12'><path fill='%23003da5' d='M0 0h18v12H0z'/><path fill='%23fff' d='M7.5 0h3v12h-3zM0 4.5h18v3H0zM3.75 1l1 1.25-1 1.25-1-1.25zM14.25 1l1 1.25-1 1.25-1-1.25zM3.75 8.5l1 1.25-1 1.25-1-1.25zM14.25 8.5l1 1.25-1 1.25-1-1.25z'/></svg>");
+}
+/* États-Unis : sept bandes et le rectangle bleu, sans les étoiles. */
+.flag-us {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 21 14'><path fill='%23fff' d='M0 0h21v14H0z'/><path fill='%23b22234' d='M0 0h21v2H0zM0 4h21v2H0zM0 8h21v2H0zM0 12h21v2H0z'/><path fill='%233c3b6e' d='M0 0h9v8H0z'/></svg>");
+}
+.flag-gb {
+  background-image: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30'><path fill='%23012169' d='M0 0h60v30H0z'/><path stroke='%23fff' stroke-width='6' d='M0 0l60 30M60 0L0 30'/><path stroke='%23c8102e' stroke-width='2.4' d='M0 0l60 30M60 0L0 30'/><path stroke='%23fff' stroke-width='10' d='M30 0v30M0 15h60'/><path stroke='%23c8102e' stroke-width='6' d='M30 0v30M0 15h60'/></svg>");
 }
 
-/* Numéro de version, discret. */
+/* Numéro de version et lien vers la page de confidentialité, discrets. */
 .mc-version {
   text-align: center;
   font-size: 8px;
   color: #cfe8ff;
-  opacity: 0.5;
+  opacity: 0.6;
+}
+.mc-version a {
+  color: inherit;
 }
 
 /* Boutons NOVA (en partie) et Partager (fin de partie) : même coin bas-droit,

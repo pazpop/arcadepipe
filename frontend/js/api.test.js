@@ -3,7 +3,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 
-// api.js lit window.location au chargement et appelle fetch : simulés ici.
+// api.js lit window.location au chargement et appelle fetch (dont site-config.json, sans réglage ici) : simulés.
 globalThis.window = { location: { port: "" } };
 let calls = [];
 let ok = true;

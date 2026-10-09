@@ -21,6 +21,14 @@ Le jeu peut charger Google Analytics, mais aucun identifiant n'est écrit dans l
 
 Le reverse-proxy doit autoriser `googletagmanager.com` et `google-analytics.com` dans sa CSP.
 
+## itch.io
+
+itch.io héberge les fichiers du jeu chez lui ; le classement, lui, reste sur le site. `python tools/build_itch.py` construit `dist/arcadepipe-itch.zip` : le frontend tel quel, avec l'adresse complète de l'API dans `site-config.json` (`apiBase`) et le numéro de version. Il n'y a pas de mesure d'audience dans cette archive.
+
+1. Sur itch.io, créer un projet de type *HTML*, y déposer l'archive et cocher *This file will be played in the browser*.
+2. Dimensions de l'affichage : 960 × 540 (le jeu est en 16:9), avec le bouton plein écran.
+3. Autoriser l'adresse d'itch.io à appeler l'API : ajouter son origine (celle de la fenêtre du jeu, `https://html-classic.itch.zone` à ce jour) à `ALLOWED_ORIGINS` du backend, à côté de celle du site. Sans cela, le jeu fonctionne mais affiche « Classement indisponible » et n'enregistre aucun score.
+
 C'est le seul fichier de déploiement Docker de ce repo. Celui qui ajoute Traefik et TLS pour l'instance publique vit dans le repo d'infra séparé.
 
 ## CI/CD

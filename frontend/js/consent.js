@@ -11,18 +11,10 @@
 import { STORAGE_KEYS } from "./config.js";
 import { loadItem, saveItem } from "./storage.js";
 import { loadAnalytics, disableAnalytics } from "./analytics.js";
-
-async function fetchMeasurementId() {
-  try {
-    const res = await fetch("site-config.json");
-    return (await res.json()).gaMeasurementId;
-  } catch {
-    return ""; // fichier absent ou illisible : pas de mesure d'audience
-  }
-}
+import { siteConfig } from "./siteConfig.js";
 
 export async function initConsent() {
-  const measurementId = await fetchMeasurementId();
+  const measurementId = (await siteConfig).gaMeasurementId;
   if (!measurementId) return;
 
   // Stockage indisponible : le choix n'est pas mémorisé, le bandeau revient à chaque visite.

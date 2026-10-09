@@ -16,3 +16,6 @@ e2e/playwright-report/
 
 # Sources audio de travail (seuls les MP3 encodés sont publiés)
 frontend/music/*.wav
+
+# Archive du jeu pour itch.io (tools/build_itch.py)
+dist/

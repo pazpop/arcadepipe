@@ -28,10 +28,11 @@ JS vanilla (modules ES6) + Canvas 2D, sans build · FastAPI + SQLite · musique 
 
 ## Aller plus loin
 
-- **Traduire le jeu** : copier [`frontend/js/i18n/fr.js`](frontend/js/i18n/fr.js) (la référence) sous le code de la langue (`es.js`...), traduire les textes en gardant les `{paramètres}` tels quels, puis l'ajouter à `LANGS` dans [`frontend/js/i18n.js`](frontend/js/i18n.js) et dessiner son drapeau (`.flag-es`, [`frontend/css/style.css`](frontend/css/style.css)). `node --test` (dans `frontend/js`) signale toute clé manquante.
+- **Traduire le jeu** : copier [`frontend/js/i18n/fr.js`](frontend/js/i18n/fr.js) (la référence) sous le code de la langue (`es.js`...), traduire les textes en gardant les `{paramètres}` tels quels, puis l'ajouter à `LANGS` dans [`frontend/js/i18n.js`](frontend/js/i18n.js) et dessiner son drapeau (clé `lang.flags` du fichier, classe `.flag-…` de [`frontend/css/style.css`](frontend/css/style.css)). `node --test` (dans `frontend/js`) signale toute clé manquante.
 - **Code** : [architecture du frontend](frontend/README.md) · [règles du jeu](frontend/GAMEPLAY.md) · [backend](backend/README.md) · [tests e2e](e2e/README.md)
 - **Exploitation** : [déploiement](docs/deploiement.md) · [sécurité](docs/securite.md) · [données collectées](docs/donnees-collectees.md)
 - **Suivi** : [changelog](CHANGELOG.md) · [roadmap](ROADMAP.md)
+- **Presse** : [kit presse](https://arcadepipe.pazpop.net/press/) (présentation, images, vidéo) · [confidentialité](https://arcadepipe.pazpop.net/privacy.html)
 
 ## 🎓 Pourquoi ce projet ?
 

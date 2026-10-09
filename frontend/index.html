@@ -67,13 +67,13 @@
           <button id="fullscreen-btn" type="button" class="mc-btn" data-i18n="panel.fullscreen"></button>
         </div>
         <!-- Cookies : visible seulement si la mesure d'audience est activée
-             (js/consent.js). Langue : propose la langue suivante, dans cette
-             langue et avec son drapeau (js/main.js). -->
+             (js/consent.js). Langue : les drapeaux de la langue proposée, la
+             suivante (js/main.js). -->
         <div class="mc-section mc-row">
           <button id="cookie-btn" type="button" class="mc-btn hidden" data-i18n="panel.cookies" data-i18n-title="panel.cookies.title"></button>
-          <button id="lang-btn" type="button" class="mc-btn" data-i18n-title="panel.lang.title"><span id="lang-label"></span><span id="lang-flag" class="flag"></span></button>
+          <button id="lang-btn" type="button" class="mc-btn" data-i18n-title="panel.lang.title"></button>
         </div>
-        <div class="mc-section mc-version" id="version-label"></div>
+        <div class="mc-section mc-version"><span id="version-label"></span> · <a class="privacy-link" data-i18n="panel.privacy" href="privacy.html" target="_blank" rel="noopener"></a></div>
       </div>
       <!-- Hors du panneau qui se replie, donc toujours visibles : Pause (seul
            moyen de mettre en pause au tactile) et l'onglet du panneau. -->
@@ -91,7 +91,7 @@
 
     <!-- Consentement à la mesure d'audience, si le déploiement l'a activée (js/consent.js). -->
     <div id="cookie-banner" class="cookie-banner hidden" role="dialog" data-i18n-aria="cookie.aria">
-      <span><span data-i18n="cookie.text"></span> <a data-i18n="cookie.more" href="https://github.com/pazpop/arcadepipe/blob/main/docs/donnees-collectees.md" target="_blank" rel="noopener"></a></span>
+      <span><span data-i18n="cookie.text"></span> <a class="privacy-link" data-i18n="cookie.more" href="privacy.html" target="_blank" rel="noopener"></a></span>
       <div class="cookie-actions">
         <button id="cookie-accept" type="button" data-i18n="cookie.accept"></button>
         <button id="cookie-decline" type="button" data-i18n="cookie.decline"></button>

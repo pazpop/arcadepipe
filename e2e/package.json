@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "test": "playwright test",
-    "install-browsers": "playwright install chromium"
+    "install-browsers": "playwright install chromium",
+    "presskit": "node tools/presskit.mjs"
   },
   "devDependencies": {
     "@playwright/test": "^1.55.0",

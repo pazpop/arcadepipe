@@ -13,12 +13,11 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 
 ## Avant de publier sur des plateformes (itch.io...)
 
-- [ ] **Accord écrit de mall-e** pour diffuser sa musique ailleurs que sur le site : elle n'est pas couverte par la licence du code.
+- [ ] **Accord de mall-e** pour diffuser sa musique ailleurs que sur le site : donné par message (Signal, à conserver) ; garder aussi sa réponse par courriel quand elle arrivera.
 - [ ] **Redessiner le décor du boss** (`deathStar`, `stars.js`) : il ressemble à l'Étoile de la mort, une marque protégée. Renommer aussi dans le code.
-- [ ] **Faire marcher le jeu hors du site** : adresse de l'API réglable (`API_BASE`, `js/api.js`) et origine de la plateforme autorisée (`ALLOWED_ORIGINS`), ou bien le site affiché dans un cadre par la plateforme. À tester sur itch.io.
+- [ ] **Publier sur itch.io** : l'archive se construit (`python tools/build_itch.py`, voir [docs/deploiement.md](docs/deploiement.md#itchio)). Reste à autoriser l'origine d'itch.io dans `ALLOWED_ORIGINS` du backend (dépôt d'infra), à déposer l'archive, puis à tester le classement depuis la page itch.io.
 - [ ] **Supprimer de faux scores à distance** : une commande d'administration protégée, au lieu d'une requête SQL à la main sur le serveur.
-- [ ] **Page de confidentialité dans le jeu**, en français et en anglais (le lien du bandeau pointe vers un fichier GitHub en français).
-- [ ] **Kit presse**, une fois le reste prêt : résumé du jeu dans les deux langues, fiche technique, crédits, captures d'écran, courte vidéo, contact.
+- [ ] **Compléter le kit presse** (`frontend/press/`) : une capture du boss une fois son décor redessiné (`npm run presskit` dans `e2e/`), une adresse de contact, la date de sortie, les liens des plateformes ; éventuellement la vidéo en MP4 ou en GIF.
 - [ ] **Documentation du dépôt en anglais et en français** (README, docs).
 
 ## Jeu

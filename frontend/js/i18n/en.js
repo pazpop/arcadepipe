@@ -1,8 +1,9 @@
 // English — same keys as fr.js (the reference file), checked by i18n.test.js.
 // {name} is replaced by a value at display time: keep it as is.
 export default {
-  // Texte du bouton qui propose de passer à cette langue, à côté de son drapeau (.flag-en, css/style.css).
-  "lang.switch": "Change",
+  // Drapeaux du bouton qui propose de passer à cette langue : un nom par
+  // drapeau, dessiné par la classe .flag-<nom> de css/style.css.
+  "lang.flags": "us gb",
 
   // --- Settings panel (HTML, bottom left) ---
   "panel.pause.title": "Pause menu",
@@ -22,6 +23,7 @@ export default {
   "panel.cookies": "Cookies",
   "panel.cookies.title": "Change my cookie preferences",
   "panel.lang.title": "Change language",
+  "panel.privacy": "Privacy",
   "panel.toggle.title": "Show/hide the menu",
   "nova.title": "Trigger NOVA (Space)",
   "share.button": "📤 Share",

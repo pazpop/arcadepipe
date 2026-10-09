@@ -9,7 +9,7 @@ import { createGame } from "./game.js";
 import { createShareCardCanvas } from "./shareCard.js";
 import { loadItem, saveItem } from "./storage.js";
 import { initConsent } from "./consent.js";
-import { t, LANGS, nextLangCode, nextLang, translateDom } from "./i18n.js";
+import { t, lang, LANGS, nextLangCode, nextLang, translateDom } from "./i18n.js";
 
 const $ = (id) => document.getElementById(id);
 
@@ -28,11 +28,16 @@ export { music, game };
 
 translateDom();
 $("version-label").textContent = `v${VERSION}`;
-// Bouton de langue : il propose la langue suivante, écrit dans cette langue
-// ("Change" pour passer à l'anglais) avec son drapeau.
-$("lang-label").textContent = LANGS[nextLangCode]["lang.switch"];
-$("lang-flag").classList.add(`flag-${nextLangCode}`);
-$("lang-btn").addEventListener("click", nextLang);
+// La page de confidentialité contient les deux langues : le lien mène à la bonne.
+for (const link of document.querySelectorAll(".privacy-link")) link.href = `privacy.html#${lang}`;
+// Bouton de langue : il montre les drapeaux de la langue proposée, la suivante.
+const langBtn = $("lang-btn");
+for (const flag of LANGS[nextLangCode]["lang.flags"].split(" ")) {
+  const span = document.createElement("span");
+  span.className = `flag flag-${flag}`;
+  langBtn.append(span);
+}
+langBtn.addEventListener("click", nextLang);
 initConsent();
 
 // --- Audio : repris à chaque geste, pas seulement au premier. Le navigateur

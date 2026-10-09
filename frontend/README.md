@@ -8,6 +8,7 @@ JS vanilla (modules ES6) + Canvas 2D, sans étape de build : les fichiers sont s
 | --- | --- |
 | `index.html`, `css/style.css` | la page : le canvas, le panneau de réglages, les boutons posés par-dessus |
 | `og-image.png` | image affichée quand un lien vers le jeu est partagé |
+| `privacy.html`, `press/` | page de confidentialité et kit presse, en français et en anglais (captures refaites par `npm run presskit`, dans `e2e/`) |
 | `js/main.js` | point d'entrée : crée le jeu, branche boutons et touches, lance la boucle |
 | `js/game.js` | machine à états : appelle l'écran courant de `js/states/` |
 | `js/config.js` | toutes les constantes (couleurs, difficulté, bonus, boss...) |
@@ -19,7 +20,7 @@ JS vanilla (modules ES6) + Canvas 2D, sans étape de build : les fichiers sont s
 | `js/audio/` | bruitages synthétisés (`sfx.js`) et lecteur de musique (`music.js`) |
 | `js/i18n.js`, `js/i18n/` | traductions, un fichier par langue |
 | `js/api.js`, `consent.js`, `analytics.js`, `shareCard.js` | classement en ligne, mesure d'audience et consentement, image de partage |
-| `site-config.json` | réglages du déploiement (identifiant de mesure d'audience, vide par défaut) |
+| `js/siteConfig.js`, `site-config.json` | réglages du déploiement : identifiant de mesure d'audience, adresse de l'API (vides par défaut) |
 | `js/renderer.js`, `input.js`, `storage.js` | canvas à la résolution de l'écran, entrées clavier/souris/tactile, préférences |
 
 ## Architecture

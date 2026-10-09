@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : le résultat de `git rev-list --count HEAD`, plus un. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.153] - 2026-10-09
+- Images de base téléchargées depuis le miroir de Docker Hub tenu par Google : une panne de Docker Hub ne bloque plus la construction.
+
 ## [2.152] - 2026-10-09
 - Aide : cinq pages, la musique y retrouve sa section (avec les raccourcis clavier).
 

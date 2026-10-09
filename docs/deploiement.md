@@ -46,7 +46,7 @@ flowchart TD
 
 Tout est dans `.github/workflows/deploy.yml`, hormis l'audit hebdomadaire. Une pull request (celles de Dependabot comprises) s'arrête après les vérifications : seul un push sur `main` construit et déploie.
 
-- Actions GitHub épinglées par SHA de commit, images de base épinglées par digest : un tag peut être redéplacé, un SHA ou un digest non.
+- Actions GitHub épinglées par SHA de commit, images de base épinglées par digest : un tag peut être redéplacé, un SHA ou un digest non. Elles sont téléchargées depuis `mirror.gcr.io`, le miroir de Docker Hub tenu par Google (mêmes images, même digest) : une panne de Docker Hub ne bloque pas la construction.
 - [Dependabot](../.github/dependabot.yml) ouvre une PR à chaque mise à jour (`pip`, `npm`, `github-actions`, `docker`).
 - `.github/workflows/audit.yml` relance l'audit des dépendances (`pip-audit`, `npm audit`) chaque lundi : une faille publiée entre deux pushs dans une dépendance fait échouer ce workflow, et GitHub prévient par courriel. Il ne couvre pas les paquets système des images, et GitHub le suspend après 60 jours sans activité dans le dépôt.
 

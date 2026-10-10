@@ -222,7 +222,10 @@ crtToggle.addEventListener("change", () => {
 window.addEventListener("keydown", (e) => {
   const key = (e.key || "").toLowerCase();
   if (game.mode === game.MODE.NAME_ENTRY) {
-    // Les lettres sont le pseudo ; seule Entrée valide.
+    // Les lettres sont le pseudo ; seule Entrée valide. Tab ne quitte pas le
+    // champ : les lettres n'iraient plus nulle part, et Entrée actionnerait
+    // en plus le bouton atteint.
+    if (key === "tab") e.preventDefault();
     if (key === "enter" && !e.repeat) game.confirmNameEntry();
     return;
   }

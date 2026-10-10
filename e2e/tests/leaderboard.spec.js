@@ -84,6 +84,7 @@ test("fin de partie : top annoncé ; score inscrit en rejouant, au tap sur VALID
   await clickLogical(240, 187.4);
   await waitForMode(page, "name_entry");
   for (let i = 0; i < 3; i++) await page.keyboard.press("Backspace"); // efface "AAA"
+  await page.keyboard.press("Tab"); // ne quitte pas le champ : la suite s'y écrit encore
   await page.keyboard.type("zoé m7"); // minuscules passées en majuscules, accent refusé
   expect(await page.evaluate(async () => (await import("/js/main.js")).music.muted)).toBe(false); // M est du texte ici
   await page.keyboard.press("Enter");

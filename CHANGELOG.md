@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : le résultat de `git rev-list --count HEAD`, plus un. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.165] - 2026-10-09
+- Saisie du pseudo : la touche Tab ne quitte plus le champ (les lettres n'étaient plus prises, et Entrée actionnait aussi un bouton du panneau).
+
 ## [2.163] - 2026-10-09
 - Kit presse : captures d'écran refaites avec le jeu actuel (anneaux du niveau bonus aux nuances variées, éventail du premier boss).
 

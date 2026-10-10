@@ -32,7 +32,7 @@ export function updatePowerups(pool, dt) {
   for (const p of pool.items) {
     if (!p.active) continue;
     p.elapsed += dt;
-    p.x -= POWERUP.fallSpeed * dt;
+    p.x -= POWERUP.driftSpeed * dt;
     p.y += Math.sin(p.elapsed * 3) * 10 * dt; // léger flottement, plus visible qu'une dérive rectiligne
     if (p.elapsed > POWERUP.lifetime || p.x < -10 || p.y < -10 || p.y > RES_H + 10) {
       p.active = false;

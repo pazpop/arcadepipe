@@ -96,7 +96,7 @@ export const POWERUP = {
   shieldHits: 3, // nombre de coups absorbés avant que le bouclier se brise
   dropChanceNormal: 0.08,
   dropChanceElite: 0.25,
-  fallSpeed: 26,
+  driftSpeed: 26, // px/s, vers la gauche
   radius: 5,
   lifetime: 9, // disparaît si non ramassé
   // Noms et effets affichés : clés "powerup.<type>" des fichiers de langue (i18n/).
@@ -120,9 +120,25 @@ export const BOSS = {
   weakPointHp: 5,
   weakPointScore: 300, // autant qu'un ennemi élite
   victoryScore: 1000, // nettement au-dessus d'un point faible, pour marquer l'accomplissement
+  firstVolleyDelay: 0.3, // secondes entre son arrivée et sa première salve
   fireInterval: 1.2, // secondes entre deux salves, boss intact
   fireIntervalFactor: 0.645, // multiplié par ce facteur à chaque phase du combat (0,13 s à la cinquième)
   hurryEverySeconds: 30, // le combat monte aussi d'une phase à ce rythme, points faibles détruits ou non
+  // Éventail : tirs à la première phase (un de plus par phase), ouverture en
+  // radians, et courbure des tirs des bords (rad/s) : il s'ouvre « en fleur ».
+  fanCount: 5,
+  fanSpread: Math.PI / 2.2,
+  fanCurve: 0.6,
+  // Spirale : bras à la première phase (un de plus par phase, spiralArmsMax au plus).
+  spiralArms: 3,
+  spiralArmsMax: 6,
+  spiralSpeedMul: 0.9, // ses tirs sont un peu plus lents que ceux de l'éventail
+  // Anneau : tirs à la première phase (ringCountStep de plus par phase), et
+  // courbure (rad/s) : il tourne légèrement en s'étendant.
+  ringCount: 10,
+  ringCountStep: 2,
+  ringCurve: 0.5,
+  ringSpeedMul: 0.8,
   // Part de l'écart entre deux bras dont la spirale tourne à chaque salve.
   // Loin de 1/2, 1/3, 1/4 : avec une fraction simple, les tirs repasseraient
   // par les mêmes rayons et laisseraient des couloirs sûrs.
@@ -184,7 +200,7 @@ export const HIT_STOP = {
 // Frôlement des tirs ennemis (graze.js) : récompense l'esquive serrée plutôt
 // que large, alimente la jauge NOVA (voir NOVA ci-dessous).
 export const GRAZE = {
-  // Tailles de chaîne saluées par un son à part (playGrazeMilestone) — à ajuster au ressenti.
+  // Tailles de chaîne saluées par un son à part (playGrazeMilestone).
   milestones: [5, 10, 15],
   // Rayon depuis le centre du vaisseau : bien plus grand que
   // PLAYER.hitboxRadius, proche de la moitié de la hauteur du sprite, pour que

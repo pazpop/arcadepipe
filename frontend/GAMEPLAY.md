@@ -1,6 +1,6 @@
 # Règles du jeu
 
-Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/config.js`](js/config.js), sauf celles des ennemis ([`js/enemies.js`](js/enemies.js)) ; l'organisation du code est décrite dans le [README du frontend](README.md).
+Ce que fait le jeu, côté joueur. Les valeurs chiffrées des règles vivent dans [`js/config.js`](js/config.js), sauf celles des ennemis ([`js/enemies.js`](js/enemies.js)) ; l'organisation du code est décrite dans le [README du frontend](README.md).
 
 ## Le vaisseau
 

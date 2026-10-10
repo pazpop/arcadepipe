@@ -90,7 +90,7 @@ if (wants("captures")) {
 if (wants("captures")) {
   const { context, page } = await openGame();
   await setConfig(page, {
-    POWERUP: { dropChanceNormal: 1, fallSpeed: 60, typeWeights: { power: 0, rapid: 0, shotgun: 1, shield: 0 } },
+    POWERUP: { dropChanceNormal: 1, driftSpeed: 60, typeWeights: { power: 0, rapid: 0, shotgun: 1, shield: 0 } },
   });
   await page.mouse.click(...at(240, 150));
   await page.mouse.down();

@@ -427,7 +427,7 @@ export function hitTestInfoContinue(x, y) {
 }
 
 // Pagination (voir states/help.js, HELP_PAGES) — juste au-dessus de
-// CONTINUER. La page la plus remplie (la première) s'arrête une ligne au-dessus.
+// CONTINUER. La page la plus remplie (la première) s'arrête juste au-dessus.
 function infoPrevRect() {
   return { x: RES_W * 0.32, y: RES_H * 0.78, w: 70, h: 16 };
 }

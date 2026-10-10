@@ -178,7 +178,7 @@ export class AudioEngine {
   }
 
   playBossHit() {
-    this._tone({ type: "sawtooth", startFreq: 300, endFreq: 60, duration: 0.2, gain: 0.15 });
+    this._tone({ type: "sawtooth", startFreq: 300, endFreq: 60, duration: 0.2 });
   }
 
   // Fusil à pompe (bonus CHEVROTINE) : superpose un transitoire (bruit
@@ -219,7 +219,7 @@ export class AudioEngine {
   // palier de chaîne (plafonné côté appelant) — une chaîne qui s'enchaîne se
   // ressent au son, pas juste au score qui défile.
   playGraze(tier) {
-    const freq = 900 + Math.min(tier, 8) * 90;
+    const freq = 900 + tier * 90;
     this._tone({ type: "sine", startFreq: freq, endFreq: freq * 1.15, duration: 0.045, gain: 0.05 });
   }
 

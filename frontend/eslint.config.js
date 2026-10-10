@@ -19,8 +19,6 @@ export default [
         performance: "readonly",
         requestAnimationFrame: "readonly",
         Audio: "readonly",
-        AudioContext: "readonly",
-        webkitAudioContext: "readonly",
         fetch: "readonly",
         AbortController: "readonly",
         URLSearchParams: "readonly",

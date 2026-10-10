@@ -28,7 +28,7 @@ async function forceDrops(page, weights) {
     const { POWERUP } = await import("/js/config.js");
     POWERUP.dropChanceNormal = 1;
     POWERUP.dropChanceElite = 1;
-    POWERUP.fallSpeed = 60;
+    POWERUP.driftSpeed = 60;
     POWERUP.lifetime = 60;
     POWERUP.duration = 999; // le bonus ramassé dure tout le test
     POWERUP.typeWeights = w;

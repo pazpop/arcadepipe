@@ -64,7 +64,7 @@ export function spawnBoss(waveNumber) {
     spiralAngle: 0,
     sizeScale,
     hull: tintedHull(hull, Math.random() * 360), // coque à la teinte de ce combat
-    fireTimer: 0.3, // délai avant le 1er tir, une fois arrivé (boss.arrived)
+    fireTimer: BOSS.firstVolleyDelay, // décompté une fois arrivé (boss.arrived)
     elapsed: 0, // secondes depuis l'arrivée : flottement vertical, et phase du combat (bossPhase)
     weakPoints: points,
     victory: false,
@@ -93,7 +93,7 @@ export function bossFireInterval(phase, firstBoss) {
 // inférieur) : le tir du milieu vise le joueur, qui ne peut donc pas rester immobile.
 export function bossFanCount(phase, firstBoss) {
   const countMul = firstBoss ? BOSS.firstBossBulletCountMul : 1;
-  const count = Math.max(3, Math.round((5 + phase) * countMul));
+  const count = Math.max(3, Math.round((BOSS.fanCount + phase) * countMul));
   return count % 2 === 0 ? count - 1 : count;
 }
 
@@ -141,20 +141,18 @@ export function updateBoss(boss, dt, projectiles, target) {
     // les trois, plus fournis) et la cadence.
     const phase = bossPhase(destroyedCount(boss), boss.elapsed);
     if (phase % 3 === 0) {
-      // courbe légère (0,6 rad/s aux bords) : l'éventail s'ouvre en "fleur", le centre reste droit.
-      patternFan(projectiles, boss.x - 20, boss.y, target, speed, bossFanCount(phase, firstBoss), Math.PI / 2.2, 0.6);
+      patternFan(projectiles, boss.x - 20, boss.y, target, speed, bossFanCount(phase, firstBoss), BOSS.fanSpread, BOSS.fanCurve);
     } else if (phase % 3 === 1) {
-      const arms = 3 + Math.min(3, phase);
+      const arms = Math.min(BOSS.spiralArmsMax, BOSS.spiralArms + phase);
       boss.spiralAngle = nextSpiralAngle(boss.spiralAngle, arms);
-      patternSpiralStep(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.9, arms);
+      patternSpiralStep(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * BOSS.spiralSpeedMul, arms);
     } else {
-      // curve modeste : l'anneau tourne légèrement en s'étendant ("pinwheel").
-      const count = Math.max(6, Math.round((10 + phase * 2) * countMul));
+      const count = Math.max(6, Math.round((BOSS.ringCount + phase * BOSS.ringCountStep) * countMul));
       boss.spiralAngle = nextRingAngle(boss.spiralAngle, count);
-      patternRing(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.8, count, 0.5);
+      patternRing(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * BOSS.ringSpeedMul, count, BOSS.ringCurve);
     }
-    // += et non = : le retard pris sur la salve qui vient de partir est rattrapé,
-    // la cadence ne dépend pas de la durée d'une image.
+    // += : le retard pris sur la salve qui vient de partir est rattrapé, la
+    // cadence ne dépend pas de la durée d'une image.
     boss.fireTimer += bossFireInterval(phase, firstBoss);
   }
 }

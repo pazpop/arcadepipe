@@ -62,7 +62,7 @@ export function updateGraze(g, dt, player, projectiles, enemies, particles, audi
     }
   }
 
-  // Corps des ennemis normaux (pool `enemies`) — le boss n'en fait jamais
+  // Corps des ennemis, tous types (pool `enemies`) — le boss n'en fait jamais
   // partie (objet séparé, `g.boss`), donc il est exclu par construction :
   // seuls ses tirs, déjà traités ci-dessus via projectiles.enemy, le font grazer.
   for (const en of enemies.items) {

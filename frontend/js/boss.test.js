@@ -1,8 +1,9 @@
 // Boss : points faibles (invulnérabilité à l'entrée, victoire), cadence, éventail, anneaux.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { bossFanCount, bossFireInterval, bossPhase, hitBossWeakPoint, nextRingAngle } from "./boss.js";
+import { bossFanCount, bossFireInterval, bossPhase, hitBossWeakPoint, nextRingAngle, nextSpiralAngle, updateBoss } from "./boss.js";
 import { BOSS } from "./config.js";
+import { createProjectiles } from "./projectiles.js";
 
 // Un boss réduit à ce que lit hitBossWeakPoint : un seul point faible, à 1 PV, en son centre.
 function bossWithOneWeakPoint(arrived) {
@@ -66,4 +67,36 @@ test("anneaux : d'une salve à l'autre, les tirs ne repassent jamais par les mê
     seen.add((angle % gap).toFixed(3));
   }
   assert.ok(seen.size >= 20, `${seen.size} positions distinctes sur 30 salves`);
+});
+
+// Tirs de la salve d'un boss intact (vague 10), `elapsed` secondes après son arrivée.
+function volleySize(elapsed) {
+  const weakPoints = Array.from({ length: 5 }, () => ({ destroyed: false, blink: 0 }));
+  const boss = { wave: 10, arrived: true, victory: false, x: 400, y: 135, elapsed, fireTimer: 0, spiralAngle: 0, weakPoints };
+  const projectiles = createProjectiles();
+  updateBoss(boss, 1 / 60, projectiles, { x: 86, y: 135 });
+  return projectiles.enemy.items.filter((b) => b.active).length;
+}
+
+test("boss qu'on n'attaque pas : le temps seul le fait passer de l'éventail à la spirale, puis à l'anneau", () => {
+  const phase = BOSS.hurryEverySeconds;
+  assert.equal(volleySize(0), 5); // éventail
+  assert.equal(volleySize(phase + 1), 4); // spirale à 4 bras
+  assert.equal(volleySize(phase * 2 + 1), 14); // anneau
+});
+
+test("spirale : en huit salves, ses tirs ne laissent aucun grand couloir intact", () => {
+  for (const arms of [4, 6]) {
+    const gap = (Math.PI * 2) / arms; // écart entre deux bras
+    const seen = [];
+    let angle = 0;
+    for (let volley = 0; volley < 8; volley++) {
+      angle = nextSpiralAngle(angle, arms);
+      seen.push(angle % gap);
+    }
+    seen.sort((a, b) => a - b);
+    let widest = seen[0] + gap - seen[7]; // le couloir à cheval sur deux bras
+    for (let i = 1; i < 8; i++) widest = Math.max(widest, seen[i] - seen[i - 1]);
+    assert.ok(widest < gap * 0.2, `${arms} bras : couloir de ${(widest / gap).toFixed(2)} écart`);
+  }
 });

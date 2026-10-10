@@ -1,7 +1,8 @@
 // Boss : arme mécanique massive occupant le tiers droit de l'écran, avec
 // 4 à 6 points faibles clignotants (jaunes, puis orange et rouges sous les dégâts).
-// Chaque point détruit change sa façon de tirer et accélère sa cadence, qui monte
-// aussi avec le temps (phases). Invulnérable pendant son entrée à l'écran.
+// Son combat avance par phases : chaque point détruit en passe une, le temps
+// aussi. Chaque phase change sa façon de tirer et accélère sa cadence.
+// Invulnérable pendant son entrée à l'écran.
 // Victoire quand tous les points faibles sont détruits.
 import { RES_W, RES_H, BOSS, DIFFICULTY, PALETTE, bulletSpeedFactor } from "./config.js";
 import { buildSprites } from "./assets.js";
@@ -76,8 +77,8 @@ function destroyedCount(boss) {
 }
 
 // Phase du combat, de 0 à weakPointsMax - 1 : elle monte à chaque point faible
-// détruit, et aussi avec le temps (toutes les BOSS.hurryEverySeconds), pour
-// qu'un boss qu'on se contente d'esquiver ne reste pas inoffensif.
+// détruit, et aussi avec le temps (toutes les BOSS.hurryEverySeconds) : un boss
+// qu'on se contente d'esquiver devient aussi dangereux qu'un boss presque détruit.
 export function bossPhase(destroyed, elapsed) {
   return Math.min(BOSS.weakPointsMax - 1, destroyed + Math.floor(elapsed / BOSS.hurryEverySeconds));
 }
@@ -90,9 +91,9 @@ export function bossFireInterval(phase, firstBoss) {
 
 // Nombre de tirs de l'éventail. Toujours impair (arrondi au nombre impair
 // inférieur) : le tir du milieu vise le joueur, qui ne peut donc pas rester immobile.
-export function bossFanCount(destroyed, firstBoss) {
+export function bossFanCount(phase, firstBoss) {
   const countMul = firstBoss ? BOSS.firstBossBulletCountMul : 1;
-  const count = Math.max(3, Math.round((5 + destroyed) * countMul));
+  const count = Math.max(3, Math.round((5 + phase) * countMul));
   return count % 2 === 0 ? count - 1 : count;
 }
 
@@ -101,6 +102,12 @@ export function bossFanCount(destroyed, firstBoss) {
 // que les couloirs eux-mêmes se déplacent au fil des salves.
 export function nextRingAngle(angle, count) {
   return angle + Math.PI / count + BOSS.ringSweep;
+}
+
+// Angle de la spirale à la salve suivante : elle tourne d'une part fixe de
+// l'écart entre deux bras (BOSS.spiralTurn).
+export function nextSpiralAngle(angle, arms) {
+  return angle + ((Math.PI * 2) / arms) * BOSS.spiralTurn;
 }
 
 // Durée du fondu de la coque après la victoire — courte pour ne pas "flotter"
@@ -130,22 +137,25 @@ export function updateBoss(boss, dt, projectiles, target) {
     const firstBoss = isFirstBoss(boss.wave);
     const speed = BOSS.bulletSpeed * bulletSpeedFactor(boss.wave) * (firstBoss ? BOSS.firstBossSpeedMul : 1);
     const countMul = firstBoss ? BOSS.firstBossBulletCountMul : 1;
-    const destroyed = destroyedCount(boss);
-    if (destroyed % 3 === 0) {
+    // La phase choisit le motif (éventail, spirale, anneau, puis de nouveau
+    // les trois, plus fournis) et la cadence.
+    const phase = bossPhase(destroyedCount(boss), boss.elapsed);
+    if (phase % 3 === 0) {
       // courbe légère (0,6 rad/s aux bords) : l'éventail s'ouvre en "fleur", le centre reste droit.
-      patternFan(projectiles, boss.x - 20, boss.y, target, speed, bossFanCount(destroyed, firstBoss), Math.PI / 2.2, 0.6);
-    } else if (destroyed % 3 === 1) {
-      boss.spiralAngle += 0.4;
-      patternSpiralStep(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.9, 3 + Math.min(3, destroyed));
+      patternFan(projectiles, boss.x - 20, boss.y, target, speed, bossFanCount(phase, firstBoss), Math.PI / 2.2, 0.6);
+    } else if (phase % 3 === 1) {
+      const arms = 3 + Math.min(3, phase);
+      boss.spiralAngle = nextSpiralAngle(boss.spiralAngle, arms);
+      patternSpiralStep(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.9, arms);
     } else {
       // curve modeste : l'anneau tourne légèrement en s'étendant ("pinwheel").
-      const count = Math.max(6, Math.round((10 + destroyed * 2) * countMul));
+      const count = Math.max(6, Math.round((10 + phase * 2) * countMul));
       boss.spiralAngle = nextRingAngle(boss.spiralAngle, count);
       patternRing(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.8, count, 0.5);
     }
     // += et non = : le retard pris sur la salve qui vient de partir est rattrapé,
     // la cadence ne dépend pas de la durée d'une image.
-    boss.fireTimer += bossFireInterval(bossPhase(destroyed, boss.elapsed), firstBoss);
+    boss.fireTimer += bossFireInterval(phase, firstBoss);
   }
 }
 

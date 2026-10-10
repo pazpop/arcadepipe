@@ -123,6 +123,10 @@ export const BOSS = {
   fireInterval: 1.2, // secondes entre deux salves, boss intact
   fireIntervalFactor: 0.645, // multiplié par ce facteur à chaque phase du combat (0,13 s à la cinquième)
   hurryEverySeconds: 30, // le combat monte aussi d'une phase à ce rythme, points faibles détruits ou non
+  // Part de l'écart entre deux bras dont la spirale tourne à chaque salve.
+  // Loin de 1/2, 1/3, 1/4 : avec une fraction simple, les tirs repasseraient
+  // par les mêmes rayons et laisseraient des couloirs sûrs.
+  spiralTurn: 0.382,
   ringSweep: 0.07, // radians ajoutés à chaque anneau, pour que ses tirs balaient tout l'écran au fil des salves
   bulletSpeed: 90,
   // 1er combat de boss (isFirstBoss() dans boss.js) volontairement plus

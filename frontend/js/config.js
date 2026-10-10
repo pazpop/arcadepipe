@@ -162,7 +162,7 @@ export const BOSS = {
 export const AUDIO = {
   masterVolume: 0.5,
   // Playlist : morceaux de mall-e (voir Crédits).
-  tracks: ["music/first.mp3", "music/second.mp3", "music/third.mp3", "music/fourth.mp3"],
+  tracks: ["music/first.mp3", "music/second.mp3", "music/third.mp3", "music/fourth.mp3", "music/fifth.mp3"],
 };
 
 export const STORAGE_KEYS = {

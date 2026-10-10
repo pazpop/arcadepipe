@@ -38,6 +38,13 @@ function vibrate(pattern) {
 // gauche, premiers ennemis retardés d'autant (g.spawnTimer).
 const SHIP_INTRO_DURATION = 1.8;
 
+// Ralentis : part du temps réel qui s'écoule pendant le micro-gel d'un impact,
+// puis pendant la séquence de mort. Celle-ci dure l'invulnérabilité du
+// vaisseau, plus DEATH_EXTRA_TIME secondes.
+const HIT_STOP_SLOWDOWN = 0.06;
+const DEATH_SLOWDOWN = 0.16;
+const DEATH_EXTRA_TIME = 0.2;
+
 function triggerShake(g, amount) {
   g.shake = Math.max(g.shake, REDUCED_MOTION ? 0 : amount);
 }
@@ -209,7 +216,7 @@ function resolveCollisions(g, engine) {
   for (const pu of powerups.items) {
     if (!pu.active) continue;
     // +3 : marge généreuse, ramasser un bonus doit être plus tolérant qu'encaisser un tir.
-    if (circlesOverlap(pu.x, pu.y, POWERUP.radius, player.x, player.y, PLAYER.hitboxRadius + 3)) {
+    if (circlesOverlap(pu.x, pu.y, POWERUP.radius, player.x, player.y, PLAYER.hitboxRadius + POWERUP.pickupMargin)) {
       pu.active = false;
       audio.playPowerup();
       spawnFlashBurst(particles, pu.x, pu.y, 8);
@@ -270,11 +277,11 @@ function onPlayerHit(g, engine) {
   audio.playExplosion();
   spawnExplosion(particles, player.x, player.y, 18, PALETTE.player);
   spawnFlashBurst(particles, player.x, player.y, 8);
-  if (!player.alive && !g.dying) {
+  if (!player.alive) {
     // Séquence cinématique avant "GAME OVER" : ralenti (voir update ci-dessous)
     // plutôt qu'une coupure directe.
     g.dying = true;
-    g.deathTimer = PLAYER.invulnDuration + 0.2;
+    g.deathTimer = PLAYER.invulnDuration + DEATH_EXTRA_TIME;
     triggerShake(g, 16);
   }
 }
@@ -331,7 +338,7 @@ export function update(g, engine, dt) {
   // une vraie pause) — voir triggerHitStop().
   if (g.hitStop > 0) {
     g.hitStop = Math.max(0, g.hitStop - dt);
-    dt *= 0.06;
+    dt *= HIT_STOP_SLOWDOWN;
   }
 
   // Distance parcourue (cosmétique, voir DISTANCE dans config.js) —
@@ -343,7 +350,7 @@ export function update(g, engine, dt) {
     // Ralenti après la mort — plus long/prononcé que le micro-gel
     // ci-dessus, tout continue de bouger mais au ralenti jusqu'à GAME OVER.
     g.deathTimer -= dt;
-    dt *= 0.16;
+    dt *= DEATH_SLOWDOWN;
     if (g.deathTimer <= 0) {
       g.dying = false;
       endOfRunState.open(g);
@@ -410,7 +417,7 @@ export function update(g, engine, dt) {
     if (g.spawnTimer <= 0) {
       g.formationCountdown = spawnNext(enemies, g.wave, g.formationCountdown);
       // += : le retard pris sur cette apparition est rattrapé (voir le tir du joueur, player.js).
-      g.spawnTimer += Math.max(0.12, g.spawnInterval + (Math.random() - 0.5) * 0.15);
+      g.spawnTimer += Math.max(DIFFICULTY.spawnIntervalFloor, g.spawnInterval + (Math.random() - 0.5) * DIFFICULTY.spawnIntervalJitter);
     }
   }
 

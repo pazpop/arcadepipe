@@ -72,6 +72,10 @@ export const DIFFICULTY = {
   baseSpawnInterval: 0.9,
   spawnIntervalStep: 0.05,
   minSpawnInterval: 0.18,
+  // Chaque apparition est décalée au hasard d'au plus la moitié de
+  // spawnIntervalJitter secondes, sans descendre sous spawnIntervalFloor.
+  spawnIntervalJitter: 0.15,
+  spawnIntervalFloor: 0.12,
   waveBreakDuration: 2.4, // saut spatial entre deux vagues
   // Plus long après un boss : le temps que le décor et les derniers ennemis
   // en fuite quittent l'écran.
@@ -98,6 +102,7 @@ export const POWERUP = {
   dropChanceElite: 0.25,
   driftSpeed: 26, // px/s, vers la gauche
   radius: 5,
+  pickupMargin: 3, // px ajoutés à la hitbox du vaisseau pour le ramassage
   lifetime: 9, // disparaît si non ramassé
   // Noms et effets affichés : clés "powerup.<type>" des fichiers de langue (i18n/).
   types: {

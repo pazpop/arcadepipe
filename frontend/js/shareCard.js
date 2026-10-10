@@ -67,7 +67,7 @@ function drawShareCard(ctx, stats) {
   text(ctx, "ARCADEPIPE", SIZE / 2, 130, { size: 54, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
   text(ctx, "STARFIGHTER", SIZE / 2, 185, { size: 22, align: "center", color: PALETTE.player, glow: PALETTE.player });
 
-  text(ctx, t("card.score"), SIZE / 2, 340, { size: 22, align: "center", color: PALETTE.hud });
+  text(ctx, t("card.score"), SIZE / 2, 340, { size: 22, align: "center" });
   text(ctx, String(stats.score), SIZE / 2, 420, { size: 90, align: "center", color: PALETTE.gold, glow: PALETTE.gold });
 
   // Grille 2x2 : 4 stats ne tiennent pas proprement sur une ligne.
@@ -89,18 +89,18 @@ function drawShareCard(ctx, stats) {
       const x = SIZE / 2 + (i === 0 ? -1 : 1) * colGap;
       const labelLines = c.label.split("\n");
       labelLines.forEach((line, li) => {
-        text(ctx, line, x, statY + li * 22, { size: 16, align: "center", color: PALETTE.hud });
+        text(ctx, line, x, statY + li * 22, { size: 16, align: "center" });
       });
       text(ctx, c.value, x, statY + 60, { size: 36, align: "center", color: PALETTE.player, glow: PALETTE.player });
     });
   });
 
-  text(ctx, t("card.challenge"), SIZE / 2, 760, { size: 22, align: "center", color: PALETTE.hud });
+  text(ctx, t("card.challenge"), SIZE / 2, 760, { size: 22, align: "center" });
   text(ctx, SHARE_HOST, SIZE / 2, 800, { size: 30, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
 
   drawQrCode(ctx, SIZE / 2, 835, 225);
 
-  text(ctx, `v${VERSION}`, SIZE - 20, SIZE - 18, { size: 14, align: "right", color: PALETTE.hud });
+  text(ctx, `v${VERSION}`, SIZE - 20, SIZE - 18, { size: 14, align: "right" });
 }
 
 // Canvas hors de la page, destiné à l'export (toBlob).

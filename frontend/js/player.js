@@ -71,7 +71,7 @@ export function updatePlayer(player, input, projectiles, dt, onShotFired, canFir
   // spatial ou le niveau bonus (g.clearingScreen, states/waves.js).
   if (canFire) {
     player.fireTimer -= dt;
-    if (player.alive && (input.fireHeld || input.autoFire) && player.fireTimer <= 0) {
+    if ((input.fireHeld || input.autoFire) && player.fireTimer <= 0) {
       const damage = buffDef ? buffDef.damage : 1;
       const color = buffDef ? buffDef.color : null;
       if (player.buff && player.buff.type === "shotgun") {

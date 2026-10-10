@@ -14,7 +14,7 @@ function pixelsToCanvas(rows, palette, scale) {
   for (let y = 0; y < h; y++) {
     for (let x = 0; x < w; x++) {
       const c = rows[y][x];
-      if (c === "." || !palette[c]) continue;
+      if (c === ".") continue;
       ctx.fillStyle = palette[c];
       ctx.fillRect(x * scale, y * scale, scale, scale);
     }

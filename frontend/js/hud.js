@@ -68,25 +68,23 @@ function drawOptionList(ctx, rects, selected, size = 11) {
 // --- HUD en partie ---
 
 export function drawGameHud(ctx, s, lives) {
-  text(ctx, t("hud.score", { score: s.score }), 8, 10, { size: 8, align: "left" });
+  text(ctx, t("hud.score", { score: s.score }), 8, 10);
   // Compteur de kills/objectif à côté de la vague — masqué en vague de boss
   // (on le bat par ses points faibles, pas par un total de kills). Même ligne
   // que "VAGUE" pour ne pas empiéter sur l'indicateur de buff/bouclier.
   if (s.bonusLevel) {
     text(ctx, t("hud.bonusLevel", { passed: s.bonusLevel.passedCount, total: BONUS_LEVEL.ringCount }), RES_W / 2, 10, {
-      size: 8,
       align: "center",
       color: NOVA.color,
     });
   } else if (s.boss) {
-    text(ctx, t("hud.wave", { wave: s.wave }), RES_W / 2, 10, { size: 8, align: "center" });
+    text(ctx, t("hud.wave", { wave: s.wave }), RES_W / 2, 10, { align: "center" });
   } else {
     const kills = String(Math.min(s.waveKills, s.waveKillTarget)).padStart(2, "0");
     const target = String(s.waveKillTarget).padStart(2, "0");
-    text(ctx, `${t("hud.wave", { wave: s.wave })}   ${kills}/${target}`, RES_W / 2, 10, { size: 8, align: "center" });
+    text(ctx, `${t("hud.wave", { wave: s.wave })}   ${kills}/${target}`, RES_W / 2, 10, { align: "center" });
   }
   text(ctx, "♥".repeat(Math.max(0, lives)), RES_W - 8, 10, {
-    size: 8,
     align: "right",
     color: PALETTE.danger,
     glow: PALETTE.danger,
@@ -112,7 +110,6 @@ export function drawNovaGauge(ctx, stock, max, progress) {
   const y = 20;
   text(ctx, `NOVA ${stock}/${max}`, 8, y, {
     size: 7,
-    align: "left",
     color,
     glow: stock > 0 ? color : null,
     alpha: stock > 0 ? 1 : 0.6,
@@ -199,7 +196,6 @@ export function drawBonusLevelIntro(ctx, timer) {
     alpha,
   });
   text(ctx, t("bonus.intro.line"), RES_W / 2, RES_H * 0.3 + 20, {
-    size: 8,
     align: "center",
     color: NOVA.color,
     glow: NOVA.color,
@@ -212,7 +208,6 @@ export function drawControlHint(ctx, timer) {
   text(ctx, t("hud.controlHint"), RES_W / 2, RES_H - 16, {
     size: 7,
     align: "center",
-    color: PALETTE.hud,
     alpha: Math.min(0.85, timer),
   });
 }
@@ -291,8 +286,8 @@ export function drawLeaderboardScreen(ctx, scores, failed, revealCount, gamesPla
   if (gamesPlayed != null) {
     text(ctx, t("board.games", { count: gamesPlayed }), RES_W / 2, 34, { size: 7, align: "center", alpha: 0.6 });
   }
-  text(ctx, t("board.rank"), COL.rank, 42, { size: 7, align: "left", alpha: 0.7 });
-  text(ctx, t("board.name"), COL.name, 42, { size: 7, align: "left", alpha: 0.7 });
+  text(ctx, t("board.rank"), COL.rank, 42, { size: 7, alpha: 0.7 });
+  text(ctx, t("board.name"), COL.name, 42, { size: 7, alpha: 0.7 });
   text(ctx, t("board.score"), COL.score, 42, { size: 7, align: "right", alpha: 0.7 });
   text(ctx, t("board.wave"), COL.wave, 42, { size: 7, align: "right", alpha: 0.7 });
   text(ctx, t("board.kills"), COL.kills, 42, { size: 7, align: "right", alpha: 0.7 });
@@ -310,8 +305,8 @@ export function drawLeaderboardScreen(ctx, scores, failed, revealCount, gamesPla
     const y = startY + i * rowH;
     const rank = `${String(i + 1).padStart(2, "0")}.`;
     const glow = isMedal ? color : null;
-    text(ctx, rank, COL.rank, y, { size, align: "left", color, glow });
-    text(ctx, sc.player_name, COL.name, y, { size, align: "left", color, glow });
+    text(ctx, rank, COL.rank, y, { size, color, glow });
+    text(ctx, sc.player_name, COL.name, y, { size, color, glow });
     text(ctx, String(sc.score), COL.score, y, { size, align: "right", color, glow });
     text(ctx, String(sc.wave), COL.wave, y, { size, align: "right", color, glow });
     text(ctx, String(sc.kills), COL.kills, y, { size, align: "right", color, glow });
@@ -408,7 +403,6 @@ export function drawConfirmQuitScreen(ctx, selected) {
     glow: PALETTE.danger,
   });
   text(ctx, t("quit.warning"), RES_W / 2, RES_H * 0.38 + 18, {
-    size: 8,
     align: "center",
     alpha: 0.85,
   });
@@ -496,7 +490,7 @@ export function drawInfoScreen(ctx, content, page, pageCount) {
       y += 14;
       const lines = wrapLines(ctx, section.detail, contentWidth);
       for (const line of lines) {
-        text(ctx, line, centerX, y, { size: 8, align: "center" });
+        text(ctx, line, centerX, y, { align: "center" });
         y += lineH;
       }
       y += sectionGap;
@@ -513,7 +507,7 @@ export function drawInfoScreen(ctx, content, page, pageCount) {
       const rowY = y + i * rowH;
       const def = POWERUP.types[type];
       drawPowerupIcon(ctx, centerX - 120, rowY, type, 5);
-      text(ctx, `${t(`powerup.${type}`)} — ${t(`powerup.${type}.effect`)}`, centerX - 100, rowY, { size: 8, align: "left", color: def.color });
+      text(ctx, `${t(`powerup.${type}`)} — ${t(`powerup.${type}.effect`)}`, centerX - 100, rowY, { color: def.color });
     });
   }
 
@@ -523,7 +517,7 @@ export function drawInfoScreen(ctx, content, page, pageCount) {
     ENEMY_LEGEND.forEach((en, i) => {
       const rowY = y + i * rowH;
       drawWithGlow(ctx, enemySprites[en.spriteKey], centerX - 120, rowY);
-      text(ctx, en.text, centerX - 100, rowY, { size: 8, align: "left", color: en.color });
+      text(ctx, en.text, centerX - 100, rowY, { color: en.color });
     });
   }
 
@@ -532,7 +526,7 @@ export function drawInfoScreen(ctx, content, page, pageCount) {
   // Grisée plutôt que masquée aux extrémités : la position du bouton reste
   // stable, seule son opacité indique qu'il n'y a rien de plus dans ce sens.
   text(ctx, t("help.prev"), prevR.x, prevR.y, { size: 9, align: "center", alpha: page > 0 ? 1 : 0.3 });
-  text(ctx, `${page + 1}/${pageCount}`, RES_W / 2, prevR.y, { size: 9, align: "center", color: PALETTE.hud });
+  text(ctx, `${page + 1}/${pageCount}`, RES_W / 2, prevR.y, { size: 9, align: "center" });
   text(ctx, t("help.next"), nextR.x, nextR.y, { size: 9, align: "center", alpha: page < pageCount - 1 ? 1 : 0.3 });
 
   const r = infoContinueRect();

@@ -25,12 +25,15 @@ jobs:
         run: |
           pip install -r backend/requirements-dev.txt
           pip-audit -r backend/requirements.txt
+      # Chaque audit est lancé même si le précédent a échoué (`if`) : une faille
+      # ne doit pas en cacher une autre.
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: ${{ !cancelled() }}
         with:
           node-version: "22"
-      # Lancé même si pip-audit a échoué : une faille Python ne doit pas en cacher une autre.
-      - name: npm audit (frontend, e2e)
+      - name: npm audit (frontend)
         if: ${{ !cancelled() }}
-        run: |
-          npm audit --prefix frontend
-          npm audit --prefix e2e
+        run: npm audit --prefix frontend
+      - name: npm audit (e2e)
+        if: ${{ !cancelled() }}
+        run: npm audit --prefix e2e

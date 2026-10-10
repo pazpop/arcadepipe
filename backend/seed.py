@@ -8,7 +8,6 @@ import database
 
 # Scores volontairement bas : faciles à dépasser dès les premières parties.
 # Pseudos au format du jeu (1 à 8 lettres majuscules, chiffres ou espaces).
-# PATRIOTE / MAD JACK / NUKEPUNK : clin d'œil à des amis.
 SEED_SCORES = [
     ("ALEX", 220),
     ("MAD JACK", 180),

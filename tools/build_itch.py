@@ -23,20 +23,23 @@ OUTPUT = ROOT / "dist" / "arcadepipe-itch.zip"
 # des liens, robots.txt et le kit presse (frontend/Dockerfile).
 FILES = ["index.html", "privacy.html", "favicon.svg"]
 FOLDERS = ["css", "js", "lib", "music"]
-EXCLUDED = (".test.js", "package.json", ".md", ".wav")
+EXCLUDED = (".test.js", "package.json", ".md")
+
+
+def git(*args):
+    return subprocess.run(["git", *args], cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
 
 
 def version():
-    count = subprocess.run(
-        ["git", "rev-list", "--count", "HEAD"], cwd=ROOT, capture_output=True, text=True, check=True
-    ).stdout.strip()
-    return f"2.{count}"
+    return f"2.{git('rev-list', '--count', 'HEAD')}"
 
 
 def main():
+    # Seulement les fichiers suivis par Git : un brouillon ou un fichier du
+    # système oublié dans un dossier du jeu ne part pas sur itch.io.
+    tracked = git("ls-files", *[f"frontend/{folder}" for folder in FOLDERS]).splitlines()
     paths = [FRONTEND / name for name in FILES]
-    for folder in FOLDERS:
-        paths += [p for p in sorted((FRONTEND / folder).rglob("*")) if p.is_file() and not p.name.endswith(EXCLUDED)]
+    paths += [ROOT / name for name in sorted(tracked) if not name.endswith(EXCLUDED)]
 
     OUTPUT.parent.mkdir(exist_ok=True)
     with zipfile.ZipFile(OUTPUT, "w", zipfile.ZIP_DEFLATED) as archive:

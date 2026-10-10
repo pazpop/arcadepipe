@@ -1,7 +1,7 @@
 // Classement avec le vrai backend (lancé par playwright.config.js sur le port
 // 8001, base vide). Le jeu appelle le port 8000 en développement : ses requêtes
 // sont redirigées ici vers ce backend de test.
-import { test, expect, canvasHelpers, gameState, reachBoss, screenText, skipHints, waitForMode } from "./helpers.js";
+import { test, expect, canvasHelpers, dieOnBossHull, gameState, screenText, skipHints, waitForMode } from "./helpers.js";
 
 const API = "http://localhost:8001";
 
@@ -40,16 +40,12 @@ test("fin de partie : top annoncé ; score inscrit en rejouant, au tap sur VALID
     PLAYER.startingLives = 1;
     BOSS.bulletSpeed = 0; // seule la coque du boss peut toucher
   });
-  const { toPage, clickLogical } = canvasHelpers(page);
+  const { clickLogical } = canvasHelpers(page);
   const serverNames = async () => (await (await request.get(`${API}/api/scores?limit=100`)).json()).map((s) => s.player_name);
 
   // Joue jusqu'au boss, fonce dans sa coque, et attend l'annonce du top (moins de dix scores en base).
   async function dieAndQualify() {
-    await reachBoss(page, 2); // un kill avant le boss : un score nul n'entre pas au classement
-    await page.mouse.up();
-    const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
-    await page.mouse.move(hull.x, hull.y);
-    await waitForMode(page, "game_over", 15000);
+    await dieOnBossHull(page); // score non nul : un score nul n'entre pas au classement
     await expect.poll(() => screenText(page)).toContain("TU ENTRES DANS LE TOP 10 !");
     expect(await screenText(page)).toContain("ENTRER MON PSEUDO");
   }

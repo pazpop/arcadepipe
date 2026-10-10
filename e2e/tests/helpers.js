@@ -155,3 +155,15 @@ export async function reachBoss(page, bossWave = 1) {
   }
   expect((await gameState(page)).boss?.arrived).toBe(true);
 }
+
+// Joue jusqu'au boss de la vague 2 (un ennemi abattu avant lui : le score n'est
+// pas nul), puis fonce dans sa coque jusqu'à GAME OVER. Le test règle avant
+// PLAYER.startingLives à 1 et BOSS.bulletSpeed à 0 : seule la coque peut toucher.
+export async function dieOnBossHull(page) {
+  await reachBoss(page, 2);
+  await page.mouse.up();
+  const { toPage } = canvasHelpers(page);
+  const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
+  await page.mouse.move(hull.x, hull.y);
+  await waitForMode(page, "game_over", 15000);
+}

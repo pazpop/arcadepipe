@@ -1,4 +1,4 @@
-import { test, expect, canvasHelpers, collectErrors, gameState, reachBoss, screenText, skipHints, waitForMode } from "./helpers.js";
+import { test, expect, canvasHelpers, collectErrors, dieOnBossHull, gameState, reachBoss, screenText, skipHints, waitForMode } from "./helpers.js";
 
 test("tir automatique par défaut : le vaisseau tire sans clic", async ({ page }) => {
   await page.goto("/");
@@ -88,12 +88,8 @@ test("fin de partie sans serveur : classement annoncé injoignable, record perso
   });
 
   // Foncer dans la coque du boss : partie terminée, comptée, top consulté.
-  await reachBoss(page, 2); // un kill avant le boss : un score nul n'interroge pas le classement
-  await page.mouse.up();
-  const { canvas, toPage, clickLogical } = canvasHelpers(page);
-  const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
-  await page.mouse.move(hull.x, hull.y);
-  await waitForMode(page, "game_over", 15000);
+  await dieOnBossHull(page); // score non nul : un score nul n'interroge pas le classement
+  const { canvas, clickLogical } = canvasHelpers(page);
   await expect.poll(() => [...apiCalls].sort()).toEqual(["GET /api/scores", "POST /api/games"]);
   expect((await gameState(page)).scoreQualifies).toBe(false);
   await expect.poll(() => screenText(page)).toContain("CLASSEMENT INJOIGNABLE");
@@ -140,12 +136,7 @@ async function dieWithSlowLeaderboard(page) {
   });
   await page.route("**/api/games**", (route) => route.fulfill({ status: 201, json: { status: "ok" } }));
 
-  await reachBoss(page, 2);
-  await page.mouse.up();
-  const { toPage } = canvasHelpers(page);
-  const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
-  await page.mouse.move(hull.x, hull.y);
-  await waitForMode(page, "game_over", 15000);
+  await dieOnBossHull(page);
   return answer;
 }
 

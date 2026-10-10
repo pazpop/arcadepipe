@@ -14,10 +14,10 @@ npm test                   # ou : npx playwright test --headed
 ## Ce qui est couvert (`tests/`)
 
 - `menu-pause` — menu, pause (scène figée, bouton Pause au clavier), confirmation de sortie, aide (bienvenue, toutes ses pages, menu, pause, bouton du panneau), crédits, clavier et focus, panneau replié, plein écran, filtre rétro
-- `gameplay` — tir manuel et automatique, choix de piste, fin de vague, fin de partie sans serveur (classement annoncé injoignable, record personnel gardé et affiché au menu), serveur lent (« … », « Chargement… », REJOUER qui répond)
+- `gameplay` — tir manuel et automatique, choix de piste, fin de vague, fin de partie sans serveur (classement annoncé injoignable, record personnel gardé et affiché au menu), serveur lent (« … », « Chargement… », REJOUER qui n'attend pas), partie quittée par la pause (record non enregistré)
 - `powerups-boss` — bonus (arme, bouclier, les deux ensemble), boss invulnérable à son entrée, vie perdue contre sa coque, boss vaincu
 - `graze-nova` — frôlements, jauge NOVA, bouton tactile (efface les tirs du boss), Espace (détruit les ennemis)
-- `bonus-level` — le niveau bonus se déclenche, se termine, puis la partie reprend
+- `bonus-level` — le niveau bonus se déclenche, se termine, récompense selon les anneaux réussis, puis la partie reprend
 - `music-retry` — un 429 sur les pistes ne déclenche pas de rafale de requêtes
 - `music-end` — une fin de piste enchaîne sur une autre piste, qui joue réellement
 - `consent` — mesure d'audience désactivée par défaut ; activée, Google Analytics jamais chargé avant « Accepter », bouton Cookies (changer ou retirer son choix)

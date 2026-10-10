@@ -122,8 +122,9 @@ test("fin de partie sans serveur : classement annoncé injoignable, record perso
   await expect.poll(() => screenText(page)).toContain(`RECORD ${best}`);
 });
 
-test("serveur du classement lent : « … » pendant l'attente, et REJOUER répond toujours", async ({ page }) => {
-  test.setTimeout(120000); // deux parties jusqu'au boss
+// Partie perdue contre la coque du boss, avec un classement qui ne répond (qu'il
+// est vide) que lorsque le test appelle la fonction renvoyée.
+async function dieWithSlowLeaderboard(page) {
   await page.goto("/");
   await skipHints(page);
   await page.evaluate(async () => {
@@ -131,7 +132,6 @@ test("serveur du classement lent : « … » pendant l'attente, et REJOUER répo
     PLAYER.startingLives = 1;
     BOSS.bulletSpeed = 0; // seule la coque du boss peut toucher
   });
-  // Le classement ne répond (qu'il est vide) que lorsque le test le décide.
   let answer;
   const answered = new Promise((resolve) => (answer = resolve));
   await page.route("**/api/scores**", async (route) => {
@@ -140,33 +140,30 @@ test("serveur du classement lent : « … » pendant l'attente, et REJOUER répo
   });
   await page.route("**/api/games**", (route) => route.fulfill({ status: 201, json: { status: "ok" } }));
 
-  const { toPage, clickLogical } = canvasHelpers(page);
-  async function die() {
-    await reachBoss(page, 2);
-    await page.mouse.up();
-    const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
-    await page.mouse.move(hull.x, hull.y);
-    await waitForMode(page, "game_over", 15000);
-  }
+  await reachBoss(page, 2);
+  await page.mouse.up();
+  const { toPage } = canvasHelpers(page);
+  const hull = await toPage((await gameState(page)).boss.weakPoints[0].x, 135);
+  await page.mouse.move(hull.x, hull.y);
+  await waitForMode(page, "game_over", 15000);
+  return answer;
+}
 
-  // Seconde option choisie avant la réponse : l'écran montre qu'il attend, puis passe à la suite.
-  await die();
+test("serveur du classement lent : la seconde option affiche « … » pendant l'attente, puis passe à la suite", async ({ page }) => {
+  const answer = await dieWithSlowLeaderboard(page);
+  const { clickLogical } = canvasHelpers(page);
   await clickLogical(240, 187.4);
   await expect.poll(() => screenText(page)).toContain("CLASSEMENT …");
   answer();
   await waitForMode(page, "name_entry"); // classement vide : le score y entre
+});
 
-  // REJOUER, lui, n'attend pas le serveur.
-  await page.reload();
-  await skipHints(page);
-  await page.evaluate(async () => {
-    const { PLAYER, BOSS } = await import("/js/config.js");
-    PLAYER.startingLives = 1;
-    BOSS.bulletSpeed = 0;
-  });
-  await die();
+test("serveur du classement lent : REJOUER n'attend pas sa réponse", async ({ page }) => {
+  const answer = await dieWithSlowLeaderboard(page);
+  const { clickLogical } = canvasHelpers(page);
   await clickLogical(240, 167.4);
   await waitForMode(page, "playing", 1000);
+  answer();
 });
 
 test("classement ouvert depuis le menu : « Chargement… » tant que le serveur n'a pas répondu", async ({ page }) => {
@@ -193,5 +190,6 @@ test("partie quittée par le menu de pause : le record personnel n'est pas enreg
   await clickLogical(240, 158); // OUI, QUITTER
   await waitForMode(page, "menu");
   expect(await page.evaluate(() => localStorage.getItem("arcadepipe_best_score"))).toBeNull();
+  await expect.poll(() => screenText(page)).toContain("JOUER"); // le menu est dessiné
   expect(await screenText(page)).not.toContain("RECORD");
 });

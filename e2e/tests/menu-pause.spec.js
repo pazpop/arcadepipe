@@ -111,11 +111,18 @@ test("toutes les pages de l'aide et les crédits s'affichent", async ({ page }) 
 
   await clickLogical(240, 151.2 + 2 * 22); // AIDE
   await waitForMode(page, "help");
-  // Un titre propre à chaque page, dans l'ordre.
-  const pages = ["DÉPLACEMENT", "COLLISION", "RACCOURCIS CLAVIER", "AIDE — BONUS", "AIDE — ENNEMIS"];
-  for (const [index, heading] of pages.entries()) {
+  // Un titre et une explication propres à chaque page, dans l'ordre.
+  const pages = [
+    ["DÉPLACEMENT", "dirige le vaisseau"],
+    ["COLLISION", "seuls les tirs frôlés rapportent des points"],
+    ["RACCOURCIS CLAVIER", "Espace : NOVA"],
+    ["AIDE — BONUS", "CHEVROTINE — cône de plombs"],
+    ["AIDE — ENNEMIS", "KAMIKAZE — 1 PV"],
+  ];
+  for (const [index, [heading, detail]] of pages.entries()) {
     if (index > 0) await clickLogical(326, 210); // SUIV.
     await expect.poll(() => screenText(page)).toContain(heading);
+    expect(await screenText(page)).toContain(detail);
     expect(await screenText(page)).toContain(`${index + 1}/${pages.length}`);
     await canvas.screenshot({ path: `test-results/help-page-${index + 1}.png` });
   }
@@ -127,6 +134,7 @@ test("toutes les pages de l'aide et les crédits s'affichent", async ({ page }) 
 
   await clickLogical(240, 151.2 + 3 * 22); // CRÉDITS
   await waitForMode(page, "credits");
+  await expect.poll(() => screenText(page), { timeout: 10000 }).toContain("UN JEU DÉVELOPPÉ PAR PAZPOP"); // le générique défile
   await canvas.screenshot({ path: "test-results/credits.png" });
   await page.keyboard.press("Escape");
   await waitForMode(page, "menu");

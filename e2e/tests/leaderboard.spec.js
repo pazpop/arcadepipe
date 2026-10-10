@@ -26,7 +26,7 @@ test("le classement affiche les scores du serveur, du meilleur au moins bon", as
   const { clickLogical } = canvasHelpers(page);
   await clickLogical(240, 151.2 + 22); // CLASSEMENT
   await waitForMode(page, "leaderboard");
-  // Les deux scores sont là, le meilleur devant (d'autres peuvent déjà être en base).
+  // Les deux scores sont là, le meilleur devant.
   const order = async () => (await names(page)).filter((n) => n === "ALPHA" || n === "BETA").slice(0, 2);
   await expect.poll(order).toEqual(["BETA", "ALPHA"]);
 });

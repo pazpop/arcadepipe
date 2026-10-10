@@ -34,7 +34,15 @@ test("graze : la jauge NOVA se remplit, le bouton tactile apparaît et NOVA effa
   // Déclenchement : les tirs du boss disparaissent (regardé à chaque image,
   // avant sa salve suivante), le stock repasse à 0 et le bouton est masqué.
   await novaBtn.click();
-  await page.waitForFunction(async () => (await import("/js/main.js")).game.bossBulletsOnScreen === 0, null, { timeout: 2000 });
+  const cleared = await page.evaluate(async () => {
+    const { game } = await import("/js/main.js");
+    for (let frame = 0; frame < 120; frame++) {
+      if (game.bossBulletsOnScreen === 0) return true;
+      await new Promise(requestAnimationFrame);
+    }
+    return false;
+  });
+  expect(cleared).toBe(true);
   await expect(novaBtn).toHaveClass(/hidden/, { timeout: 2000 });
 
   expect(errors).toEqual([]);

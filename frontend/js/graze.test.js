@@ -1,6 +1,7 @@
 // Tests pour graze.js : score d'une chaîne, charges NOVA, updateGraze.
 // Lancer : node --test frontend/js/*.test.js (aucune dépendance npm requise).
 import { test } from "node:test";
+import { startWave } from "./states/waves.js";
 import assert from "node:assert/strict";
 
 import { addNovaGrazes, grazeScoreForChain, novaMaxForWave, updateGraze } from "./graze.js";
@@ -118,4 +119,10 @@ test("au-delà de GRAZE.scoringPerWave frôlements dans une vague, ils ne rappor
   assert.equal(g.score, scoreAtCap);
   assert.equal(g.novaStock * GRAZE.grazePerCharge + g.novaGrazes, novaAtCap + 2);
   assert.equal(g.grazeChain, GRAZE.scoringPerWave + 2);
+});
+
+test("frôlements payants : le compte repart de zéro à chaque vague", () => {
+  const g = { waveScoringGrazes: GRAZE.scoringPerWave };
+  startWave(g, { starfield: {} }, 2);
+  assert.equal(g.waveScoringGrazes, 0);
 });

@@ -1,6 +1,7 @@
 # Toutes les dépendances de l'image, y compris celles que les cinq premières
 # installent d'elles-mêmes : l'image est ainsi la même à chaque construction, et
-# pip-audit vérifie les versions réellement déployées. Dependabot propose les
+# pip-audit vérifie les versions réellement déployées (sauf `packaging`, qu'il
+# ignore quand la version épinglée est la dernière parue). Dependabot propose les
 # mises à jour. Liste refaite par `pip freeze` dans l'image après un ajout.
 # Seul absent : pydantic_core, dont pydantic impose déjà la version exacte
 # (l'épingler ici ferait échouer toute mise à jour de l'un sans l'autre).

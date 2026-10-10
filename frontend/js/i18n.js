@@ -1,5 +1,5 @@
 // Traductions : un fichier par langue dans i18n/ (fr.js est la référence).
-// Ajouter une langue = copier fr.js, le traduire, l'ajouter à LANGS ci-dessous.
+// Ajouter une langue : voir « Traduire le jeu » dans le README du dépôt.
 import { STORAGE_KEYS } from "./config.js";
 import { loadItem, saveItem } from "./storage.js";
 import fr from "./i18n/fr.js";
@@ -8,7 +8,8 @@ import en from "./i18n/en.js";
 export const LANGS = { fr, en };
 const FALLBACK = "en"; // navigateur dans une langue non traduite
 
-const isTranslated = (code) => Object.keys(LANGS).includes(code);
+const codes = Object.keys(LANGS);
+const isTranslated = (code) => codes.includes(code);
 
 // Langue demandée dans l'adresse (?lang=en, posé par nextLang), sinon celle
 // mémorisée, sinon celle du navigateur si elle est traduite. L'adresse passe en
@@ -26,7 +27,6 @@ function detectLang() {
 export const lang = detectLang();
 
 // Langue proposée par le bouton de langue : la suivante dans LANGS.
-const codes = Object.keys(LANGS);
 export const nextLangCode = codes[(codes.indexOf(lang) + 1) % codes.length];
 
 // Texte de la clé dans la langue courante ; "{nom}" remplacé par params.nom.
@@ -41,7 +41,10 @@ export function t(key, params = {}) {
 // des modules.
 export function nextLang() {
   saveItem(STORAGE_KEYS.lang, nextLangCode);
-  window.location.search = `?lang=${nextLangCode}`; // recharge la page à cette adresse
+  // Recharge la page à la même adresse, avec ?lang= (les autres paramètres sont gardés).
+  const url = new URL(window.location.href);
+  url.searchParams.set("lang", nextLangCode);
+  window.location.href = url.href;
 }
 
 // Textes du HTML : data-i18n (contenu), data-i18n-title (infobulle),

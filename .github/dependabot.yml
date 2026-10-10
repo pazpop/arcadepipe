@@ -1,9 +1,9 @@
 version: 2
 updates:
   # PR à chaque nouvelle version (pip-audit, lui, ne signale qu'une CVE publiée).
-  # Une seule PR pour toutes les dépendances Python : elles sont toutes épinglées
-  # (backend/requirements.txt), et certaines ne s'installent qu'ensemble
-  # (fastapi et starlette).
+  # Une seule PR pour toutes les dépendances Python, toutes épinglées
+  # (backend/requirements.txt). Si deux paquets deviennent incompatibles, la PR
+  # échoue : ajouter alors une règle `ignore` pour le paquet en cause.
   - package-ecosystem: "pip"
     directory: "/backend"
     schedule:

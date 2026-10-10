@@ -2,11 +2,23 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : le résultat de `git rev-list --count HEAD`, plus un. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
-## [2.158] - 2026-10-09
+## [2.162] - 2026-10-09
+- **Classement** : seuls les 40 premiers tirs frôlés de chaque vague rapportent des points (les suivants chargent encore NOVA) : rester devant un boss en frôlant ses tirs ne rapporte plus rien.
+- **Boss** : ses anneaux balaient l'écran au fil des salves, sans laisser de couloir sûr ; le premier boss retrouve des éventails plus légers (3 tirs, puis 5).
+- « INTACT » ne reste plus figé sur GAME OVER ; l'Entrée du pavé numérique fonctionne ; l'aide ouverte au clavier se referme avec Entrée ; les flèches sur un curseur de volume ne déplacent plus la sélection du menu.
+- Changer de langue garde les autres paramètres de l'adresse.
+- API : un en-tête `X-Forwarded-For` vide ne désactive plus la limite d'envois.
+- Numéros corrigés dans ce fichier : 2.159 et 2.160 (notés 2.157 et 2.158), et l'entrée 2.156 séparée de la 2.154.
+
+## [2.160] - 2026-10-09
 - Dépendances Python : `pydantic_core` n'est plus épinglé à part (pydantic impose déjà sa version exacte), ce qui faisait échouer les mises à jour proposées par Dependabot.
 
-## [2.157] - 2026-10-09
+## [2.159] - 2026-10-09
 - Kit presse : la page des descriptions n'annonce plus une sélection au clic, que la politique de sécurité du site bloquait.
+
+## [2.156] - 2026-10-09
+- **Textes** relus dans les deux langues : l'aide situe la case « Tir automatique » dans le panneau de réglages ; « ENNEMIS {n} » et « KILLS {n} » en fin de partie (plus de « 1 ENNEMIS ») ; « mall-e » en minuscules, « par » au lieu de « by » en français ; colonne « ABATTUS » au classement ; en anglais, « fire rate » pour les bonus et le texte de la carte de partage.
+- Kit presse : page des descriptions itch.io et YouTube, à copier (`press/descriptions.html`).
 
 ## [2.154] - 2026-10-09
 - **Classement** : frôler un vaisseau ennemi charge NOVA et allonge la chaîne, mais ne rapporte plus de points (seuls les tirs frôlés en donnent) : on ne peut plus marquer sans fin en longeant des ennemis qui ne tirent pas.
@@ -18,8 +30,6 @@ Changements notables (gameplay, visuel, audio, infra), plus récent en premier. 
 - La bannière d'une vague ne reste plus figée sous GAME OVER ; le panneau de réglages ne clignote plus au chargement ; « … » à côté de VALIDER pendant l'envoi du score.
 - Tests e2e : ils lisent maintenant les textes affichés par le jeu, et couvrent le record personnel, le classement injoignable ou lent, la chaîne cassée par un coup et la récompense du niveau bonus.
 - Python 3.12 au minimum pour le backend ; une seule proposition Dependabot pour toutes les dépendances Python.
-- **Textes** relus dans les deux langues : l'aide situe la case « Tir automatique » dans le panneau de réglages ; « ENNEMIS {n} » et « KILLS {n} » en fin de partie (plus de « 1 ENNEMIS ») ; « mall-e » en minuscules, « par » au lieu de « by » en français ; colonne « ABATTUS » au classement ; en anglais, « fire rate » pour les bonus et le texte de la carte de partage.
-- Kit presse : page des descriptions itch.io et YouTube, à copier (`press/descriptions.html`).
 - Numéros corrigés dans ce fichier : 2.125 (noté 2.124) et 2.142 (noté 2.144) ; dates des 2.127, 2.128 et 2.131.
 
 ## [2.153] - 2026-10-09

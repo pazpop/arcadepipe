@@ -102,6 +102,7 @@ test("fin de partie sans serveur : classement annoncé injoignable, record perso
   expect(shown).toContain("GAME OVER");
   expect(shown).toContain("NOUVEAU RECORD PERSONNEL !");
   expect(shown).not.toContain("ARME MASSIVE"); // la bannière de la vague ne reste pas figée sous GAME OVER
+  expect(shown).not.toContain("INTACT"); // ni le rappel du bonus sans dégâts, qui clignote au premier coup de la vague
   const best = Number(await page.evaluate(() => localStorage.getItem("arcadepipe_best_score")));
   expect(best).toBeGreaterThan(0);
   await canvas.screenshot({ path: "test-results/game-over-offline.png" });
@@ -121,7 +122,8 @@ test("fin de partie sans serveur : classement annoncé injoignable, record perso
   await expect.poll(() => screenText(page)).toContain(`RECORD ${best}`);
 });
 
-test("serveur du classement lent : « … » pendant l'attente, puis « Chargement… », et REJOUER répond toujours", async ({ page }) => {
+test("serveur du classement lent : « … » pendant l'attente, et REJOUER répond toujours", async ({ page }) => {
+  test.setTimeout(120000); // deux parties jusqu'au boss
   await page.goto("/");
   await skipHints(page);
   await page.evaluate(async () => {
@@ -129,9 +131,11 @@ test("serveur du classement lent : « … » pendant l'attente, puis « Chargeme
     PLAYER.startingLives = 1;
     BOSS.bulletSpeed = 0; // seule la coque du boss peut toucher
   });
-  // Le classement répond au bout de 2,5 s, et répond qu'il est vide.
+  // Le classement ne répond (qu'il est vide) que lorsque le test le décide.
+  let answer;
+  const answered = new Promise((resolve) => (answer = resolve));
   await page.route("**/api/scores**", async (route) => {
-    await new Promise((resolve) => setTimeout(resolve, 2500));
+    await answered;
     await route.fulfill({ json: [] });
   });
   await page.route("**/api/games**", (route) => route.fulfill({ status: 201, json: { status: "ok" } }));
@@ -149,6 +153,7 @@ test("serveur du classement lent : « … » pendant l'attente, puis « Chargeme
   await die();
   await clickLogical(240, 187.4);
   await expect.poll(() => screenText(page)).toContain("CLASSEMENT …");
+  answer();
   await waitForMode(page, "name_entry"); // classement vide : le score y entre
 
   // REJOUER, lui, n'attend pas le serveur.
@@ -174,4 +179,19 @@ test("classement ouvert depuis le menu : « Chargement… » tant que le serveur
   await clickLogical(240, 151.2 + 22); // CLASSEMENT
   await expect.poll(() => screenText(page)).toContain("Chargement…");
   await expect.poll(() => screenText(page), { timeout: 5000 }).toContain("Aucun score pour l'instant.");
+});
+
+test("partie quittée par le menu de pause : le record personnel n'est pas enregistré", async ({ page }) => {
+  await page.goto("/");
+  await skipHints(page);
+  await reachBoss(page, 2); // un ennemi abattu : le score n'est plus nul
+  await page.mouse.up();
+  const { clickLogical } = canvasHelpers(page);
+  await page.keyboard.press("KeyP");
+  await waitForMode(page, "paused");
+  await clickLogical(240, 172); // MENU PRINCIPAL
+  await clickLogical(240, 158); // OUI, QUITTER
+  await waitForMode(page, "menu");
+  expect(await page.evaluate(() => localStorage.getItem("arcadepipe_best_score"))).toBeNull();
+  expect(await screenText(page)).not.toContain("RECORD");
 });

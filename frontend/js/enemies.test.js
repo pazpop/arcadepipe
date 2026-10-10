@@ -1,4 +1,4 @@
-// Tests pour le tir des ennemis (enemies.js) : jamais vers l'arrière.
+// Tests des ennemis (enemies.js) : tir jamais vers l'arrière, kamikaze, formation.
 // Lancer : node --test frontend/js/*.test.js (aucune dépendance npm requise).
 import { test } from "node:test";
 import assert from "node:assert/strict";
@@ -46,7 +46,7 @@ test("formation : trois ennemis normaux en flèche, meneur devant, qui restent �
   assert.ok(trio.every((en) => en.type === "normal" && !en.gunner && en.vx === trio[0].vx && en.vy === 0));
   const [leader, upper, lower] = trio;
   assert.ok(leader.x < upper.x && upper.x === lower.x);
-  assert.equal(upper.y + lower.y, leader.y * 2);
+  assert.ok(Math.abs(upper.y + lower.y - leader.y * 2) < 1e-9); // les ailiers encadrent le meneur
 });
 
 test("formation : jamais en vague 1, et pas à chaque vague ensuite", () => {

@@ -32,9 +32,11 @@ let qualifies = Promise.resolve(false);
 // ignoré. L'écran annonce l'entrée dans le classement dès que le serveur a répondu.
 export function open(g) {
   g.mode = MODE.GAME_OVER;
-  // Le flash et la bannière ne s'effacent qu'en partie : ils resteraient figés sur la scène.
+  // Le flash, la bannière et le clignotement du rappel « INTACT » ne s'effacent
+  // qu'en partie : ils resteraient figés sur la scène.
   g.flash = 0;
   g.banner = null;
+  g.intactBlink = 0;
   g.gameOverSelected = 0;
   g.scoreQualifies = false;
   g.leaderboardDown = false;

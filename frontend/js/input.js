@@ -17,6 +17,8 @@ export function canvasToLogical(canvas, clientX, clientY) {
 }
 
 const SCROLL_KEYS = ["Space", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"];
+// Touches dont un bouton, une case ou un curseur du panneau se sert lui-même.
+const CONTROL_KEYS = ["Enter", ...SCROLL_KEYS];
 
 export function createInput(canvas) {
   const input = {
@@ -28,15 +30,17 @@ export function createInput(canvas) {
     justPressed: new Set(), // vidé à chaque frame par game.js
   };
 
-  // Espace et les flèches feraient aussi défiler la page autour du jeu
-  // (itch.io) : empêché, sauf dans un champ ou sur un curseur du panneau.
   // e.repeat : une touche maintenue ne compte qu'une fois.
   window.addEventListener("keydown", (e) => {
-    if (e.target === document.body && SCROLL_KEYS.includes(e.code)) e.preventDefault();
-    // Entrée ou Espace sur un bouton, une case ou un curseur du panneau
-    // l'actionne : le jeu, lui, n'en tient pas compte.
-    const onControl = e.target !== document.body && (e.code === "Enter" || e.code === "Space");
-    if (!e.repeat && !onControl) input.justPressed.add(e.code);
+    const code = e.code === "NumpadEnter" ? "Enter" : e.code; // l'Entrée du pavé numérique vaut l'autre
+    const onControl = e.target !== document.body; // un élément du panneau (ou le champ du pseudo) a le focus
+    // Espace et les flèches feraient aussi défiler la page autour du jeu
+    // (itch.io) : empêché tant qu'aucun élément du panneau n'a le focus.
+    if (!onControl && SCROLL_KEYS.includes(code)) e.preventDefault();
+    // Entrée, Espace ou une flèche sur un élément du panneau l'actionne : le
+    // jeu, lui, n'en tient pas compte.
+    const forControl = onControl && CONTROL_KEYS.includes(code);
+    if (!e.repeat && !forControl) input.justPressed.add(code);
   });
 
   canvas.addEventListener("mousemove", (e) => {
@@ -50,7 +54,9 @@ export function createInput(canvas) {
     input.isTouch = false;
     input.fireHeld = true;
   });
-  window.addEventListener("mouseup", () => (input.fireHeld = false));
+  window.addEventListener("mouseup", (e) => {
+    if (e.button === 0) input.fireHeld = false; // bouton gauche seulement, comme à l'appui
+  });
 
   // Tactile : le doigt pilote le vaisseau, décalé vers l'avant (droite)
   // plutôt que caché sous le doigt. targetTouches : les doigts posés sur le

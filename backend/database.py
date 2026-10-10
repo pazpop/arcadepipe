@@ -84,7 +84,7 @@ def insert_score(player_name: str, score: int, wave: int = 1, kills: int = 0) ->
         return dict(row)
 
 
-def get_top_scores(limit: int = 10) -> list[dict]:
+def get_top_scores(limit: int) -> list[dict]:
     with get_connection() as conn:
         rows = conn.execute(
             "SELECT player_name, score, wave, kills FROM scores "

@@ -1,7 +1,8 @@
 // Boss : arme mécanique massive occupant le tiers droit de l'écran, avec
-// 4 à 6 points faibles clignotants (jaunes, puis orange et rouges sous les dégâts). Chaque point détruit accélère
-// et densifie les patterns de tir restants (phases). Invulnérable pendant
-// son entrée à l'écran. Victoire quand tous les points faibles sont détruits.
+// 4 à 6 points faibles clignotants (jaunes, puis orange et rouges sous les dégâts).
+// Chaque point détruit change sa façon de tirer et accélère sa cadence, qui monte
+// aussi avec le temps (phases). Invulnérable pendant son entrée à l'écran.
+// Victoire quand tous les points faibles sont détruits.
 import { RES_W, RES_H, BOSS, DIFFICULTY, PALETTE, bulletSpeedFactor } from "./config.js";
 import { buildSprites } from "./assets.js";
 import { patternFan, patternSpiralStep, patternRing } from "./patterns.js";
@@ -63,7 +64,7 @@ export function spawnBoss(waveNumber) {
     sizeScale,
     hull: tintedHull(hull, Math.random() * 360), // coque à la teinte de ce combat
     fireTimer: 0.3, // délai avant le 1er tir, une fois arrivé (boss.arrived)
-    elapsed: 0, // secondes depuis l'arrivée, pour le flottement vertical
+    elapsed: 0, // secondes depuis l'arrivée : flottement vertical, et phase du combat (bossPhase)
     weakPoints: points,
     victory: false,
     victoryTimer: 0,
@@ -87,12 +88,19 @@ export function bossFireInterval(phase, firstBoss) {
   return firstBoss ? interval * BOSS.firstBossFireIntervalMul : interval;
 }
 
-// Nombre de tirs de l'éventail. Toujours impair : le tir du milieu vise le
-// joueur, qui ne peut donc pas rester immobile.
+// Nombre de tirs de l'éventail. Toujours impair (arrondi au nombre impair
+// inférieur) : le tir du milieu vise le joueur, qui ne peut donc pas rester immobile.
 export function bossFanCount(destroyed, firstBoss) {
   const countMul = firstBoss ? BOSS.firstBossBulletCountMul : 1;
   const count = Math.max(3, Math.round((5 + destroyed) * countMul));
-  return count % 2 === 0 ? count + 1 : count;
+  return count % 2 === 0 ? count - 1 : count;
+}
+
+// Angle de départ de l'anneau suivant : décalé d'un demi-écart entre deux tirs
+// (il passe là où le précédent laissait un couloir), plus BOSS.ringSweep, pour
+// que les couloirs eux-mêmes se déplacent au fil des salves.
+export function nextRingAngle(angle, count) {
+  return angle + Math.PI / count + BOSS.ringSweep;
 }
 
 // Durée du fondu de la coque après la victoire — courte pour ne pas "flotter"
@@ -130,14 +138,14 @@ export function updateBoss(boss, dt, projectiles, target) {
       boss.spiralAngle += 0.4;
       patternSpiralStep(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.9, 3 + Math.min(3, destroyed));
     } else {
-      // Chaque salve est décalée d'un demi-écart entre deux tirs : elle passe
-      // là où la précédente laissait un couloir. curve modeste : l'anneau
-      // tourne légèrement en s'étendant ("pinwheel").
+      // curve modeste : l'anneau tourne légèrement en s'étendant ("pinwheel").
       const count = Math.max(6, Math.round((10 + destroyed * 2) * countMul));
-      boss.spiralAngle += Math.PI / count;
+      boss.spiralAngle = nextRingAngle(boss.spiralAngle, count);
       patternRing(projectiles, boss.x - 20, boss.y, boss.spiralAngle, speed * 0.8, count, 0.5);
     }
-    boss.fireTimer = bossFireInterval(bossPhase(destroyed, boss.elapsed), firstBoss);
+    // += et non = : le retard pris sur la salve qui vient de partir est rattrapé,
+    // la cadence ne dépend pas de la durée d'une image.
+    boss.fireTimer += bossFireInterval(bossPhase(destroyed, boss.elapsed), firstBoss);
   }
 }
 

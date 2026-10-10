@@ -91,7 +91,7 @@ export default {
   "help.fire.detail": "Automatique. Décoche « Tir automatique » dans le panneau de réglages (bouton ⚙, en bas à gauche) pour tirer en maintenant le clic ou le doigt",
   "help.nova": "NOVA",
   "help.nova.detail":
-    "Frôle (sans le toucher) un tir ennemi ou un vaisseau ennemi — pas le boss — pour charger la jauge NOVA en haut à gauche : prends des risques ! Une fois pleine, ESPACE (ou le bouton tactile en bas à droite) détruit tous les ennemis à l'écran et leurs tirs, jamais le boss. Jusqu'à 2 charges en réserve dès le 2e combat de boss (1 seule avant), à déclencher quand tu veux.",
+    "Frôle (sans le toucher) un tir ennemi ou un vaisseau ennemi — pas la coque du boss — pour charger la jauge NOVA en haut à gauche : prends des risques ! Une fois pleine, ESPACE (ou le bouton tactile en bas à droite) détruit tous les ennemis à l'écran et leurs tirs, jamais le boss. Jusqu'à 2 charges en réserve dès le 2e combat de boss (1 seule avant), à déclencher quand tu veux.",
   "help.boss": "BOSS",
   "help.boss.detail": "Vise les points faibles JAUNES, évite sa coque — le vaincre donne +1 vie. Ses tirs BLEUS te visent, en éventail ; les BLANCS partent en spirale ou en anneau",
   "help.ram": "COLLISION",

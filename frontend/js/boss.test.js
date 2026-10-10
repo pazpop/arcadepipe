@@ -1,7 +1,7 @@
-// Points faibles du boss : invulnérabilité à l'entrée, victoire.
+// Boss : points faibles (invulnérabilité à l'entrée, victoire), cadence, éventail, anneaux.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { bossFanCount, bossFireInterval, bossPhase, hitBossWeakPoint } from "./boss.js";
+import { bossFanCount, bossFireInterval, bossPhase, hitBossWeakPoint, nextRingAngle } from "./boss.js";
 import { BOSS } from "./config.js";
 
 // Un boss réduit à ce que lit hitBossWeakPoint : un seul point faible, à 1 PV, en son centre.
@@ -48,4 +48,22 @@ test("phase du boss : monte avec les points faibles détruits et avec le temps, 
   assert.equal(bossPhase(0, BOSS.hurryEverySeconds * 2 + 1), 2);
   assert.equal(bossPhase(2, BOSS.hurryEverySeconds + 1), 3);
   assert.equal(bossPhase(5, 10000), BOSS.weakPointsMax - 1);
+});
+
+test("premier boss : ses éventails ont moins de tirs que ceux des suivants", () => {
+  for (const destroyed of [0, 3]) {
+    assert.ok(bossFanCount(destroyed, true) < bossFanCount(destroyed, false), `${destroyed} détruits`);
+  }
+});
+
+test("anneaux : d'une salve à l'autre, les tirs ne repassent jamais par les mêmes rayons", () => {
+  const count = 14;
+  const gap = (Math.PI * 2) / count; // écart entre deux tirs d'un anneau
+  const seen = new Set();
+  let angle = 0;
+  for (let volley = 0; volley < 30; volley++) {
+    angle = nextRingAngle(angle, count);
+    seen.add((angle % gap).toFixed(3));
+  }
+  assert.ok(seen.size >= 20, `${seen.size} positions distinctes sur 30 salves`);
 });

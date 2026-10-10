@@ -90,7 +90,7 @@ export default {
   "help.fire.detail": 'Automatic. Uncheck "Auto-fire" in the settings panel (⚙ button, bottom left) to fire only while you hold the mouse button or keep a finger down',
   "help.nova": "NOVA",
   "help.nova.detail":
-    "Graze (without touching) an enemy shot or an enemy ship — not the boss — to charge the NOVA gauge at the top left: take risks! Once full, SPACE (or the touch button at the bottom right) destroys every enemy on screen and their shots, never the boss. Up to 2 charges in reserve from the 2nd boss fight on (only 1 before that). Use them whenever you like.",
+    "Graze (without touching) an enemy shot or an enemy ship — not the boss's hull — to charge the NOVA gauge at the top left: take risks! Once full, SPACE (or the touch button at the bottom right) destroys every enemy on screen and their shots, never the boss. Up to 2 charges in reserve from the 2nd boss fight on (only 1 before that). Use them whenever you like.",
   "help.boss": "BOSS",
   "help.boss.detail": "Aim for the YELLOW weak points, avoid its hull — defeating it grants +1 life. Its BLUE shots are aimed at you, in a fan; the WHITE ones come in spirals or rings",
   "help.ram": "COLLISION",

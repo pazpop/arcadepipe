@@ -64,13 +64,16 @@ test("fin de partie : top annoncé ; score inscrit en rejouant, au tap sur VALID
   await dieAndQualify();
   await clickLogical(240, 187.4);
   await waitForMode(page, "name_entry");
-  // Envoi ralenti d'une seconde : l'écran montre qu'il attend.
+  // L'envoi du score ne part que lorsque le test le décide : l'écran montre qu'il attend.
+  let send;
+  const sent = new Promise((resolve) => (send = resolve));
   await page.route("http://localhost:8000/api/scores", async (route) => {
-    if (route.request().method() === "POST") await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (route.request().method() === "POST") await sent;
     await route.fallback();
   });
   await clickLogical(240, 118); // VALIDER
   await expect.poll(() => screenText(page)).toContain("VALIDER …");
+  send();
   await waitForMode(page, "leaderboard");
   await expect.poll(async () => (await serverNames()).filter((n) => n === "AAA").length).toBe(2);
   await clickLogical(240, 135); // retour au menu

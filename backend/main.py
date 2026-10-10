@@ -44,9 +44,10 @@ def get_client_ip(request: Request) -> str:
     # falsifiable ; avec un second proxy devant le premier, tous les joueurs
     # partageraient la même adresse, donc le même quota. Non supportés.
     forwarded = request.headers.get("x-forwarded-for")
-    if forwarded:
-        return forwarded.split(",")[-1].strip()
-    return get_remote_address(request)
+    # `or` : un en-tête vide ou terminé par une virgule ne donne pas de clé
+    # vide, pour laquelle le limiteur ne compterait rien.
+    last = forwarded.split(",")[-1].strip() if forwarded else ""
+    return last or get_remote_address(request)
 
 
 limiter = Limiter(key_func=get_client_ip)

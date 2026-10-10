@@ -74,6 +74,7 @@ export function createGame({ input, audio, music, nameInputEl }) {
     intactBlink: 0, // secondes de clignotement du rappel "INTACT" après le premier coup de la vague (hud.js)
     tookDamageThisWave: false, // pour DIFFICULTY.noDamageWaveBonus — reset dans startWave, mis à true dans onPlayerHit
     grazeChain: 0, // remise à zéro à chaque vague (startWave) et à chaque coup encaissé (playing.js) — voir graze.js
+    waveScoringGrazes: 0, // frôlements de tirs déjà payés dans la vague (plafond : GRAZE.scoringPerWave)
     maxGrazeChain: 0, // meilleure chaîne de la partie entière — reset dans startRun (pas startWave), voir graze.js
     distanceTraveled: 0, // années-lumière, accumulé pendant PLAYING — reset dans startRun, voir DISTANCE dans config.js
     novaStock: 0, // rechargé par le graze, dépensé par useNova() (states/playing.js)
@@ -239,9 +240,6 @@ export function createGame({ input, audio, music, nameInputEl }) {
     },
     get scoreQualifies() {
       return g.scoreQualifies;
-    },
-    get leaderboardDown() {
-      return g.leaderboardDown;
     },
     get grazeChain() {
       return g.grazeChain;

@@ -20,13 +20,14 @@ export const test = base.extend({
 });
 
 // Le texte du jeu est dessiné dans le canvas, donc absent du DOM. Ce script,
-// injecté dans la page avant le jeu, note chaque texte dessiné ; à chaque image,
+// injecté dans la page avant le jeu, note chaque texte dessiné dans le canvas
+// du jeu (pas dans celui de l'image de partage) ; à chaque image,
 // window.drawnTexts reçoit ceux de l'image précédente, complète.
 function recordDrawnTexts() {
   let current = [];
   const fillText = CanvasRenderingContext2D.prototype.fillText;
   CanvasRenderingContext2D.prototype.fillText = function (text, ...rest) {
-    current.push(String(text));
+    if (this.canvas.id === "game-canvas") current.push(String(text));
     return fillText.call(this, text, ...rest);
   };
   window.drawnTexts = [];
@@ -38,7 +39,8 @@ function recordDrawnTexts() {
   requestAnimationFrame(nextFrame);
 }
 
-// Textes affichés à l'écran par le jeu, réunis en une seule chaîne :
+// Textes dessinés par le jeu à la dernière image, réunis en une seule chaîne
+// (« dessiné » : un texte transparent ou recouvert y figure aussi) :
 //   await expect.poll(() => screenText(page)).toContain("GAME OVER");
 export function screenText(page) {
   return page.evaluate(() => window.drawnTexts.join("\n"));
@@ -106,7 +108,6 @@ export function gameState(page) {
       lives: game.lives,
       scores: game.scores,
       scoreQualifies: game.scoreQualifies,
-      leaderboardDown: game.leaderboardDown,
       grazeChain: game.grazeChain,
       novaStock: game.novaStock,
       kills: game.getRunSummary().kills,

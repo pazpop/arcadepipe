@@ -11,7 +11,7 @@ JS vanilla (modules ES6) + Canvas 2D, sans étape de build : les fichiers sont s
 | `privacy.html`, `press/` | page de confidentialité et kit presse, en français et en anglais (captures refaites par `npm run presskit`, dans `e2e/`) ; `press/descriptions.html` garde les textes des pages itch.io et YouTube, à copier |
 | `js/main.js` | point d'entrée : crée le jeu, branche boutons et touches, lance la boucle |
 | `js/game.js` | machine à états : appelle l'écran courant de `js/states/` |
-| `js/config.js` | toutes les constantes (couleurs, difficulté, bonus, boss...) |
+| `js/config.js` | les constantes du jeu (couleurs, difficulté, bonus, boss...) ; celles des ennemis sont dans `js/enemies.js` |
 | `js/states/` | un fichier par écran ; `playing.js` est la partie elle-même, `waves.js` l'enchaînement des vagues |
 | `js/player.js`, `enemies.js`, `boss.js`, `projectiles.js`, `powerups.js`, `particles.js` | les objets du jeu : création, mise à jour, dessin |
 | `js/graze.js`, `bonusLevel.js`, `collisions.js`, `patterns.js` | frôlement et NOVA, niveau bonus, collisions, formes de tirs ennemis |

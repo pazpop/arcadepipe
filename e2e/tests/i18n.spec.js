@@ -18,7 +18,7 @@ test.describe("navigateur en anglais", () => {
     await page.click("#cookie-decline");
     await page.click("#lang-btn"); // recharge la page
     await expect(page.locator("html")).toHaveAttribute("lang", "fr");
-    await page.reload();
+    await page.goto("/"); // sans ?lang= dans l'adresse : c'est le choix mémorisé qui joue
     await expect(page.locator("#help-btn")).toHaveText("Aide");
     expect(errors).toEqual([]);
   });
@@ -52,4 +52,12 @@ test("stockage bloqué (page embarquée, navigation privée) : le bouton de lang
   await page.click("#lang-btn"); // recharge la page
   await expect(page.locator("html")).toHaveAttribute("lang", "en");
   await expect(page.locator("#help-btn")).toHaveText("Help");
+});
+
+test("changer de langue garde les autres paramètres de l'adresse", async ({ page }) => {
+  await page.goto("/?source=test#haut");
+  await page.click("#lang-btn");
+  await expect(page.locator("html")).toHaveAttribute("lang", "en");
+  expect(new URL(page.url()).searchParams.get("source")).toBe("test");
+  expect(new URL(page.url()).hash).toBe("#haut");
 });

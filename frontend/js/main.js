@@ -136,7 +136,11 @@ autoFireToggle.addEventListener("change", () => {
   saveItem(STORAGE_KEYS.autoFire, autoFireToggle.checked ? "1" : "0");
 });
 
-$("help-btn").addEventListener("click", () => game.openHelp());
+// Le bouton rend le focus, comme Pause : les touches suivantes vont à l'écran d'aide.
+$("help-btn").addEventListener("click", (e) => {
+  game.openHelp();
+  e.currentTarget.blur();
+});
 
 // --- Plein écran sur #game-container (pas le canvas seul : les boutons posés
 // par-dessus doivent rester visibles). Bouton masqué si le navigateur n'a pas

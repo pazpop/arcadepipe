@@ -7,7 +7,7 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 - [ ] **Vérifier sur un vrai téléphone** les commandes dans les bandes noires en paysage (Pause, bouton ⚙, NOVA) et l'encoche ; la musique dès le menu ; le clavier virtuel à la saisie du pseudo ; la fluidité en vague avancée (vague 10 et plus).
 - [ ] **Valider en jouant les réglages par défaut** : micro-gel à l'impact (`HIT_STOP`) et paliers sonores du frôlement (`GRAZE.milestones`), dans `config.js`.
 - [ ] **Faire relire l'anglais** (`frontend/js/i18n/en.js`).
-- [ ] **Cinquième morceau de mall-e** : l'ajouter à `AUDIO.tracks` (`config.js`) et au README.
+- [ ] **Cinquième morceau de mall-e** : l'ajouter à `AUDIO.tracks` (`config.js`) et au README ; « quatre morceaux » est aussi écrit dans `frontend/press/descriptions.html`.
 - [ ] **Tester le partage d'un score en conditions réelles** : partager l'image d'une partie et vérifier que le QR code se lit avec un téléphone.
 - [ ] **Première minute** : mesurer le délai avant le premier bonus sur dix parties ; s'il dépasse 30 s, augmenter les chances de drop en vague 1.
 

@@ -89,3 +89,10 @@ def test_get_client_ip_sans_en_tete_utilise_l_ip_de_connexion():
     requete = _requete_factice(None)
     requete.client = Mock(host="198.51.100.9")
     assert get_client_ip(requete) == "198.51.100.9"
+
+
+def test_get_client_ip_en_tete_termine_par_une_virgule_utilise_l_ip_de_connexion():
+    """Sans ce repli la clé serait vide, et le limiteur ne compterait rien."""
+    requete = _requete_factice("1.2.3.4,")
+    requete.client = Mock(host="198.51.100.9")
+    assert get_client_ip(requete) == "198.51.100.9"

@@ -122,7 +122,8 @@ export const BOSS = {
   victoryScore: 1000, // nettement au-dessus d'un point faible, pour marquer l'accomplissement
   fireInterval: 1.2, // secondes entre deux salves, boss intact
   fireIntervalFactor: 0.645, // multiplié par ce facteur à chaque phase du combat (0,13 s à la cinquième)
-  hurryEverySeconds: 30, // sans point faible détruit, le combat monte quand même d'une phase à ce rythme
+  hurryEverySeconds: 30, // le combat monte aussi d'une phase à ce rythme, points faibles détruits ou non
+  ringSweep: 0.07, // radians ajoutés à chaque anneau, pour que ses tirs balaient tout l'écran au fil des salves
   bulletSpeed: 90,
   // 1er combat de boss (isFirstBoss() dans boss.js) volontairement plus
   // clément — le joueur n'a pas encore le rythme. Boss suivants non
@@ -193,6 +194,7 @@ export const GRAZE = {
   bodyCooldown: 1.5,
   baseScore: 15, // multiplié par la taille de la chaîne courante (voir graze.js)...
   maxChainMultiplier: 20, // ...jusqu'à ce plafond
+  scoringPerWave: 40, // frôlements de tirs qui rapportent des points, par vague ; les suivants ne font plus que charger NOVA
   grazePerCharge: 12, // nombre de grazes pour remplir une charge NOVA
 };
 

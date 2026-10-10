@@ -12,6 +12,7 @@ on:
 jobs:
   audit:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
@@ -27,7 +28,9 @@ jobs:
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: "22"
+      # Lancé même si pip-audit a échoué : une faille Python ne doit pas en cacher une autre.
       - name: npm audit (frontend, e2e)
+        if: ${{ !cancelled() }}
         run: |
           npm audit --prefix frontend
           npm audit --prefix e2e

@@ -19,7 +19,7 @@ Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/confi
 | Gunner (bleu) | 2 | un ennemi normal qui tire, plus lentement qu'une élite | vague 6 |
 
 - Ils apparaissent dans le tiers droit de l'écran, puis se déplacent librement.
-- À partir de la vague 2, une vague sur deux environ voit passer une formation : trois ennemis normaux en flèche, qui entrent ensemble par la droite. Une par vague au plus.
+- À partir de la vague 2, six vagues sur dix environ voit passer une formation : trois ennemis normaux en flèche, qui entrent ensemble par la droite. Une par vague au plus.
 - Un ennemi ne tire que si le joueur est devant lui, et jamais depuis le tiers gauche de l'écran.
 - Un ennemi touché mais pas détruit passe à une version ternie de son sprite : il n'y a pas de jauge de PV.
 - Foncer dans un ennemi le détruit, sans rapporter de points, au prix d'un coup (un point de bouclier, ou une vie), sauf pendant l'invulnérabilité qui suit un coup.
@@ -34,11 +34,11 @@ Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/confi
 ## Le boss
 
 - Sa coque est indestructible : il faut détruire ses points faibles (4 à 6 selon la vague), qui passent du jaune à l'orange puis au rouge. Une barre de vie en bas de l'écran résume l'ensemble.
-- Il est invulnérable pendant son entrée, puis tire aussitôt. Sa façon de tirer change à chaque point faible détruit (éventail, spirale, anneau) et sa cadence accélère. Elle accélère aussi toutes les 30 secondes : un boss qu'on se contente d'esquiver devient vite intenable.
-- Deux couleurs de tirs, selon la façon de les esquiver : bleu pour les éventails visés (le tir du milieu part droit sur le vaisseau), blanc pour les spirales et les anneaux (chaque anneau passe là où le précédent laissait un couloir).
+- Il est invulnérable pendant son entrée, puis tire aussitôt. Sa façon de tirer change à chaque point faible détruit (éventail, spirale, anneau) et sa cadence accélère. Elle accélère aussi toutes les 30 secondes, points faibles détruits ou non.
+- Deux couleurs de tirs, selon la façon de les esquiver : bleu pour les éventails visés (le tir du milieu part droit sur le vaisseau), blanc pour les spirales et les anneaux (chaque anneau passe là où le précédent laissait un couloir, et ces couloirs se déplacent).
 - Foncer dans sa coque coûte un coup (un point de bouclier, ou une vie).
 - Derrière lui, en décor, la silhouette du vaisseau-mère de la flotte ennemie.
-- Le premier boss est adouci (moins de vie, tirs plus lents, éventails et anneaux moins fournis).
+- Le premier boss est adouci (moins de vie, tirs plus lents, éventails et anneaux moins fournis : 3 tirs au lieu de 5 pour son premier éventail).
 - Le vaincre rapporte un gros bonus de score et une vie (5 au maximum).
 
 ## Les bonus
@@ -56,7 +56,7 @@ Les trois armes durent 20 secondes ; le décompte est en pause pendant un saut s
 
 ## Frôlement et NOVA
 
-- **Frôler** un tir ennemi rapporte des points, multipliés par la longueur de la chaîne de frôlements en cours, jusqu'à 20. Frôler le corps d'un ennemi allonge la chaîne et charge NOVA, sans rapporter de points : un ennemi qui ne tire pas se frôle sans risque. Un son marque les chaînes de 5, 10 et 15.
+- **Frôler** un tir ennemi rapporte des points, multipliés par la longueur de la chaîne de frôlements en cours, jusqu'à 20, pour les 40 premiers tirs frôlés de chaque vague ; les suivants ne font plus que charger NOVA. Frôler le corps d'un ennemi allonge la chaîne et charge NOVA, sans rapporter de points : un ennemi qui ne tire pas se frôle sans risque. Un son marque les chaînes de 5, 10 et 15.
 - La chaîne repart de zéro à chaque vague et à chaque coup encaissé (pas un coup absorbé par le bouclier).
 - Un tir ne compte qu'une fois ; un ennemi peut être frôlé de nouveau après un délai. La coque du boss ne compte pas.
 - Chaque frôlement charge la jauge **NOVA** (en haut à gauche) : 12 frôlements pour une charge. Une charge en réserve au maximum, deux à partir du deuxième boss.

@@ -31,9 +31,9 @@ export function patternSpiralStep(projectiles, x, y, angle, speed, arms) {
   }
 }
 
-// Anneau de `count` tirs partant de `angle` : l'appelant le change à chaque
-// salve, sinon les tirs suivraient toujours les mêmes rayons et les couloirs
-// entre eux seraient sûrs pour toujours. curve (rad/s) : l'anneau tourne en
+// Anneau de `count` tirs partant de `angle`, que l'appelant change à chaque
+// salve (nextRingAngle, boss.js) : des tirs qui suivraient toujours les mêmes
+// rayons laisseraient entre eux des couloirs sûrs pour toujours. curve (rad/s) : l'anneau tourne en
 // s'étendant — effet "pinwheel". Couleur "circulaire", comme patternSpiralStep.
 export function patternRing(projectiles, x, y, angle, speed, count, curve) {
   for (let i = 0; i < count; i++) {

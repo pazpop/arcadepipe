@@ -1,6 +1,6 @@
-// Menus, pause, aide, crédits, panneau de réglages : le texte du jeu est dessiné
-// dans le canvas, donc ces tests suivent l'écran courant (mode) et laissent des
-// captures dans test-results/ pour la vérification à l'œil.
+// Menus, pause, aide, crédits, panneau de réglages. Ces tests suivent l'écran
+// courant (mode) et lisent les textes dessinés dans le canvas (screenText) ;
+// ils laissent des captures dans test-results/.
 import { test, expect, canvasHelpers, collectErrors, gameState, screenText, skipHints, waitForMode } from "./helpers.js";
 
 test("le menu se charge sans erreur et les contrôles musique sont visibles", async ({ page }) => {
@@ -111,11 +111,17 @@ test("toutes les pages de l'aide et les crédits s'affichent", async ({ page }) 
 
   await clickLogical(240, 151.2 + 2 * 22); // AIDE
   await waitForMode(page, "help");
-  for (let pageNumber = 2; pageNumber <= 5; pageNumber++) {
-    await clickLogical(326, 210); // SUIV.
-    expect((await gameState(page)).helpPage).toBe(pageNumber - 1); // helpPage compte à partir de 0
-    await canvas.screenshot({ path: `test-results/help-page-${pageNumber}.png` });
+  // Un titre propre à chaque page, dans l'ordre.
+  const pages = ["DÉPLACEMENT", "COLLISION", "RACCOURCIS CLAVIER", "AIDE — BONUS", "AIDE — ENNEMIS"];
+  for (const [index, heading] of pages.entries()) {
+    if (index > 0) await clickLogical(326, 210); // SUIV.
+    await expect.poll(() => screenText(page)).toContain(heading);
+    expect(await screenText(page)).toContain(`${index + 1}/${pages.length}`);
+    await canvas.screenshot({ path: `test-results/help-page-${index + 1}.png` });
   }
+  await clickLogical(326, 210); // SUIV. sur la dernière page : on y reste
+  await page.waitForTimeout(300); // rien ne doit se passer : pas d'état à attendre
+  expect((await gameState(page)).helpPage).toBe(pages.length - 1);
   await clickLogical(240, 232); // CONTINUER
   await waitForMode(page, "menu");
 
@@ -166,6 +172,36 @@ test("Tab n'atteint jamais le champ du pseudo ; Entrée sur un réglage n'agit p
   await page.waitForTimeout(300); // rien ne doit se passer : pas d'état à attendre
   expect((await gameState(page)).mode).toBe("menu");
   expect(posts).toEqual([]);
+});
+
+test("Entrée du pavé numérique : comme Entrée", async ({ page }) => {
+  await page.goto("/");
+  await skipHints(page);
+  await page.keyboard.press("NumpadEnter"); // JOUER est sélectionné
+  await waitForMode(page, "playing");
+});
+
+test("aide ouverte au clavier depuis le panneau : Entrée la referme", async ({ page }) => {
+  await page.goto("/");
+  await page.locator("#help-btn").focus();
+  await page.keyboard.press("Enter");
+  await waitForMode(page, "help");
+  await page.keyboard.press("Enter"); // CONTINUER
+  await waitForMode(page, "menu");
+});
+
+test("flèches sur un curseur de volume : elles règlent le volume, pas le menu", async ({ page }) => {
+  await page.goto("/");
+  await skipHints(page);
+  const volume = page.locator("#music-volume");
+  await volume.focus();
+  const before = Number(await volume.inputValue());
+  await page.keyboard.press("ArrowDown");
+  expect(Number(await volume.inputValue())).toBeLessThan(before);
+  // La sélection du menu n'a pas bougé : hors du curseur, Entrée lance JOUER.
+  await volume.blur();
+  await page.keyboard.press("Enter");
+  await waitForMode(page, "playing");
 });
 
 test("clic droit sur une option du menu : sans effet", async ({ page }) => {

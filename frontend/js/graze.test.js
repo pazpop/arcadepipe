@@ -30,7 +30,7 @@ test("dès la vague du 2e boss : deux charges NOVA max", () => {
 // Garde de updateGraze() pendant g.clearingScreen (niveau bonus, saut
 // spatial) : sans elle, ce scénario graze bien (voir le test de contrôle).
 function makeGrazeFixture() {
-  const g = { grazeChain: 0, maxGrazeChain: 0, score: 0, novaGrazes: 0, novaStock: 0, novaMax: 1, clearingScreen: false };
+  const g = { grazeChain: 0, maxGrazeChain: 0, waveScoringGrazes: 0, score: 0, novaGrazes: 0, novaStock: 0, novaMax: 1, clearingScreen: false };
   const player = { alive: true, invuln: 0, x: 0, y: 0 };
   // Même position que le joueur : chevauchement garanti quel que soit le rayon.
   const projectiles = { enemy: { items: [{ active: true, grazed: false, x: 0, y: 0 }], radius: 1 } };
@@ -100,4 +100,22 @@ test("frôler un vaisseau charge NOVA sans rapporter de points ; frôler un tir 
   const shot = makeGrazeFixture();
   updateGraze(shot.g, 0.016, shot.player, shot.projectiles, shot.enemies, shot.particles, shot.audio);
   assert.deepEqual([shot.g.score, shot.g.novaGrazes], [GRAZE.baseScore, 1]);
+});
+
+test("au-delà de GRAZE.scoringPerWave frôlements dans une vague, ils ne rapportent plus de points mais chargent encore NOVA", () => {
+  const { g, player, projectiles, enemies, particles, audio } = makeGrazeFixture();
+  g.novaMax = 99;
+  const grazeOnce = () => {
+    projectiles.enemy.items[0].grazed = false;
+    updateGraze(g, 0.016, player, projectiles, enemies, particles, audio);
+  };
+  for (let i = 0; i < GRAZE.scoringPerWave; i++) grazeOnce();
+  const scoreAtCap = g.score;
+  const novaAtCap = g.novaStock * GRAZE.grazePerCharge + g.novaGrazes;
+  assert.ok(scoreAtCap > 0);
+  grazeOnce();
+  grazeOnce();
+  assert.equal(g.score, scoreAtCap);
+  assert.equal(g.novaStock * GRAZE.grazePerCharge + g.novaGrazes, novaAtCap + 2);
+  assert.equal(g.grazeChain, GRAZE.scoringPerWave + 2);
 });

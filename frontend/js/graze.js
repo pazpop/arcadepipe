@@ -2,13 +2,13 @@
 // d'un vaisseau compte, pas seulement esquiver ce qu'il tire) : récompense
 // l'esquive serrée plutôt que large. Le boss fait exception — seuls ses tirs
 // grazent, jamais sa coque (voir updateGraze plus bas). Chaque frôlement
-// rapporte des points et charge la jauge NOVA.
+// allonge la chaîne et charge la jauge NOVA ; seuls les tirs frôlés rapportent
+// des points, et seulement les GRAZE.scoringPerWave premiers de chaque vague.
 import { GRAZE, NOVA, DIFFICULTY } from "./config.js";
 import { circlesOverlap } from "./collisions.js";
 import { spawnSpark } from "./particles.js";
 
-// Le multiplicateur s'arrête à GRAZE.maxChainMultiplier : sans plafond, une
-// très longue chaîne rapporterait plus que tout le reste de la partie.
+// Le multiplicateur s'arrête à GRAZE.maxChainMultiplier.
 export function grazeScoreForChain(chain) {
   return GRAZE.baseScore * Math.min(chain, GRAZE.maxChainMultiplier);
 }
@@ -29,13 +29,18 @@ export function addNovaGrazes(g, count) {
   g.novaGrazes = total % perCharge;
 }
 
-// scores : le frôlement rapporte des points (un tir) ou non (le corps d'un ennemi).
-function registerGraze(g, particles, audio, x, y, scores) {
+// isShot : c'est un tir qui est frôlé (il peut rapporter des points), pas le corps d'un ennemi.
+function registerGraze(g, particles, audio, x, y, isShot) {
   g.grazeChain += 1;
   // Sur toute la partie (pas remise à zéro par vague comme grazeChain) —
   // affichée en fin de run sur la carte de partage (voir shareCard.js).
   g.maxGrazeChain = Math.max(g.maxGrazeChain, g.grazeChain);
-  if (scores) g.score += grazeScoreForChain(g.grazeChain);
+  // Points : plafonnés par vague. Sans plafond, rester dans une vague (ou
+  // devant un boss) en frôlant ses tirs rapporterait plus que la jouer.
+  if (isShot && g.waveScoringGrazes < GRAZE.scoringPerWave) {
+    g.waveScoringGrazes += 1;
+    g.score += grazeScoreForChain(g.grazeChain);
+  }
   addNovaGrazes(g, 1);
   spawnSpark(particles, x, y, 2);
   // Le son monte avec la chaîne, jusqu'à un plafond : au-delà, il deviendrait insupportable.

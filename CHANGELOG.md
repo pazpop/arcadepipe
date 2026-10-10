@@ -1,6 +1,9 @@
 # Changelog
 
-Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : le résultat de `git rev-list --count HEAD`, plus un. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
+Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : `git fetch`, puis le résultat de `git rev-list --count origin/main`, plus le rang du commit parmi ceux qui ne sont pas encore poussés. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
+
+## [2.169] - 2026-10-09
+- Kit presse et descriptions itch.io et YouTube : phrases sur le frôlement et sur NOVA mises en accord avec les règles (plafond, boss épargné) ; français retouché.
 
 ## [2.167] - 2026-10-09
 - **Boss** : sa façon de tirer change aussi avec le temps (toutes les 30 secondes), plus seulement à chaque point faible détruit : l'esquiver sans l'attaquer n'est plus sans danger. Sa spirale ne repasse plus par les mêmes rayons.

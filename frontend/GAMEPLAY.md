@@ -19,7 +19,7 @@ Ce que fait le jeu, côté joueur. Les valeurs chiffrées vivent dans [`js/confi
 | Gunner (bleu) | 2 | un ennemi normal qui tire, plus lentement qu'une élite | vague 6 |
 
 - Ils apparaissent dans le tiers droit de l'écran, puis se déplacent librement.
-- À partir de la vague 2, six vagues sur dix environ voit passer une formation : trois ennemis normaux en flèche, qui entrent ensemble par la droite. Une par vague au plus.
+- À partir de la vague 2, six vagues ordinaires sur dix environ voient passer une formation (jamais une vague de boss) : trois ennemis normaux en flèche, qui entrent ensemble par la droite. Une par vague au plus.
 - Un ennemi ne tire que si le joueur est devant lui, et jamais depuis le tiers gauche de l'écran.
 - Un ennemi touché mais pas détruit passe à une version ternie de son sprite : il n'y a pas de jauge de PV.
 - Foncer dans un ennemi le détruit, sans rapporter de points, au prix d'un coup (un point de bouclier, ou une vie), sauf pendant l'invulnérabilité qui suit un coup.

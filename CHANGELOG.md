@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : le résultat de `git rev-list --count HEAD`, plus un. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.163] - 2026-10-09
+- Kit presse : captures d'écran refaites avec le jeu actuel (anneaux du niveau bonus aux nuances variées, éventail du premier boss).
+
 ## [2.162] - 2026-10-09
 - **Classement** : seuls les 40 premiers tirs frôlés de chaque vague rapportent des points (les suivants chargent encore NOVA) : rester devant un boss en frôlant ses tirs ne rapporte plus rien.
 - **Boss** : ses anneaux balaient l'écran au fil des salves, sans laisser de couloir sûr ; le premier boss retrouve des éventails plus légers (3 tirs, puis 5).

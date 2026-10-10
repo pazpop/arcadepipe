@@ -409,7 +409,8 @@ export function update(g, engine, dt) {
     g.spawnTimer -= dt;
     if (g.spawnTimer <= 0) {
       g.formationCountdown = spawnNext(enemies, g.wave, g.formationCountdown);
-      g.spawnTimer = Math.max(0.12, g.spawnInterval + (Math.random() - 0.5) * 0.15);
+      // += : le retard pris sur cette apparition est rattrapé (voir le tir du joueur, player.js).
+      g.spawnTimer += Math.max(0.12, g.spawnInterval + (Math.random() - 0.5) * 0.15);
     }
   }
 

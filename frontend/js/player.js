@@ -79,7 +79,9 @@ export function updatePlayer(player, input, projectiles, dt, onShotFired, canFir
       } else {
         firePlayerBullet(projectiles, player.x + 8, player.y, PLAYER.bulletSpeed, damage, color);
       }
-      player.fireTimer = PLAYER.fireCooldown * (buffDef ? buffDef.fireCooldownMul : 1);
+      // Le retard pris sur ce tir (au plus une image) est rattrapé sur le
+      // suivant : la cadence ne dépend pas de la fréquence de l'écran.
+      player.fireTimer = Math.max(player.fireTimer, -dt) + PLAYER.fireCooldown * (buffDef ? buffDef.fireCooldownMul : 1);
       onShotFired(player.buff ? player.buff.type : "normal");
     }
   }

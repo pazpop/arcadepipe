@@ -122,7 +122,8 @@ test("toutes les pages de l'aide et les crédits s'affichent", async ({ page }) 
   for (const [index, [heading, detail]] of pages.entries()) {
     if (index > 0) await clickLogical(326, 210); // SUIV.
     await expect.poll(() => screenText(page)).toContain(heading);
-    expect(await screenText(page)).toContain(detail);
+    // Sauts de ligne remplacés par des espaces : la coupure des lignes dépend de la police du système.
+    expect((await screenText(page)).replace(/\s+/g, " ")).toContain(detail);
     expect(await screenText(page)).toContain(`${index + 1}/${pages.length}`);
     await canvas.screenshot({ path: `test-results/help-page-${index + 1}.png` });
   }

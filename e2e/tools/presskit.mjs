@@ -1,6 +1,8 @@
 // Régénère les captures d'écran, la vidéo, la couverture et la bannière itch.io du kit presse (frontend/press/).
-// Le jeu est joué pour de vrai dans un navigateur ; seuls quelques réglages sont
-// forcés pour atteindre vite chaque situation (vagues courtes, bonus garanti).
+// Le jeu est joué pour de vrai dans un navigateur. La partie et la vidéo sont
+// jouées sans rien forcer ; pour les autres scènes, quelques réglages amènent
+// vite la situation (bonus garanti, vagues d'un seul ennemi avant le boss)
+// sans changer ce que l'image montre : vies, numéro de vague, règles.
 //
 // Usage, depuis e2e/ :  npm run presskit            (tout)
 //                        npm run presskit -- itch    (un seul groupe, voir `wants` plus bas)
@@ -15,6 +17,7 @@ const PORT = 5510;
 const SIZE = { width: 1280, height: 720 };
 
 const server = spawn("python", ["-m", "http.server", String(PORT), "--directory", FRONTEND], { stdio: "ignore" });
+process.on("exit", () => server.kill()); // une scène qui échoue ne laisse pas le port occupé
 await new Promise((resolve) => setTimeout(resolve, 1500));
 const browser = await chromium.launch();
 
@@ -56,6 +59,13 @@ async function play(page, seconds) {
 
 const shot = (page, name) => page.screenshot({ path: path.join(OUT, `${name}.png`) });
 
+// Capture d'une scène de jeu : refusée si le vaisseau est mort en route (relancer le script).
+async function shotPlaying(page, name) {
+  const mode = await page.evaluate(async () => (await import("/js/main.js")).game.mode);
+  if (mode !== "playing") throw new Error(`${name} : partie terminée avant la capture (${mode}), relancer`);
+  await shot(page, name);
+}
+
 // Sans argument, tout est refait. Avec un nom de groupe, seulement ce groupe :
 // "captures", "video" ou "itch" (images de la page itch.io, à partir des captures).
 const only = process.argv[2];
@@ -68,12 +78,11 @@ if (wants("captures")) {
   await context.close();
 }
 
-// 2. En partie, vers la vague 4 (vagues raccourcies pour y arriver vite)
+// 2. En partie, après vingt-quatre secondes de jeu
 if (wants("captures")) {
   const { context, page } = await openGame();
-  await setConfig(page, { DIFFICULTY: { baseWaveKills: 3, waveKillsStep: 1 }, PLAYER: { startingLives: 5 } });
   await play(page, 24);
-  await shot(page, "screenshot-gameplay");
+  await shotPlaying(page, "screenshot-gameplay");
   await context.close();
 }
 
@@ -82,7 +91,6 @@ if (wants("captures")) {
   const { context, page } = await openGame();
   await setConfig(page, {
     POWERUP: { dropChanceNormal: 1, fallSpeed: 60, typeWeights: { power: 0, rapid: 0, shotgun: 1, shield: 0 } },
-    PLAYER: { startingLives: 5 },
   });
   await page.mouse.click(...at(240, 150));
   await page.mouse.down();
@@ -98,7 +106,7 @@ if (wants("captures")) {
   }
   await page.mouse.move(...at(110, 135), { steps: 10 });
   await page.waitForTimeout(1500);
-  await shot(page, "screenshot-shotgun");
+  await shotPlaying(page, "screenshot-shotgun");
   await context.close();
 }
 
@@ -110,19 +118,19 @@ if (wants("captures")) {
   });
   await page.mouse.click(...at(240, 150));
   await page.mouse.move(...at(110, 135));
-  await page.waitForFunction(async () => (await import("/js/main.js")).game.inBonusLevel, null, { timeout: 30000 });
+  while (!(await page.evaluate(async () => (await import("/js/main.js")).game.inBonusLevel))) await page.waitForTimeout(200);
   await page.waitForTimeout(7500); // intro passée, plusieurs anneaux à l'écran
-  await shot(page, "screenshot-bonus-level");
+  await shotPlaying(page, "screenshot-bonus-level");
   await context.close();
 }
 
-// 5. Un combat de boss (dès la vague 2, après un seul ennemi)
+// 5. Un combat de boss, à la vague 5 (quatre vagues d'un seul ennemi avant lui)
 if (wants("captures")) {
   const { context, page } = await openGame();
-  await setConfig(page, { DIFFICULTY: { bossWaveEvery: 2, baseWaveKills: 1, waveKillsStep: 0 }, PLAYER: { startingLives: 5 } });
+  await setConfig(page, { DIFFICULTY: { baseWaveKills: 1, waveKillsStep: 0, waveBreakDuration: 0.6 } });
   await page.mouse.click(...at(240, 150));
   await page.mouse.down();
-  for (let i = 0; i < 100; i++) {
+  for (let i = 0; i < 200; i++) {
     const arrived = await page.evaluate(async () => (await import("/js/main.js")).game.bossState?.arrived);
     if (arrived) break;
     await page.mouse.move(...at(110, 135 + 85 * Math.sin(i / 3)), { steps: 5 });
@@ -131,7 +139,7 @@ if (wants("captures")) {
   await page.mouse.up(); // sans tirer : le boss garde tous ses points faibles
   await page.mouse.move(...at(110, 200), { steps: 10 });
   await page.waitForTimeout(3800); // quelques salves à l'écran
-  await shot(page, "screenshot-boss");
+  await shotPlaying(page, "screenshot-boss");
   await context.close();
 }
 
@@ -139,7 +147,6 @@ if (wants("captures")) {
 if (wants("video")) {
   const videoDir = path.join(OUT, "video-tmp");
   const { context, page } = await openGame({ recordVideo: { dir: videoDir, size: SIZE } });
-  await setConfig(page, { DIFFICULTY: { baseWaveKills: 4, waveKillsStep: 1 }, PLAYER: { startingLives: 5 } });
   await play(page, 20);
   await context.close(); // la vidéo est écrite à la fermeture
   const [file] = fs.readdirSync(videoDir);
@@ -150,14 +157,14 @@ if (wants("video")) {
 // 7. Couverture pour itch.io (630x500) : le titre du jeu sur la capture du boss
 if (wants("itch")) {
   const { context, page } = await openGame({ viewport: { width: 1200, height: 675 } });
-  const title = await page.screenshot({ clip: { x: 300, y: 96, width: 600, height: 170 } }); // titre et sous-titre
+  const title = await page.screenshot({ clip: { x: 300, y: 96, width: 600, height: 160 } }); // titre et sous-titre
   const dataUrl = (png) => `data:image/png;base64,${png.toString("base64")}`;
   const boss = fs.readFileSync(path.join(OUT, "screenshot-boss.png"));
   const fade = "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent), linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent)";
   await page.setViewportSize({ width: 630, height: 500 });
   await page.setContent(`<body style="margin:0;width:630px;height:500px;background:#05060f;overflow:hidden;position:relative;font-family:monospace">
     <img src="${dataUrl(boss)}" style="position:absolute;left:-250px;top:60px;height:520px;image-rendering:pixelated">
-    <div style="position:absolute;left:0;right:0;top:0;height:230px;background:linear-gradient(to bottom, rgba(5,6,15,.96) 55%, rgba(5,6,15,0))"></div>
+    <div style="position:absolute;left:0;right:0;top:0;height:230px;background:linear-gradient(to bottom, #05060f 55%, rgba(5,6,15,0))"></div>
     <img src="${dataUrl(title)}" style="position:absolute;left:15px;top:22px;width:600px;mix-blend-mode:screen;-webkit-mask-image:${fade};-webkit-mask-composite:source-in;mask-image:${fade};mask-composite:intersect">
     <div style="position:absolute;left:0;right:0;bottom:18px;text-align:center;color:#ffe66d;font-size:19px;text-shadow:0 0 10px #ffe66d, 0 0 3px #000">FREE RETRO SPACE SHOOTER</div>
   </body>`);
@@ -169,7 +176,7 @@ if (wants("itch")) {
 // 8. Bannière pour itch.io (960x220) : le titre seul, sur la capture de partie
 if (wants("itch")) {
   const { context, page } = await openGame({ viewport: { width: 1200, height: 675 } });
-  const title = await page.screenshot({ clip: { x: 300, y: 96, width: 600, height: 170 } }); // titre et sous-titre
+  const title = await page.screenshot({ clip: { x: 300, y: 96, width: 600, height: 160 } }); // titre et sous-titre
   const dataUrl = (png) => `data:image/png;base64,${png.toString("base64")}`;
   const gameplay = fs.readFileSync(path.join(OUT, "screenshot-gameplay.png"));
   const fade = "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent), linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent)";
@@ -188,7 +195,7 @@ if (wants("itch")) {
 // transparent, icône carrée
 if (wants("itch")) {
   const { context, page } = await openGame({ viewport: { width: 1200, height: 675 } });
-  const title = await page.screenshot({ clip: { x: 300, y: 96, width: 600, height: 170 } }); // titre et sous-titre
+  const title = await page.screenshot({ clip: { x: 300, y: 96, width: 600, height: 160 } }); // titre et sous-titre
   const dataUrl = (png) => `data:image/png;base64,${png.toString("base64")}`;
   const boss = fs.readFileSync(path.join(OUT, "screenshot-boss.png"));
   const fade = "linear-gradient(to right, transparent, #000 12%, #000 88%, transparent), linear-gradient(to bottom, transparent, #000 12%, #000 88%, transparent)";

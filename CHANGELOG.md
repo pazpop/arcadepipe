@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : `git fetch`, puis le résultat de `git rev-list --count origin/main`, plus le rang du commit parmi ceux qui ne sont pas encore poussés. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.170] - 2026-10-09
+- Kit presse : captures, vidéo et images itch.io refaites sans vies ni vagues forcées (trois vies, boss à la vague 5).
+
 ## [2.169] - 2026-10-09
 - Kit presse et descriptions itch.io et YouTube : phrases sur le frôlement et sur NOVA mises en accord avec les règles (plafond, boss épargné) ; français retouché.
 

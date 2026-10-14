@@ -1,6 +1,5 @@
 // Tests pour les traductions (i18n.js, i18n/*.js) : chaque langue doit avoir
 // exactement les clés et les {paramètres} du français, la langue de référence.
-// Lancer : node --test frontend/js/*.test.js (aucune dépendance npm requise).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 

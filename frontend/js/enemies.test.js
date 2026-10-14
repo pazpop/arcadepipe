@@ -1,5 +1,4 @@
 // Tests des ennemis (enemies.js) : tir jamais vers l'arrière, kamikaze, formation.
-// Lancer : node --test frontend/js/*.test.js (aucune dépendance npm requise).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 

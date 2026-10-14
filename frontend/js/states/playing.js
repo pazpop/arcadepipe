@@ -215,7 +215,7 @@ function resolveCollisions(g, engine) {
   // Ramassage des bonus
   for (const pu of powerups.items) {
     if (!pu.active) continue;
-    // +3 : marge généreuse, ramasser un bonus doit être plus tolérant qu'encaisser un tir.
+    // POWERUP.pickupMargin : ramasser un bonus doit être plus tolérant qu'encaisser un tir.
     if (circlesOverlap(pu.x, pu.y, POWERUP.radius, player.x, player.y, PLAYER.hitboxRadius + POWERUP.pickupMargin)) {
       pu.active = false;
       audio.playPowerup();

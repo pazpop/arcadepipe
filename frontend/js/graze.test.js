@@ -1,5 +1,4 @@
 // Tests pour graze.js : score d'une chaîne, charges NOVA, updateGraze.
-// Lancer : node --test frontend/js/*.test.js (aucune dépendance npm requise).
 import { test } from "node:test";
 import { startWave } from "./states/waves.js";
 import assert from "node:assert/strict";

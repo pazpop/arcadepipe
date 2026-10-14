@@ -152,7 +152,7 @@ jobs:
             ${{ env.REGISTRY }}/${{ env.IMAGE_FRONTEND }}:${{ github.sha }}
 
       # Le déploiement vit dans terraform-infra-pazpop-hetzner, notifié ici.
-      # Sautée sur un fork (secret absent).
+      # Sautée sur un fork : le `if` ne la lance que dans ce dépôt.
       - name: Notifier terraform-infra-pazpop-hetzner
         if: ${{ github.repository == 'pazpop/arcadepipe' }}
         uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4

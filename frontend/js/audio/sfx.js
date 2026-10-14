@@ -122,8 +122,8 @@ export class AudioEngine {
     g.connect(this.master);
   }
 
-  // Transition "saut spatial" : glissement montant sur 2s avec légère
-  // distorsion, synchronisé avec l'accélération visuelle (states/playing.js).
+  // Saut spatial entre deux vagues (startWaveBreak, states/waves.js) : glissement
+  // montant de 2 s avec légère distorsion, pendant l'accélération du décor.
   playWarpTransition() {
     if (this.ctx.state !== "running") return; // voir _tone
     const now = this.ctx.currentTime;

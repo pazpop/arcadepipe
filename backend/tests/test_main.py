@@ -12,25 +12,25 @@ from seed import SEED_SCORES
 
 
 def test_score_in_accepte_une_entree_valide():
-    score = ScoreIn(player_name="S2FIX", score=1500, wave=3)
-    assert score.player_name == "S2FIX"
+    score = ScoreIn(player_name="TEST", score=1500, wave=3)
+    assert score.player_name == "TEST"
     assert score.score == 1500
     assert score.wave == 3
 
 
 def test_score_in_wave_par_defaut_a_1():
-    score = ScoreIn(player_name="S2FIX", score=100)
+    score = ScoreIn(player_name="TEST", score=100)
     assert score.wave == 1
 
 
 def test_score_in_kills_par_defaut_a_0():
-    score = ScoreIn(player_name="S2FIX", score=100)
+    score = ScoreIn(player_name="TEST", score=100)
     assert score.kills == 0
 
 
 def test_score_in_rejette_un_nombre_de_kills_negatif():
     with pytest.raises(ValidationError):
-        ScoreIn(player_name="S2FIX", score=100, kills=-1)
+        ScoreIn(player_name="TEST", score=100, kills=-1)
 
 
 @pytest.mark.parametrize("nom", ["", "   ", "\t\n"])
@@ -46,8 +46,8 @@ def test_score_in_rejette_les_caracteres_que_le_jeu_ne_saisit_pas(nom):
 
 
 def test_score_in_nettoie_les_espaces_autour_du_nom():
-    score = ScoreIn(player_name="  S2FIX  ", score=100)
-    assert score.player_name == "S2FIX"
+    score = ScoreIn(player_name="  TEST  ", score=100)
+    assert score.player_name == "TEST"
 
 
 def test_score_in_rejette_un_nom_trop_long():
@@ -58,13 +58,13 @@ def test_score_in_rejette_un_nom_trop_long():
 @pytest.mark.parametrize("score_invalide", [-1, 1_000_000])
 def test_score_in_rejette_un_score_hors_bornes(score_invalide):
     with pytest.raises(ValidationError):
-        ScoreIn(player_name="S2FIX", score=score_invalide)
+        ScoreIn(player_name="TEST", score=score_invalide)
 
 
 @pytest.mark.parametrize("wave_invalide", [0, 10_000])
 def test_score_in_rejette_une_vague_hors_bornes(wave_invalide):
     with pytest.raises(ValidationError):
-        ScoreIn(player_name="S2FIX", score=100, wave=wave_invalide)
+        ScoreIn(player_name="TEST", score=100, wave=wave_invalide)
 
 
 def test_les_scores_de_depart_respectent_les_regles_de_l_api():

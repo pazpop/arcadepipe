@@ -1,5 +1,4 @@
 // Tests pour bonusLevelRewardFraction() (bonusLevel.js) — logique pure.
-// Lancer : node --test frontend/js/*.test.js (aucune dépendance npm requise).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 

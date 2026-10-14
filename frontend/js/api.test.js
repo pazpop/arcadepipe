@@ -1,5 +1,4 @@
 // Tests pour le cache des lectures de api.js (classement, compteur de parties).
-// Lancer : node --test frontend/js/*.test.js (aucune dépendance npm requise).
 import { test } from "node:test";
 import assert from "node:assert/strict";
 

@@ -77,8 +77,7 @@ export function pause(g) {
 }
 
 export function startRun(g, engine) {
-  const { music, player, projectiles, enemies, particles, powerups } = engine;
-  music.playRandom();
+  const { player, projectiles, enemies, particles, powerups } = engine;
   resetPlayer(player);
   for (const pool of [projectiles.player, projectiles.enemy, projectiles.pellet, enemies, particles, powerups]) {
     deactivateAll(pool);

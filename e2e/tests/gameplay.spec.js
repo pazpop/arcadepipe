@@ -45,6 +45,26 @@ test("playRandom ne rejoue jamais la même piste deux fois de suite", async ({ p
   for (let i = 1; i < picks.length; i++) expect(picks[i]).not.toBe(picks[i - 1]);
 });
 
+const trackIndex = (page) => page.evaluate(async () => (await import("/js/main.js")).music.trackIndex);
+
+test("musique : une nouvelle partie garde le morceau en cours", async ({ page }) => {
+  await page.goto("/");
+  await skipHints(page);
+  const { clickLogical, startRun } = canvasHelpers(page);
+  await clickLogical(240, 20); // premier geste, hors des options : la musique démarre
+  const before = await trackIndex(page);
+  await startRun();
+  expect(await trackIndex(page)).toBe(before);
+});
+
+test("musique : une visite ne recommence pas par le dernier morceau entendu", async ({ page }) => {
+  await page.goto("/");
+  await page.evaluate(() => localStorage.setItem("arcadepipe_track", "2"));
+  await page.reload();
+  await canvasHelpers(page).clickLogical(240, 20); // premier geste : la musique démarre
+  expect(await trackIndex(page)).not.toBe(2);
+});
+
 test("fin de vague : la vague 2 démarre après le saut spatial, sans erreur", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");

@@ -92,10 +92,12 @@ export class MusicPlayer {
     this._retryTimer = setTimeout(() => this._load(), delay);
   }
 
+  // Premier geste de la visite : un morceau tiré au hasard, jamais le dernier
+  // entendu à la visite précédente. Ensuite la musique continue d'une partie à l'autre.
   start() {
     if (this.started) return;
     this.started = true;
-    this._load();
+    this.playRandom();
   }
 
   next() {
@@ -110,7 +112,7 @@ export class MusicPlayer {
     if (this.started && !this.paused) this._load();
   }
 
-  // Tirée au début de chaque partie et en fin de piste — jamais deux fois la même d'affilée.
+  // Tirée au premier geste de la visite et en fin de piste — jamais deux fois la même d'affilée.
   playRandom() {
     let idx = this.trackIndex;
     while (AUDIO.tracks.length > 1 && idx === this.trackIndex) {

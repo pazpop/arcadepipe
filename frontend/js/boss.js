@@ -15,6 +15,10 @@ import { spawnExplosion, spawnFlashBurst } from "./particles.js";
 const RIGHT_ZONE_BOUND = (RES_W * 2) / 3;
 const BOSS_ZONE_MARGIN = 12;
 
+// Demi-côté du carré d'un point faible, en pixels : c'est aussi la distance à
+// laquelle un tir le touche (en plus du rayon du tir).
+const WEAK_POINT_SIZE = 4;
+
 // Couleur d'un point faible selon les dégâts déjà encaissés (fraction de
 // p.hp/p.maxHp restante) — dérivée directement des PV, pas d'état à part à
 // maintenir. Sain = même couleur pour tous (WEAK_POINT_COLORS[0]), puis
@@ -168,7 +172,7 @@ export function hitBossWeakPoint(boss, px, py, radius, particlePool, damage) {
     const wy = boss.y + p.oy;
     const dx = px - wx;
     const dy = py - wy;
-    if (dx * dx + dy * dy > (radius + 4) * (radius + 4)) continue;
+    if (dx * dx + dy * dy > (radius + WEAK_POINT_SIZE) ** 2) continue;
     p.hp -= damage;
     if (p.hp <= 0) {
       p.destroyed = true;
@@ -254,19 +258,19 @@ export function drawBoss(ctx, boss) {
     const wy = boss.y + p.oy;
     if (p.destroyed) {
       ctx.fillStyle = PALETTE.bossWeakOff;
-      ctx.fillRect(wx - 4, wy - 4, 8, 8);
+      ctx.fillRect(wx - WEAK_POINT_SIZE, wy - WEAK_POINT_SIZE, WEAK_POINT_SIZE * 2, WEAK_POINT_SIZE * 2);
       continue;
     }
     // Marqueur agrandi + contour sombre pour se détacher nettement de la coque, quelle que soit sa couleur.
     const blink = 0.5 + 0.5 * Math.sin(p.blink);
     ctx.globalAlpha = 0.35 + blink * 0.65;
     ctx.fillStyle = "#1a0a08";
-    ctx.fillRect(wx - 5, wy - 5, 10, 10);
+    ctx.fillRect(wx - WEAK_POINT_SIZE - 1, wy - WEAK_POINT_SIZE - 1, WEAK_POINT_SIZE * 2 + 2, WEAK_POINT_SIZE * 2 + 2);
     const color = weakPointColor(p);
     ctx.fillStyle = color;
     ctx.shadowColor = color;
     ctx.shadowBlur = 8;
-    ctx.fillRect(wx - 4, wy - 4, 8, 8);
+    ctx.fillRect(wx - WEAK_POINT_SIZE, wy - WEAK_POINT_SIZE, WEAK_POINT_SIZE * 2, WEAK_POINT_SIZE * 2);
     ctx.globalAlpha = 1;
     ctx.shadowBlur = 0;
   }

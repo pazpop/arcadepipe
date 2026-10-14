@@ -67,7 +67,7 @@ function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
   en.hp = hp;
   en.maxHp = hp;
   en.radius = stats.radius;
-  en.fireTimer = 0.6 + Math.random() * 0.8;
+  en.fireTimer = FIRST_SHOT_DELAY.min + Math.random() * FIRST_SHOT_DELAY.spread;
   en.elapsed = 0;
   en.gunner = gunner;
   en.leaving = false;
@@ -101,6 +101,9 @@ const KAMIKAZE_MAX_ACTIVE = 2;
 // pour éviter qu'ils apparaissent superposés (tous dans le même tiers d'écran).
 const SPAWN_MIN_GAP = 14;
 
+// Part des ennemis qui entrent par le haut ou le bas (dans le tiers droit) plutôt que par la droite.
+const EDGE_SPAWN_CHANCE = 0.28;
+
 function tooCloseToActive(pool, x, y, minGap) {
   const minGapSq = minGap * minGap;
   for (const en of pool.items) {
@@ -133,7 +136,7 @@ function spawnEnemy(pool, waveNumber) {
   const type = isElite ? "elite" : isKamikaze ? "kamikaze" : "normal";
   const isGunner = !isElite && !isKamikaze && waveNumber >= GUNNER_MIN_WAVE && Math.random() < GUNNER_CHANCE;
   const stats = TYPE_STATS[type];
-  const fromEdge = Math.random() < 0.28 ? (Math.random() < 0.5 ? "top" : "bottom") : "right";
+  const fromEdge = Math.random() < EDGE_SPAWN_CHANCE ? (Math.random() < 0.5 ? "top" : "bottom") : "right";
 
   let x, y, vx, vy;
   // Quelques tentatives pour une position libre — au-delà, on accepte le risque plutôt que de bloquer le spawn.
@@ -222,6 +225,13 @@ const KAMIKAZE_TURN_RATE = 2.6;
 const KAMIKAZE_CHASE_TIME = 8;
 
 const BULLET_SPEED = 70; // px/s en vague 1 ; accélère ensuite (bulletSpeedFactor)
+// Le gunner tire moins souvent et moins vite qu'une élite. Délais en secondes :
+// entre min et min + spread, tirés au hasard à chaque tir.
+const GUNNER_BULLET_SPEED_MUL = 0.75;
+const ELITE_FIRE_INTERVAL = { min: 1.4, spread: 0.8 };
+const GUNNER_FIRE_INTERVAL = { min: 2.2, spread: 1.2 };
+// Premier tir d'un ennemi qui tire, après son apparition.
+const FIRST_SHOT_DELAY = { min: 0.6, spread: 0.8 };
 
 export function updateEnemies(pool, dt, projectiles, target, wave, warp) {
   const bulletSpeed = BULLET_SPEED * bulletSpeedFactor(wave);
@@ -259,10 +269,11 @@ export function updateEnemies(pool, dt, projectiles, target, wave, warp) {
     if ((en.type === "elite" || en.gunner) && !en.leaving && en.x > FIRE_MIN_X && playerAhead) {
       en.fireTimer -= dt;
       if (en.fireTimer <= 0) {
-        const speed = en.gunner ? bulletSpeed * 0.75 : bulletSpeed;
+        const speed = en.gunner ? bulletSpeed * GUNNER_BULLET_SPEED_MUL : bulletSpeed;
         // Même couleur pour élite et gunner : même tir visé, même façon de l'esquiver.
         patternAimed(projectiles, en.x, en.y, target, speed);
-        en.fireTimer = en.gunner ? 2.2 + Math.random() * 1.2 : 1.4 + Math.random() * 0.8;
+        const interval = en.gunner ? GUNNER_FIRE_INTERVAL : ELITE_FIRE_INTERVAL;
+        en.fireTimer = interval.min + Math.random() * interval.spread;
       }
     }
   }

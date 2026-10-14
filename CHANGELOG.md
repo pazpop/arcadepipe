@@ -29,7 +29,6 @@ Changements notables (gameplay, visuel, audio, infra), plus récent en premier. 
 - « INTACT » ne reste plus figé sur GAME OVER ; l'Entrée du pavé numérique fonctionne ; l'aide ouverte au clavier se referme avec Entrée ; les flèches sur un curseur de volume ne déplacent plus la sélection du menu.
 - Changer de langue garde les autres paramètres de l'adresse.
 - API : un en-tête `X-Forwarded-For` vide ne désactive plus la limite d'envois.
-- Numéros corrigés dans ce fichier : 2.159 et 2.160 (notés 2.157 et 2.158), et l'entrée 2.156 séparée de la 2.154.
 
 ## [2.160] - 2026-10-09
 - Dépendances Python : `pydantic_core` n'est plus épinglé à part (pydantic impose déjà sa version exacte), ce qui faisait échouer les mises à jour proposées par Dependabot.
@@ -51,7 +50,6 @@ Changements notables (gameplay, visuel, audio, infra), plus récent en premier. 
 - La bannière d'une vague ne reste plus figée sous GAME OVER ; le panneau de réglages ne clignote plus au chargement ; « … » à côté de VALIDER pendant l'envoi du score.
 - Tests e2e : ils lisent maintenant les textes affichés par le jeu, et couvrent le record personnel, le classement injoignable ou lent, la chaîne cassée par un coup et la récompense du niveau bonus.
 - Python 3.12 au minimum pour le backend ; une seule proposition Dependabot pour toutes les dépendances Python.
-- Numéros corrigés dans ce fichier : 2.125 (noté 2.124) et 2.142 (noté 2.144) ; dates des 2.127, 2.128 et 2.131.
 
 ## [2.153] - 2026-10-09
 - Images de base téléchargées depuis le miroir de Docker Hub tenu par Google : une panne de Docker Hub ne bloque plus la construction.

@@ -7,7 +7,7 @@ from fastapi import FastAPI, Query, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field, StringConstraints
+from pydantic import BaseModel, Field, StringConstraints, model_validator
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.util import get_remote_address
@@ -74,6 +74,34 @@ class ScoreIn(BaseModel):
     score: int = Field(ge=0, le=999_999)
     wave: int = Field(default=1, ge=1, le=9_999)
     kills: int = Field(default=0, ge=0, le=999_999)
+
+    # Refuse une partie impossible : plus d'ennemis abattus que les vagues n'en
+    # contiennent, ou plus de points qu'ils n'en rapportent. Ne prouve pas qu'un
+    # score est vrai : un tricheur qui annonce une vague assez haute passe.
+    @model_validator(mode="after")
+    def partie_possible(self):
+        if self.kills > max_kills(self.wave) or self.score > max_score(self.wave, self.kills):
+            raise ValueError("partie impossible")
+        return self
+
+
+# Plafonds tirés des règles du jeu (frontend/js/config.js et enemies.js) : à
+# refaire si une règle du score change.
+# Par vague : l'objectif d'ennemis abattus (10, puis 3 de plus à chaque vague),
+# et jusqu'à 40 de plus d'un coup (NOVA sur un écran plein : POOL_SIZE).
+def max_kills(wave: int) -> int:
+    return sum(10 + 3 * (w - 1) + 40 for w in range(1, wave + 1))
+
+
+# 300 points au plus par ennemi (l'élite). Par vague, hors ennemis : le bonus
+# INTACT (500), 40 frôlements payés au multiplicateur maximal (40 x 15 x 20) et
+# un boss (6 points faibles x 300, plus 1 000 pour la victoire).
+MAX_POINTS_PER_KILL = 300
+MAX_OTHER_POINTS_PER_WAVE = 500 + 40 * 15 * 20 + 6 * 300 + 1_000
+
+
+def max_score(wave: int, kills: int) -> int:
+    return kills * MAX_POINTS_PER_KILL + wave * MAX_OTHER_POINTS_PER_WAVE
 
 
 class ScoreOut(BaseModel):

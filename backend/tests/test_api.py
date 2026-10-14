@@ -136,3 +136,9 @@ def test_cors_autorise_seulement_les_origines_declarees(client):
     assert autorisee.headers["access-control-allow-origin"] == "http://localhost:5500"
     inconnue = client.get("/api/scores", headers={"Origin": "https://exemple.test"})
     assert "access-control-allow-origin" not in inconnue.headers
+
+
+def test_partie_impossible_rejetee_sans_etre_enregistree(client):
+    r = client.post("/api/scores", json={"player_name": "TRICHE", "score": 999_999, "wave": 1, "kills": 0})
+    assert r.status_code == 422
+    assert client.get("/api/scores").json() == []

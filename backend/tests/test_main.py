@@ -96,3 +96,23 @@ def test_get_client_ip_en_tete_termine_par_une_virgule_utilise_l_ip_de_connexion
     requete = _requete_factice("1.2.3.4,")
     requete.client = Mock(host="198.51.100.9")
     assert get_client_ip(requete) == "198.51.100.9"
+
+
+# Plafond de vraisemblance : vague 1, au plus 50 ennemis abattus, et au plus
+# 300 points par ennemi plus 15 300 points d'autres sources (voir main.py).
+def test_score_in_refuse_plus_d_ennemis_que_la_vague_n_en_permet():
+    ScoreIn(player_name="TEST", score=100, wave=1, kills=50)
+    with pytest.raises(ValidationError):
+        ScoreIn(player_name="TEST", score=100, wave=1, kills=51)
+
+
+def test_score_in_refuse_un_score_au_dela_du_plafond_de_sa_partie():
+    plafond = 10 * 300 + 15_300
+    ScoreIn(player_name="TEST", score=plafond, wave=1, kills=10)
+    with pytest.raises(ValidationError):
+        ScoreIn(player_name="TEST", score=plafond + 1, wave=1, kills=10)
+
+
+def test_score_in_accepte_les_meilleures_parties_jouees_avant_la_sortie():
+    for score, wave, kills in [(432_125, 45, 2717), (89_420, 18, 525)]:
+        ScoreIn(player_name="TEST", score=score, wave=wave, kills=kills)

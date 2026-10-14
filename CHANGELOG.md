@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : `git fetch`, puis le résultat de `git rev-list --count origin/main`, plus le rang du commit parmi ceux qui ne sont pas encore poussés. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.182] - 2026-10-14
+- **Classement** : l'API refuse une partie impossible (plus d'ennemis abattus que ses vagues n'en contiennent, ou plus de points qu'ils n'en rapportent). Les vraies parties jouées jusqu'ici passent toutes.
+
 ## [2.181] - 2026-10-14
 - Contact : **contact@pazpop.net**, sur la page de confidentialité (retirer un score, sans compte GitHub) et dans le kit presse.
 

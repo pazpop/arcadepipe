@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : `git fetch`, puis le résultat de `git rev-list --count origin/main`, plus le rang du commit parmi ceux qui ne sont pas encore poussés. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.179] - 2026-10-14
+- Page de confidentialité : la langue n'apparaît dans l'adresse de la page (`?lang=`) qu'une fois choisie avec le bouton de langue.
+
 ## [2.176] - 2026-10-10
 - **Cinquième morceau** de [mall-e](https://mall-e.bandcamp.com/) dans la playlist (`fifth.mp3`).
 

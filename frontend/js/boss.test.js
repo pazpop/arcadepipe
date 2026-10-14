@@ -1,7 +1,8 @@
-// Boss : points faibles (invulnérabilité à l'entrée, victoire), cadence, éventail, anneaux.
+// Boss : points faibles (invulnérabilité à l'entrée, victoire), coque, cadence, éventail, anneaux.
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { bossFanCount, bossFireInterval, bossPhase, hitBossWeakPoint, nextRingAngle, nextSpiralAngle, updateBoss } from "./boss.js";
+import { bossFanCount, bossFireInterval, bossPhase, hitBossWeakPoint, hitsBossHull, nextRingAngle, nextSpiralAngle, updateBoss } from "./boss.js";
+import { BOSS_HULL_ROWS, BOSS_HULL_SCALE } from "./assets.js";
 import { BOSS } from "./config.js";
 import { createProjectiles } from "./projectiles.js";
 
@@ -98,5 +99,18 @@ test("spirale : en huit salves, ses tirs ne laissent aucun grand couloir intact"
     let widest = seen[0] + gap - seen[7]; // le couloir à cheval sur deux bras
     for (let i = 1; i < 8; i++) widest = Math.max(widest, seen[i] - seen[i - 1]);
     assert.ok(widest < gap * 0.2, `${arms} bras : couloir de ${(widest / gap).toFixed(2)} écart`);
+  }
+});
+
+test("coque du boss : elle touche jusqu'au bord du dessin, jamais au-delà", () => {
+  const boss = { x: 100, y: 100, sizeScale: 1 };
+  const left = boss.x - (BOSS_HULL_ROWS[0].length * BOSS_HULL_SCALE) / 2;
+  const top = boss.y - (BOSS_HULL_ROWS.length * BOSS_HULL_SCALE) / 2;
+  for (let col = 0; col < BOSS_HULL_ROWS[0].length; col++) {
+    const x = left + (col + 0.5) * BOSS_HULL_SCALE;
+    // Haut de la colonne dessinée (la coque est symétrique de haut en bas).
+    const edge = top + BOSS_HULL_ROWS.findIndex((row) => row[col] !== ".") * BOSS_HULL_SCALE;
+    assert.equal(hitsBossHull(boss, x, edge + 0.1, 0), true, `colonne ${col}, juste dedans`);
+    assert.equal(hitsBossHull(boss, x, edge - 0.1, 0), false, `colonne ${col}, juste dehors`);
   }
 });

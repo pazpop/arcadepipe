@@ -126,8 +126,10 @@ const ENEMY_KAMIKAZE_PALETTE = {
 
 // --- Coque du boss : coin triangulaire générique (large à l'arrière, effilé
 // à l'avant face au joueur) — trope SF générique, pas de détails copiés.
-// Superstructure (s) décalée pour casser la symétrie.
-const BOSS_HULL_ROWS = [
+// Superstructure (s) décalée pour casser la symétrie. Exportée : les collisions
+// de la coque (hitsBossHull, boss.js) suivent ce dessin.
+export const BOSS_HULL_SCALE = 2; // pixels du sprite par case de la grille
+export const BOSS_HULL_ROWS = [
   ".............................a",
   ".........................aaaaa",
   "....................aaaaaaaaaa",
@@ -180,7 +182,7 @@ export function buildSprites() {
     enemyEliteDamaged: pixelsToCanvas(ENEMY_ELITE_ROWS, fadedPalette(ENEMY_ELITE_PALETTE), 1),
     enemyKamikaze: pixelsToCanvas(ENEMY_KAMIKAZE_ROWS, ENEMY_KAMIKAZE_PALETTE, 1),
     enemyKamikazeDamaged: pixelsToCanvas(ENEMY_KAMIKAZE_ROWS, fadedPalette(ENEMY_KAMIKAZE_PALETTE), 1),
-    bossHull: pixelsToCanvas(BOSS_HULL_ROWS, BOSS_HULL_PALETTE, 2),
+    bossHull: pixelsToCanvas(BOSS_HULL_ROWS, BOSS_HULL_PALETTE, BOSS_HULL_SCALE),
   };
   return cache;
 }

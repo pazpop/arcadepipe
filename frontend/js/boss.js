@@ -5,7 +5,7 @@
 // Invulnérable pendant son entrée à l'écran.
 // Victoire quand tous les points faibles sont détruits.
 import { RES_W, RES_H, BOSS, DIFFICULTY, PALETTE, bulletSpeedFactor } from "./config.js";
-import { buildSprites } from "./assets.js";
+import { buildSprites, BOSS_HULL_ROWS, BOSS_HULL_SCALE } from "./assets.js";
 import { patternFan, patternSpiralStep, patternRing } from "./patterns.js";
 import { spawnExplosion, spawnFlashBurst } from "./particles.js";
 
@@ -183,28 +183,27 @@ export function hitBossWeakPoint(boss, px, py, radius, particlePool, damage) {
   return false;
 }
 
+// Forme de la coque, lue dans son dessin (BOSS_HULL_ROWS, assets.js) : elle le
+// suit s'il change. Demi-largeur, et demi-hauteur de chaque colonne, en pixels
+// du sprite. Un rectangle englobant toucherait le vide près du nez effilé.
+const HULL_HALF_WIDTH = (BOSS_HULL_ROWS[0].length * BOSS_HULL_SCALE) / 2;
+const HULL_COLUMN_HALF_HEIGHTS = [...BOSS_HULL_ROWS[0]].map((_, col) => {
+  const filled = BOSS_HULL_ROWS.map((row) => row[col] !== ".");
+  const middle = BOSS_HULL_ROWS.length / 2;
+  return Math.max(middle - filled.indexOf(true), filled.lastIndexOf(true) + 1 - middle) * BOSS_HULL_SCALE;
+});
+
 // Collision joueur <-> coque (distincte de hitBossWeakPoint : ne touche
 // jamais aux PV du boss, sert juste à savoir si le joueur encaisse un coup).
-//
-// Demi-hauteur de la coque à un offset horizontal dx (repère non mis à
-// l'échelle) — reproduit la progression de BOSS_HULL_ROWS dans assets.js
-// (étroit à l'avant, large à l'arrière) ; un rectangle englobant toucherait
-// le vide près du nez effilé.
-function hullHalfHeightAt(dx) {
-  const localX = 14.5 + dx / 2; // repère de la grille (0..29), avant mise à l'échelle x2
-  const t = Math.max(0, Math.min(1, localX / 29));
-  return 2 * (1 + t * 6.6); // demi-hauteur : 1 à la colonne 0, 7.6 à la colonne 29 (grille), ×2 pour l'échelle du sprite
-}
-
 export function hitsBossHull(boss, px, py, radius) {
-  const hull = buildSprites().bossHull;
   const scale = boss.sizeScale;
-  const halfW = (hull.width / 2) * scale;
+  const halfW = HULL_HALF_WIDTH * scale;
   const dx = px - boss.x;
   if (dx < -halfW - radius || dx > halfW + radius) return false;
-  const dy = py - boss.y;
-  // Ramené au repère non mis à l'échelle pour réutiliser hullHalfHeightAt, puis remultiplié par scale.
-  return Math.abs(dy) <= hullHalfHeightAt(dx / scale) * scale + radius;
+  // Colonne du dessin sous le point ; la première ou la dernière quand le rayon déborde.
+  const count = HULL_COLUMN_HALF_HEIGHTS.length;
+  const col = Math.min(count - 1, Math.max(0, Math.floor(((dx + halfW) / (2 * halfW)) * count)));
+  return Math.abs(py - boss.y) <= HULL_COLUMN_HALF_HEIGHTS[col] * scale + radius;
 }
 
 export function bossHealthFraction(boss) {

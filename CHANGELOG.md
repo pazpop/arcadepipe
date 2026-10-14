@@ -2,6 +2,9 @@
 
 Changements notables (gameplay, visuel, audio, infra), plus récent en premier. Le numéro de version est `2.<nombre de commits git>` : la CI le calcule et l'écrit dans le jeu en construisant l'image (`frontend/Dockerfile`). Une entrée porte donc le numéro du commit qui l'ajoute : `git fetch`, puis le résultat de `git rev-list --count origin/main`, plus le rang du commit parmi ceux qui ne sont pas encore poussés. Avant 2.43, ou pour le détail d'une entrée condensée : `git log`.
 
+## [2.187] - 2026-10-14
+- **Crédits** : merci à Alo et Bear Lover pour les tests de la bêta et leurs avis.
+
 ## [2.186] - 2026-10-14
 - **Fluidité dans Firefox** : le filtre rétro le faisait tomber à 18 images par seconde en 1920 × 1080. Il est posé sans mode de fusion, pour la même image, et le jeu tourne à 60 images par seconde.
 

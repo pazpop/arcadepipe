@@ -335,6 +335,7 @@ export const CREDITS_LINES = [
   "",
   t("credits.thanks"),
   t("credits.thanks.music"),
+  ...t("credits.thanks.beta").split("\n"),
   ...t("credits.thanks.ai").split("\n"),
   "",
   t("credits.tech"),

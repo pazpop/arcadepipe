@@ -141,6 +141,17 @@ test("toutes les pages de l'aide et les crédits s'affichent", async ({ page }) 
   await waitForMode(page, "menu");
 });
 
+test("crédits : les testeurs de la bêta sont remerciés", async ({ page }) => {
+  await page.goto("/");
+  const { clickLogical, moveLogical } = canvasHelpers(page);
+  await clickLogical(240, 151.2 + 3 * 22); // CRÉDITS
+  await waitForMode(page, "credits");
+  await moveLogical(240, 135);
+  await page.mouse.down(); // clic maintenu : le générique défile plus vite
+  await expect.poll(async () => (await screenText(page)).replace(/\s+/g, " "), { timeout: 15000 }).toContain("ALO ET BEAR LOVER");
+  await page.mouse.up();
+});
+
 test("le bouton Aide du panneau (bas gauche) ouvre l'aide directement, au menu et en jeu", async ({ page }) => {
   const errors = collectErrors(page);
   await page.goto("/");

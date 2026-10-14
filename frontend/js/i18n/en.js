@@ -138,6 +138,7 @@ export default {
   "credits.music": "MUSIC",
   "credits.thanks": "SPECIAL THANKS",
   "credits.thanks.music": "MALL-E, FOR THE MUSIC",
+  "credits.thanks.beta": "ALO AND BEAR LOVER, FOR BETA TESTING\nAND THE FEEDBACK THAT IMPROVED THE GAME",
   "credits.thanks.ai": "CLAUDE (ANTHROPIC) AND LUMO (PROTON),\nFOR DEVELOPMENT ASSISTANCE",
   "credits.tech": "TECHNOLOGIES",
   "credits.qr": "QR CODE: KAZUHIKO ARASE",

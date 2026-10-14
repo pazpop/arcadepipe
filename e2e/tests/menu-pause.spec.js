@@ -307,3 +307,11 @@ test("case Filtre rétro : coupe le filtre, et le choix tient au rechargement", 
   await expect(page.locator("#crt-toggle")).not.toBeChecked();
   await expect(page.locator("#crt-overlay")).toBeHidden();
 });
+
+// Un mode de fusion sur ce calque fait tomber Firefox à 18 images par seconde en
+// 1920x1080 (60 sans). Ses couleurs sont du noir translucide : sans fusion, l'image
+// est la même, à un arrondi près.
+test("filtre rétro : posé sans mode de fusion", async ({ page }) => {
+  await page.goto("/");
+  await expect(page.locator("#crt-overlay")).toHaveCSS("mix-blend-mode", "normal");
+});

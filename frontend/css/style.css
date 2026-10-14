@@ -29,7 +29,9 @@ html, body {
 }
 
 /* Filtre rétro : lignes de balayage et légère vignette posées par-dessus le
-   canvas, désactivables par la case du panneau. */
+   canvas, désactivables par la case du panneau. Noir translucide, sans mode de
+   fusion (mix-blend-mode) : même image, et Firefox en perdait les deux tiers de
+   ses images par seconde. */
 #crt-overlay {
   position: absolute;
   inset: 0;
@@ -43,7 +45,6 @@ html, body {
       rgba(0, 0, 0, 0) 3px
     ),
     radial-gradient(ellipse at center, rgba(0, 0, 0, 0) 60%, rgba(0, 0, 0, 0.45) 100%);
-  mix-blend-mode: multiply;
 }
 
 /* Champ hors de l'écran qui reçoit la frappe du pseudo (et ouvre le clavier

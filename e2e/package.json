@@ -11,7 +11,7 @@
     "smoke": "node tools/smoke.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "^1.55.0",
+    "@playwright/test": "^1.64.0",
     "jsqr": "^1.4.0"
   }
 }

@@ -1,0 +1,146 @@
+// English — same keys as fr.js (the reference file), checked by i18n.test.js.
+// {name} is replaced by a value at display time: keep it as is.
+export default {
+  // Flags of the button that offers this language: one name per flag, drawn
+  // by the .flag-<name> class in css/style.css.
+  "lang.flags": "us gb",
+
+  // --- Settings panel (HTML, bottom left) ---
+  "panel.pause.title": "Pause",
+  "panel.music": "MUSIC (by mall-e)",
+  "panel.music.stop": "Stop / play",
+  "panel.music.next": "Next track",
+  "panel.music.volume": "Music volume",
+  "panel.sfx": "SOUND EFFECTS",
+  "panel.sfx.volume": "Sound effects volume",
+  "panel.speed": "GAME SPEED",
+  "panel.speed.title": "Game speed (does not affect music or sound effects)",
+  "panel.autofire": "Auto-fire",
+  "panel.crt": "Retro filter",
+  "panel.help": "Help",
+  "panel.fullscreen": "Fullscreen",
+  "panel.fullscreen.exit": "Exit fullscreen",
+  "panel.lang.title": "Change language",
+  "panel.privacy": "Privacy",
+  "panel.toggle.title": "Settings",
+  "nova.title": "Trigger NOVA (Space)",
+  "share.button": "📤 Share",
+  "share.title": "Generate an image to share",
+  "share.done": "✅ Image downloaded",
+
+  // --- Main menu ---
+  "menu.lore": "The galaxy is falling to enemy fleets —\nalone at the controls of the last free fighter,\nyou are its only hope.",
+  "menu.play": "PLAY",
+  "menu.leaderboard": "LEADERBOARD",
+  "menu.help": "HELP",
+  "menu.credits": "CREDITS",
+  "menu.record": "BEST {score}",
+
+  // --- In-game HUD ---
+  "hud.score": "SCORE {score}",
+  "hud.wave": "WAVE {wave}",
+  "hud.bonusLevel": "BONUS LEVEL — RINGS {passed}/{total}",
+  "hud.intact": "NO DAMAGE +{bonus}",
+  "hud.controlHint": "HOLD TO FIRE",
+  "bonus.intro.title": "BONUS LEVEL!",
+  "bonus.intro.line": "Fly through the rings to charge your NOVA gauge!",
+
+  // --- Banners ---
+  "banner.bossWave": "WAVE {wave} — MASSIVE WEAPON INCOMING",
+  "banner.waveDone": "WAVE {wave} CLEARED",
+  "banner.waveDoneIntact": "WAVE {wave} CLEARED — NO DAMAGE! +{bonus}",
+  "banner.bonusDone": "BONUS LEVEL COMPLETE: {passed}/{total} RINGS — NOVA +{percent}%",
+  "banner.nova": "NOVA!",
+
+  // --- Power-ups ---
+  "powerup.power": "POWER",
+  "powerup.power.effect": "more damage, slower fire rate",
+  "powerup.rapid": "RAPID FIRE",
+  "powerup.rapid.effect": "very fast fire rate, less damage",
+  "powerup.shotgun": "SHOTGUN",
+  "powerup.shotgun.effect": "cone of pellets, damage falls off with distance",
+  "powerup.shield": "SHIELD",
+  "powerup.shield.effect": "absorbs incoming hits",
+
+  // --- Pause ---
+  "pause.title": "PAUSED",
+  "pause.resume": "RESUME",
+  "pause.menu": "MAIN MENU",
+  "quit.title": "QUIT THIS RUN?",
+  "quit.warning": "YOUR CURRENT PROGRESS WILL BE LOST.",
+  "quit.yes": "YES, QUIT",
+  "quit.no": "NO, KEEP PLAYING",
+
+  // --- Help ---
+  "help.title": "HELP",
+  "help.title.bonus": "HELP — POWER-UPS",
+  "help.title.enemies": "HELP — ENEMIES",
+  "help.move": "MOVEMENT",
+  "help.move.detail": "Mouse or finger: steer the ship",
+  "help.fire": "FIRE",
+  "help.fire.detail": 'Automatic. Uncheck "Auto-fire" in the settings panel (⚙ button, bottom left) to fire only while you hold the mouse button or keep a finger down',
+  "help.nova": "NOVA",
+  "help.nova.detail":
+    "Graze (without touching) an enemy shot or an enemy ship — not the boss's hull — to charge the NOVA gauge at the top left: take risks! Once full, SPACE (or the touch button at the bottom right) destroys every enemy on screen and their shots, never the boss. Up to 2 charges in reserve from the 2nd boss fight on (only 1 before that). Use them whenever you like.",
+  "help.boss": "BOSS",
+  "help.boss.detail": "Aim for the YELLOW weak points, avoid its hull — defeating it grants +1 life. Its BLUE shots are aimed at you, in a fan; the WHITE ones come in spirals or rings",
+  "help.ram": "COLLISION",
+  "help.ram.detail": "Ramming an enemy destroys it but costs you a hit: one shield point, or a life. Grazing an enemy charges NOVA; only grazed shots score points",
+  "help.music": "MUSIC",
+  "help.music.detail": "Shuffled playlist, adjustable in the settings panel (⚙ button, bottom left)",
+  "help.keys": "KEYBOARD SHORTCUTS",
+  "help.keys.detail": "Esc/P: pause · Space: NOVA · M: mute",
+  "help.prev": "◀ PREV",
+  "help.next": "NEXT ▶",
+  "help.continue": "▶ CONTINUE",
+  "enemy.normal": "EASY — 1 HP, no shots, straight line",
+  "enemy.gunner": "MEDIUM — 2 HP, aimed shots (wave 6+)",
+  "enemy.elite": "ELITE — 3 HP, aimed shots, weaves (wave 3+)",
+  "enemy.kamikaze": "KAMIKAZE — 1 HP, charges at you (wave 4+)",
+
+  // --- End of run ---
+  "gameover.title": "GAME OVER",
+  "gameover.stats": "SCORE {score}  ·  WAVE {wave}  ·  KILLS {kills}",
+  "gameover.distance": "{distance} LIGHT-YEARS TRAVELED",
+  "gameover.replay": "PLAY AGAIN",
+  "gameover.enterName": "ENTER YOUR NAME",
+  "gameover.top": "YOU MADE THE TOP {size}!",
+  "gameover.newRecord": "NEW PERSONAL BEST!",
+  "gameover.offline": "LEADERBOARD UNREACHABLE",
+  "name.title": "YOU MADE THE LEADERBOARD!",
+  "name.prompt": "ENTER YOUR NAME (8 CHARS MAX)",
+  "name.validate": "▶ CONFIRM",
+
+  // --- Leaderboard ---
+  "board.games": "GAMES PLAYED: {count}",
+  "board.rank": "RANK",
+  "board.name": "NAME",
+  "board.score": "SCORE",
+  "board.wave": "WAVE",
+  "board.kills": "KILLS",
+  "board.empty": "No scores yet.",
+  "board.loading": "Loading…",
+  "board.error": "Leaderboard unavailable right now.",
+  "board.back": "ESC / TAP — BACK",
+  "score.notSent": "SCORE NOT SENT",
+
+  // --- Credits ---
+  "credits.by": "A GAME BY PAZPOP",
+  "credits.source": "SOURCE CODE",
+  "credits.music": "MUSIC",
+  "credits.thanks": "SPECIAL THANKS",
+  "credits.thanks.music": "MALL-E, FOR THE MUSIC",
+  "credits.thanks.beta": "ALO AND BEAR LOVER, FOR BETA TESTING\nAND THE FEEDBACK THAT IMPROVED THE GAME",
+  "credits.thanks.ai": "CLAUDE (ANTHROPIC) AND LUMO (PROTON),\nFOR DEVELOPMENT ASSISTANCE",
+  "credits.tech": "TECHNOLOGIES",
+  "credits.qr": "QR CODE: KAZUHIKO ARASE",
+  "credits.end": "THANKS FOR PLAYING!",
+
+  // --- Share card (image) ---
+  "card.score": "SCORE",
+  "card.wave": "WAVE REACHED",
+  "card.kills": "ENEMIES DESTROYED",
+  "card.graze": "BEST GRAZE\nCHAIN",
+  "card.distance": "LIGHT-YEARS\nTRAVELED",
+  "card.challenge": "Can you beat this score?",
+};

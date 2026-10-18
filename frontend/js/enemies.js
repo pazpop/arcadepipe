@@ -1,0 +1,334 @@
+// Vagues d'ennemis : types, comportements, tirs. Un pool fixe (comme les
+// projectiles/particules) plutôt qu'un tableau qu'on repousse chaque frame.
+import { RES_W, RES_H, PALETTE, bulletSpeedFactor } from "./config.js";
+import { acquireSlot } from "./pool.js";
+import { buildSprites, drawWithGlow } from "./assets.js";
+import { patternAimed } from "./patterns.js";
+import { spawnExplosion, spawnSpark, spawnFlashBurst } from "./particles.js";
+
+const POOL_SIZE = 40;
+
+// Ennemis n'APPARAISSENT que dans le tiers droit (spawnEnemy) — plus
+// lisible sur mobile. Une fois en vol, trajectoire libre sur tout l'écran,
+// disparaît en sortant (jamais de rebond).
+const LEFT_BOUND = (RES_W * 2) / 3;
+
+// Zone de tir : distinct de LEFT_BOUND (qui ne confine que l'APPARITION au
+// tiers droit) — ici on autorise le tir tant que l'ennemi n'a pas dérivé
+// dans le tiers gauche, pour garder le joueur focalisé sur les 2/3 droits
+// de l'écran (le tiers gauche reste traversable, juste silencieux).
+const FIRE_MIN_X = RES_W / 3;
+
+const TYPE_STATS = {
+  normal: { hp: 1, radius: 4.5, points: 100, speed: 55 },
+  elite: { hp: 3, radius: 5, points: 300, speed: 45 }, // tire (tir visé périodique)
+  // Ne tire pas : sa menace, c'est sa trajectoire (voir la poursuite dans
+  // updateEnemies). 1 PV : facile à abattre si on réagit vite.
+  kamikaze: { hp: 1, radius: 4, points: 150, speed: 70 },
+};
+
+export function createEnemyPool() {
+  return {
+    items: Array.from({ length: POOL_SIZE }, () => ({
+      active: false,
+      type: "normal",
+      x: 0,
+      y: 0,
+      vx: 0,
+      vy: 0,
+      wobbleSeed: 0,
+      hp: 1,
+      maxHp: 1,
+      radius: 4,
+      fireTimer: 0,
+      elapsed: 0,
+      gunner: false,
+      leaving: false, // fin de vague : défile vers la gauche au lieu de disparaître (voir setEnemiesLeaving)
+      grazeCooldown: 0, // délai avant de pouvoir regrazer au corps (voir graze.js)
+    })),
+  };
+}
+
+function spawnOne(pool, type, x, y, vx, vy, gunner = false) {
+  const stats = TYPE_STATS[type];
+  // Le gunner reste de type "normal" (même silhouette, juste la palette qui
+  // change — voir ENEMY_GUNNER_PALETTE dans assets.js) mais encaisse un peu
+  // plus pour justifier qu'il tire (voir GUNNER_HP_BONUS plus bas).
+  const hp = gunner ? stats.hp + GUNNER_HP_BONUS : stats.hp;
+  const en = acquireSlot(pool);
+  if (!en) return;
+  en.active = true;
+  en.type = type;
+  en.x = x;
+  en.y = y;
+  en.vx = vx;
+  en.vy = vy;
+  en.wobbleSeed = Math.random() * Math.PI * 2;
+  en.hp = hp;
+  en.maxHp = hp;
+  en.radius = stats.radius;
+  en.fireTimer = FIRST_SHOT_DELAY.min + Math.random() * FIRST_SHOT_DELAY.spread;
+  en.elapsed = 0;
+  en.gunner = gunner;
+  en.leaving = false;
+  en.grazeCooldown = 0;
+}
+
+// Dès la vague 6 (la 5 est un boss), une partie des ennemis normaux devient
+// "gunner" et tire aussi (plus lent/moins fréquent qu'une élite).
+const GUNNER_MIN_WAVE = 6;
+const GUNNER_CHANCE = 0.22;
+// +1 PV par rapport à un normal (1 -> 2) — encaisse un coup de plus pour
+// justifier qu'il tire, sans être aussi résistant qu'une élite (3 PV).
+const GUNNER_HP_BONUS = 1;
+
+// Probabilité qu'un ennemi soit une élite, à partir de ELITE_MIN_WAVE : monte
+// avec la vague, plafonnée à 25 % pour ne pas dominer le flux d'ennemis normaux.
+const ELITE_MIN_WAVE = 3;
+function eliteChance(wave) {
+  return Math.min(0.25, 0.06 + wave * 0.015);
+}
+
+// Dès la vague 4, une petite chance de tomber sur un kamikaze plutôt qu'un
+// ennemi normal — exclusif avec élite/gunner (voir spawnEnemy).
+const KAMIKAZE_MIN_WAVE = 4;
+const KAMIKAZE_CHANCE = 0.12;
+// Plafond de kamikazes actifs simultanément : ils poursuivent le joueur, trop
+// nombreux à la fois ils deviennent inesquivables dans une vague chargée.
+const KAMIKAZE_MAX_ACTIVE = 2;
+
+// Pas de vraie physique de collision — juste un espacement à la génération
+// pour éviter qu'ils apparaissent superposés (tous dans le même tiers d'écran).
+const SPAWN_MIN_GAP = 14;
+
+// Part des ennemis qui entrent par le haut ou le bas (dans le tiers droit) plutôt que par la droite.
+const EDGE_SPAWN_CHANCE = 0.28;
+
+function tooCloseToActive(pool, x, y, minGap) {
+  const minGapSq = minGap * minGap;
+  for (const en of pool.items) {
+    if (!en.active) continue;
+    const dx = en.x - x;
+    const dy = en.y - y;
+    if (dx * dx + dy * dy < minGapSq) return true;
+  }
+  return false;
+}
+
+function countActiveKamikaze(pool) {
+  let count = 0;
+  for (const en of pool.items) {
+    if (en.active && en.type === "kamikaze" && !en.leaving) count++;
+  }
+  return count;
+}
+
+// Fait apparaître un ennemi, dont le type dépend de la vague. Entrée par la
+// droite, ou par le haut/bas (dans le tiers droit de l'écran) pour varier les
+// angles d'approche.
+function spawnEnemy(pool, waveNumber) {
+  const isElite = waveNumber >= ELITE_MIN_WAVE && Math.random() < eliteChance(waveNumber);
+  const isKamikaze =
+    !isElite &&
+    waveNumber >= KAMIKAZE_MIN_WAVE &&
+    Math.random() < KAMIKAZE_CHANCE &&
+    countActiveKamikaze(pool) < KAMIKAZE_MAX_ACTIVE;
+  const type = isElite ? "elite" : isKamikaze ? "kamikaze" : "normal";
+  const isGunner = !isElite && !isKamikaze && waveNumber >= GUNNER_MIN_WAVE && Math.random() < GUNNER_CHANCE;
+  const stats = TYPE_STATS[type];
+  const fromEdge = Math.random() < EDGE_SPAWN_CHANCE ? (Math.random() < 0.5 ? "top" : "bottom") : "right";
+
+  let x, y, vx, vy;
+  // Quelques tentatives pour une position libre — au-delà, on accepte le risque plutôt que de bloquer le spawn.
+  for (let attempt = 0; attempt < 4; attempt++) {
+    if (fromEdge === "right") {
+      x = RES_W + 10;
+      y = 20 + Math.random() * (RES_H - 40);
+      vx = -stats.speed;
+      vy = (Math.random() - 0.5) * 20;
+    } else {
+      x = LEFT_BOUND + Math.random() * (RES_W / 3 - 10);
+      y = fromEdge === "top" ? -10 : RES_H + 10;
+      vx = -stats.speed * 0.8;
+      vy = (fromEdge === "top" ? 1 : -1) * (stats.speed * 0.6);
+    }
+    if (!tooCloseToActive(pool, x, y, SPAWN_MIN_GAP)) break;
+  }
+  spawnOne(pool, type, x, y, vx, vy, isGunner);
+}
+
+// Formation : trois ennemis normaux en pointe de flèche, qui entrent ensemble
+// par la droite. Une par vague au plus, à partir de FORMATION_MIN_WAVE, et pas
+// à chaque vague (FORMATION_CHANCE).
+const FORMATION_MIN_WAVE = 2;
+const FORMATION_CHANCE = 0.6;
+const FORMATION_SPACING = 14; // écart entre le meneur et ses deux ailiers, en x et en y
+
+// Nombre d'apparitions ordinaires avant la formation de cette vague (tiré au
+// hasard, pour qu'elle ne tombe pas toujours au même moment) ; -1 : pas de
+// formation dans cette vague.
+export function formationCountdownForWave(wave) {
+  if (wave < FORMATION_MIN_WAVE || Math.random() >= FORMATION_CHANCE) return -1;
+  return 2 + Math.floor(Math.random() * 5);
+}
+
+export function spawnFormation(pool) {
+  const speed = TYPE_STATS.normal.speed;
+  const x = RES_W + 4;
+  // Positions du meneur puis des deux ailiers, pour une hauteur y donnée.
+  const places = (y) => [
+    [x, y],
+    [x + FORMATION_SPACING, y - FORMATION_SPACING],
+    [x + FORMATION_SPACING, y + FORMATION_SPACING],
+  ];
+  // Quelques tirages pour une hauteur libre, comme spawnEnemy.
+  let trio;
+  for (let attempt = 0; attempt < 10; attempt++) {
+    trio = places(40 + Math.random() * (RES_H - 80));
+    if (!trio.some(([px, py]) => tooCloseToActive(pool, px, py, SPAWN_MIN_GAP))) break;
+  }
+  for (const [px, py] of trio) spawnOne(pool, "normal", px, py, -speed, 0);
+}
+
+// Apparition suivante d'une vague : la formation quand son tour est venu
+// (compte à rebours à 0), sinon un ennemi seul. Renvoie le compte à rebours
+// suivant ; une fois négatif, plus de formation dans cette vague.
+export function spawnNext(pool, wave, formationCountdown) {
+  if (formationCountdown === 0) spawnFormation(pool);
+  else spawnEnemy(pool, wave);
+  return formationCountdown - 1;
+}
+
+// Vitesse de base des ennemis en fuite (avant le warp, x10 max — voir
+// updateWaveTransition dans states/waves.js) : assez rapide pour quitter l'écran bien
+// avant la fin du saut spatial.
+const LEAVE_SPEED = 90;
+
+// Fin de vague : les ennemis actifs défilent vers la gauche comme le fond,
+// plutôt que de disparaître d'un coup.
+export function setEnemiesLeaving(pool) {
+  for (const en of pool.items) {
+    if (!en.active) continue;
+    en.leaving = true;
+    en.vx = -LEAVE_SPEED;
+    en.vy = 0;
+  }
+}
+
+// Poursuite du kamikaze : re-vise le joueur en continu, mais la rotation est
+// plafonnée (rad/s) plutôt qu'un demi-tour instantané — assez insistant pour
+// être une vraie menace, assez lent pour rester esquivable en bougeant.
+const KAMIKAZE_TURN_RATE = 2.6;
+// Durée de la poursuite, en secondes : ensuite il file tout droit et quitte
+// l'écran. Sans limite, il tournerait sans fin autour d'un joueur immobile,
+// trop près pour être atteint par un virage aussi large.
+const KAMIKAZE_CHASE_TIME = 8;
+
+const BULLET_SPEED = 70; // px/s en vague 1 ; accélère ensuite (bulletSpeedFactor)
+// Le gunner tire moins souvent et moins vite qu'une élite. Délais en secondes :
+// entre min et min + spread, tirés au hasard à chaque tir.
+const GUNNER_BULLET_SPEED_MUL = 0.75;
+const ELITE_FIRE_INTERVAL = { min: 1.4, spread: 0.8 };
+const GUNNER_FIRE_INTERVAL = { min: 2.2, spread: 1.2 };
+// Premier tir d'un ennemi qui tire, après son apparition.
+const FIRST_SHOT_DELAY = { min: 0.6, spread: 0.8 };
+
+export function updateEnemies(pool, dt, projectiles, target, wave, warp) {
+  const bulletSpeed = BULLET_SPEED * bulletSpeedFactor(wave);
+  for (const en of pool.items) {
+    if (!en.active) continue;
+    en.elapsed += dt;
+    // Re-vise le joueur avant de bouger, pour que ce soit bien vx/vy déjà à
+    // jour qui déterminent le déplacement de cette frame ci-dessous.
+    if (en.type === "kamikaze" && !en.leaving && en.elapsed < KAMIKAZE_CHASE_TIME) {
+      const speed = Math.hypot(en.vx, en.vy);
+      const current = Math.atan2(en.vy, en.vx);
+      const desired = Math.atan2(target.y - en.y, target.x - en.x);
+      const diff = Math.atan2(Math.sin(desired - current), Math.cos(desired - current));
+      const turn = Math.max(-KAMIKAZE_TURN_RATE * dt, Math.min(KAMIKAZE_TURN_RATE * dt, diff));
+      const angle = current + turn;
+      en.vx = Math.cos(angle) * speed;
+      en.vy = Math.sin(angle) * speed;
+    }
+    // En fuite : suit le rythme du fond étoilé (warp), sinon vitesse normale.
+    en.x += en.vx * dt * (en.leaving ? warp : 1);
+    en.y += en.vy * dt;
+    // Ondulation latérale pour l'élite (trajectoire moins prévisible), coupée en fuite.
+    if (en.type === "elite" && !en.leaving) {
+      en.y += Math.sin(en.elapsed * 3 + en.wobbleSeed) * 14 * dt;
+    }
+    // Sortie d'écran (tout bord) : disparaît, jamais de rebond.
+    if (en.x < -20 || en.x > RES_W + 20 || en.y < -30 || en.y > RES_H + 30) {
+      en.active = false;
+      continue;
+    }
+    // En fuite : ne tire plus. Dans le tiers gauche non plus (FIRE_MIN_X) : le
+    // joueur doit pouvoir rester concentré sur les 2/3 droits. Jamais vers
+    // l'arrière : le joueur doit être devant l'ennemi (du côté où il vole).
+    const playerAhead = (target.x - en.x) * en.vx + (target.y - en.y) * en.vy > 0;
+    if ((en.type === "elite" || en.gunner) && !en.leaving && en.x > FIRE_MIN_X && playerAhead) {
+      en.fireTimer -= dt;
+      if (en.fireTimer <= 0) {
+        const speed = en.gunner ? bulletSpeed * GUNNER_BULLET_SPEED_MUL : bulletSpeed;
+        // Même couleur pour élite et gunner : même tir visé, même façon de l'esquiver.
+        patternAimed(projectiles, en.x, en.y, target, speed);
+        const interval = en.gunner ? GUNNER_FIRE_INTERVAL : ELITE_FIRE_INTERVAL;
+        en.fireTimer = interval.min + Math.random() * interval.spread;
+      }
+    }
+  }
+}
+
+// Couleur du type d'ennemi (voir PALETTE dans config.js) : celle de son explosion.
+export function enemyGlowColor(en) {
+  if (en.type === "elite") return PALETTE.enemyElite;
+  if (en.type === "kamikaze") return PALETTE.danger;
+  return en.gunner ? PALETTE.enemyGunner : PALETTE.enemyNormal;
+}
+
+export function damageEnemy(en, particlePool, amount) {
+  en.hp -= amount;
+  const color = enemyGlowColor(en);
+  if (en.hp <= 0) {
+    en.active = false;
+    spawnExplosion(particlePool, en.x, en.y, en.type === "elite" ? 24 : 14, color);
+    spawnFlashBurst(particlePool, en.x, en.y, en.type === "elite" ? 10 : 6);
+    return true; // détruit
+  }
+  spawnSpark(particlePool, en.x, en.y, 5);
+  return false; // touché mais survit
+}
+
+export function pointsFor(en) {
+  return TYPE_STATS[en.type].points;
+}
+
+// Un ennemi touché mais pas détruit passe à la variante ternie de son sprite
+// (fadedPalette, assets.js), seul repère de dégâts. Même un ennemi à 1 PV peut
+// survivre à un tir : RAFALE et les plombs lointains font moins d'un point de dégâts.
+function spriteFor(en, sprites) {
+  const damaged = en.hp < en.maxHp;
+  if (en.type === "elite") return damaged ? sprites.enemyEliteDamaged : sprites.enemyElite;
+  if (en.type === "kamikaze") return damaged ? sprites.enemyKamikazeDamaged : sprites.enemyKamikaze;
+  if (en.gunner) return damaged ? sprites.enemyGunnerDamaged : sprites.enemyGunner;
+  return damaged ? sprites.enemyNormalDamaged : sprites.enemyNormal;
+}
+
+export function drawEnemies(ctx, pool) {
+  const sprites = buildSprites();
+  for (const en of pool.items) {
+    if (!en.active) continue;
+    const sprite = spriteFor(en, sprites);
+    if (en.type === "kamikaze") {
+      // Orienté selon sa vitesse : on le voit pivoter vers le joueur. Le sprite
+      // pointe vers +X au repos (ENEMY_KAMIKAZE_ROWS).
+      ctx.save();
+      ctx.translate(en.x, en.y);
+      ctx.rotate(Math.atan2(en.vy, en.vx));
+      drawWithGlow(ctx, sprite, 0, 0);
+      ctx.restore();
+    } else {
+      drawWithGlow(ctx, sprite, en.x, en.y);
+    }
+  }
+}

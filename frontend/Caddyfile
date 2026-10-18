@@ -1,0 +1,25 @@
+# Compression des fichiers texte (JS, CSS, HTML), absente du Caddyfile par
+# défaut de l'image officielle.
+:80 {
+	encode zstd gzip
+
+	# Route l'API vers le backend en déploiement autonome (docker-compose.yml
+	# à la racine). Sans effet sur l'instance publique, où le Caddy de l'infra
+	# envoie /api au backend avant ce service. Corps de requête plafonné : un
+	# score tient en quelques dizaines d'octets.
+	handle /api/* {
+		request_body {
+			max_size 10KB
+		}
+		reverse_proxy backend:8000
+	}
+
+	handle {
+		root * /usr/share/caddy
+		# "no-cache" ne veut pas dire "ne pas mettre en cache" : le navigateur
+		# revalide à chaque chargement (un fichier inchangé revient en 304).
+		# Sans ça, un F5 peut resservir une version périmée du jeu.
+		header Cache-Control "no-cache"
+		file_server
+	}
+}

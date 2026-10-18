@@ -1,0 +1,267 @@
+// Synthèse audio 100% Web Audio API — aucun fichier son. Chaque effet crée
+// ses propres oscillateurs/noeuds à la volée puis les jette. De courtes rampes
+// de gain évitent les clics au démarrage et à l'arrêt.
+import { STORAGE_KEYS } from "../config.js";
+import { loadUnitFloat, saveItem } from "../storage.js";
+
+export class AudioEngine {
+  // Contexte créé tout de suite (geste utilisateur requis seulement pour le
+  // RESUME, voir ensure()) — partagé avec le lecteur de musique (music.js)
+  // plutôt qu'un second contexte.
+  constructor() {
+    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+    this.master = this.ctx.createGain();
+    this.muted = false;
+    this.masterVolume = loadUnitFloat(STORAGE_KEYS.sfxVolume, 0.5);
+    this.master.gain.value = this.masterVolume;
+    this.master.connect(this.ctx.destination);
+  }
+
+  // Le contexte doit être repris depuis un geste utilisateur (règle des
+  // navigateurs) : appelé à chaque clic, tap ou touche (voir main.js). Tout
+  // état autre que "running" : iOS en a un de plus, "interrupted", après un appel.
+  ensure() {
+    if (this.ctx.state !== "running") this.ctx.resume();
+  }
+
+  setMuted(muted) {
+    this.muted = muted;
+    this.master.gain.setTargetAtTime(muted ? 0 : this.masterVolume, this.ctx.currentTime, 0.01);
+  }
+
+  setMasterVolume(v) {
+    this.masterVolume = Math.max(0, Math.min(1, v));
+    if (!this.muted) this.master.gain.setTargetAtTime(this.masterVolume, this.ctx.currentTime, 0.01);
+    saveItem(STORAGE_KEYS.sfxVolume, this.masterVolume);
+  }
+
+  // Enveloppe de volume d'une note : montée, tenue, descente. `start` permet
+  // de programmer une note qui démarre plus tard (mélodies).
+  _envGain(duration, peak, attack, release, start = this.ctx.currentTime) {
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0, start);
+    g.gain.linearRampToValueAtTime(peak, start + attack);
+    g.gain.setValueAtTime(peak, start + Math.max(attack, duration - release));
+    g.gain.linearRampToValueAtTime(0, start + duration);
+    return g;
+  }
+
+  // Bruit blanc filtré passe-bas avec balayage de la fréquence de coupure —
+  // le "corps" commun à explosion/NOVA/fusil à pompe ci-dessous ; chacune
+  // garde sa propre enveloppe de volume (c'est elle qui les distingue au son),
+  // appliquée par l'appelant sur le filtre renvoyé ici (pas encore connecté
+  // à une sortie).
+  _noiseBurst(duration, cutoffStart, cutoffEnd) {
+    const now = this.ctx.currentTime;
+    const bufferSize = Math.floor(this.ctx.sampleRate * duration);
+    const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+    const noise = this.ctx.createBufferSource();
+    noise.buffer = buffer;
+    const filter = this.ctx.createBiquadFilter();
+    filter.type = "lowpass";
+    filter.frequency.setValueAtTime(cutoffStart, now);
+    filter.frequency.exponentialRampToValueAtTime(cutoffEnd, now + duration);
+    noise.connect(filter);
+    noise.start(now);
+    noise.stop(now + duration);
+    return filter;
+  }
+
+  // `delay` (secondes) et `release` : pour enchaîner plusieurs notes.
+  _tone({ type = "square", startFreq, endFreq = startFreq, duration, gain = 0.15, delay = 0, release = 0.01 }) {
+    // Contexte pas encore repris : son ignoré, sinon il jouerait en retard, au premier geste.
+    if (this.ctx.state !== "running") return;
+    const now = this.ctx.currentTime + delay;
+    const osc = this.ctx.createOscillator();
+    const g = this._envGain(duration, gain, 0.005, release, now);
+    osc.type = type;
+    osc.frequency.setValueAtTime(startFreq, now);
+    osc.frequency.exponentialRampToValueAtTime(Math.max(1, endFreq), now + duration);
+    osc.connect(g);
+    g.connect(this.master);
+    osc.start(now);
+    osc.stop(now + duration + 0.02);
+  }
+
+  // Tir joueur : "pew" glissé vers le grave. À cette cadence (plusieurs
+  // tirs/s), le timbre, la hauteur et l'amplitude du glissando varient d'un tir à l'autre.
+  // colorKey : "normal", "power" ou "rapid" (le fusil à pompe a son propre son).
+  playPlayerShot(colorKey) {
+    const waveforms = ["square", "triangle", "sawtooth"];
+    const type = waveforms[Math.floor(Math.random() * waveforms.length)];
+    const baseStart = { normal: 800, power: 620, rapid: 980 }[colorKey];
+    const baseEnd = { normal: 400, power: 260, rapid: 560 }[colorKey];
+    const pitchVariance = 0.8 + Math.random() * 0.4; // ±20%
+    const sweepVariance = 0.7 + Math.random() * 0.5; // amplitude du glissando, de -30 % à +20 %
+    this._tone({
+      type,
+      startFreq: baseStart * pitchVariance,
+      endFreq: baseStart * pitchVariance - (baseStart - baseEnd) * sweepVariance,
+      duration: 0.07 + Math.random() * 0.05,
+      gain: 0.075 + Math.random() * 0.03,
+    });
+  }
+
+  // Explosion : bruit blanc filtré passe-bas + glissement de fréquence de
+  // coupure, enveloppe courte (Attack 0, Decay ~150ms, pas de Sustain).
+  playExplosion() {
+    if (this.ctx.state !== "running") return; // voir _tone
+    const now = this.ctx.currentTime;
+    const duration = 0.3;
+    const filter = this._noiseBurst(duration, 200, 20);
+
+    const g = this.ctx.createGain();
+    g.gain.setValueAtTime(0, now);
+    g.gain.linearRampToValueAtTime(0.22, now + 0.005); // Attack ~0ms
+    g.gain.exponentialRampToValueAtTime(0.001, now + 0.005 + 0.15); // Decay 150ms vers ~0
+    g.gain.linearRampToValueAtTime(0, now + duration);
+
+    filter.connect(g);
+    g.connect(this.master);
+  }
+
+  // Saut spatial entre deux vagues (startWaveBreak, states/waves.js) : glissement
+  // montant de 2 s avec légère distorsion, pendant l'accélération du décor.
+  playWarpTransition() {
+    if (this.ctx.state !== "running") return; // voir _tone
+    const now = this.ctx.currentTime;
+    const duration = 2;
+    const osc = this.ctx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(100, now);
+    osc.frequency.exponentialRampToValueAtTime(800, now + duration);
+
+    const shaper = this.ctx.createWaveShaper();
+    const curve = new Float32Array(256);
+    for (let i = 0; i < 256; i++) {
+      const x = (i / 255) * 2 - 1;
+      curve[i] = Math.tanh(x * 2.5); // légère distorsion douce
+    }
+    shaper.curve = curve;
+
+    const g = this._envGain(duration, 0.1, 0.02, 0.3);
+    osc.connect(shaper);
+    shaper.connect(g);
+    g.connect(this.master);
+    osc.start(now);
+    osc.stop(now + duration + 0.05);
+  }
+
+  // NOVA : explosion nettement plus "large" qu'un impact normal
+  // (playExplosion) — bruit filtré plus long + un sub grave en dessous pour
+  // le poids. L'écran tremble déjà fort (triggerShake dans states/playing.js), le son
+  // doit suivre sinon l'effet paraît muet malgré l'écran qui vibre.
+  playNovaBlast() {
+    if (this.ctx.state !== "running") return; // voir _tone
+    const now = this.ctx.currentTime;
+    const duration = 0.6;
+    const filter = this._noiseBurst(duration, 500, 20);
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0, now);
+    noiseGain.gain.linearRampToValueAtTime(0.32, now + 0.008);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.master);
+
+    // Sub grave : c'est lui qui donne le "poids" qu'un simple bruit filtré n'a pas.
+    const sub = this.ctx.createOscillator();
+    sub.type = "sine";
+    sub.frequency.setValueAtTime(90, now);
+    sub.frequency.exponentialRampToValueAtTime(28, now + duration * 0.8);
+    const subGain = this._envGain(duration * 0.85, 0.3, 0.005, duration * 0.5);
+    sub.connect(subGain);
+    subGain.connect(this.master);
+    sub.start(now);
+    sub.stop(now + duration);
+  }
+
+  playBossHit() {
+    this._tone({ type: "sawtooth", startFreq: 300, endFreq: 60, duration: 0.2 });
+  }
+
+  // Fusil à pompe (bonus CHEVROTINE) : superpose un transitoire (bruit
+  // filtré, même technique que playExplosion mais plus grave dès le départ)
+  // et un corps grave (onde descendante courte, comme playBossHit mais plus
+  // bas) — le mélange donne un "poids" que ni l'un ni l'autre seul ne
+  // rendrait, pour bien se distinguer du "pew" aigu du tir normal.
+  playShotgunBlast() {
+    if (this.ctx.state !== "running") return; // voir _tone
+    const now = this.ctx.currentTime;
+
+    const duration = 0.15;
+    const filter = this._noiseBurst(duration, 700, 80);
+    const noiseGain = this.ctx.createGain();
+    noiseGain.gain.setValueAtTime(0.28, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.master);
+
+    const osc = this.ctx.createOscillator();
+    osc.type = "sawtooth";
+    osc.frequency.setValueAtTime(90, now);
+    osc.frequency.exponentialRampToValueAtTime(35, now + 0.12);
+    const oscGain = this._envGain(0.14, 0.2, 0.002, 0.1);
+    osc.connect(oscGain);
+    oscGain.connect(this.master);
+    osc.start(now);
+    osc.stop(now + 0.16);
+  }
+
+  // Survol menu : "tic" bref et discret, retour sonore léger — déclenché à
+  // chaque CHANGEMENT d'item, pas en continu.
+  playMenuHover() {
+    this._tone({ type: "sine", startFreq: 900, endFreq: 1100, duration: 0.035, gain: 0.05 });
+  }
+
+  // Frôlement (graze.js) : "tic" aigu et très bref, la hauteur monte avec le
+  // palier de chaîne (plafonné côté appelant) — une chaîne qui s'enchaîne se
+  // ressent au son, pas juste au score qui défile.
+  playGraze(tier) {
+    const freq = 900 + tier * 90;
+    this._tone({ type: "sine", startFreq: freq, endFreq: freq * 1.15, duration: 0.045, gain: 0.05 });
+  }
+
+  // Seuil de chaîne atteint (GRAZE.milestones) : double tic plus aigu que le
+  // plus haut palier de playGraze, pour que le cap s'entende.
+  playGrazeMilestone() {
+    [1900, 2400].forEach((freq, i) => {
+      this._tone({ type: "sine", startFreq: freq, endFreq: freq * 1.15, duration: 0.05, gain: 0.07, delay: i * 0.07 });
+    });
+  }
+
+  // Anneau du niveau bonus (bonusLevel.js) réussi : note franche, un peu plus
+  // riche que le "tic" du graze — un vrai petit succès à chaque passage.
+  playRingPass(tier) {
+    const freq = 700 + Math.min(tier, 10) * 40;
+    this._tone({ type: "triangle", startFreq: freq, endFreq: freq * 1.3, duration: 0.09, gain: 0.09 });
+  }
+
+  // Anneau raté : sourd et bref, jamais punitif (aucune vie ne peut être
+  // perdue dans le niveau bonus) — juste un accusé de réception discret.
+  playRingMiss() {
+    this._tone({ type: "sine", startFreq: 220, endFreq: 140, duration: 0.08, gain: 0.05 });
+  }
+
+  // Konami code (voir main.js) : jingle court-court-court-long.
+  playKonami() {
+    const notes = [
+      { freq: 392, delay: 0, duration: 0.1 }, // sol
+      { freq: 523, delay: 0.1, duration: 0.1 }, // do
+      { freq: 659, delay: 0.2, duration: 0.12 }, // mi
+      { freq: 784, delay: 0.32, duration: 0.3 }, // sol aigu, tenue — le "ta-daa" final
+      { freq: 1175, delay: 0.38, duration: 0.15 }, // ré très aigu, éclat par-dessus la tenue
+    ];
+    for (const { freq, delay, duration } of notes) {
+      this._tone({ startFreq: freq, duration, delay, release: duration * 0.4 });
+    }
+  }
+
+  // Ramassage de bonus : deux notes montantes, timbre franc et positif, distinct des tirs/impacts.
+  playPowerup() {
+    [520, 780].forEach((freq, i) => {
+      this._tone({ startFreq: freq, duration: 0.12, gain: 0.12, delay: i * 0.06, release: 0.08 });
+    });
+  }
+}

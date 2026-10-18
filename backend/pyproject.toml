@@ -1,0 +1,11 @@
+[tool.ruff]
+target-version = "py312"
+# 110 plutôt que le défaut 88 (façon black) : les commentaires en français
+# dépassent vite 88 sans que la lisibilité en souffre.
+line-length = 110
+
+[tool.pytest.ini_options]
+# tests/ n'a pas de __init__.py : sans ça, pytest n'ajoute que tests/ à
+# sys.path (mode "prepend" par défaut), pas backend/ — "import database"
+# et "from main import ..." échoueraient sinon.
+pythonpath = ["."]

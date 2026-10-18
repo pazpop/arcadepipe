@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>ArcadePipe — Starfighter</title>
+<meta name="description" content="ArcadePipe Starfighter — jeu d'arcade spatial rétro gratuit, jouable directement dans le navigateur, sans installation. Vagues d'ennemis, boss, bonus et classement en ligne." />
+<link rel="canonical" href="https://arcadepipe.pazpop.net/" />
+<!-- Dessiné d'après le sprite du vaisseau (PLAYER_ROWS, js/assets.js). -->
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<meta property="og:type" content="website" />
+<meta property="og:title" content="ArcadePipe — Starfighter" />
+<meta property="og:description" content="Jeu d'arcade spatial rétro gratuit, jouable directement dans le navigateur." />
+<meta property="og:url" content="https://arcadepipe.pazpop.net/" />
+<!-- Image affichée quand le lien est partagé (Discord, X, Facebook...) : 1200x630. -->
+<meta property="og:image" content="https://arcadepipe.pazpop.net/og-image.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:image" content="https://arcadepipe.pazpop.net/og-image.png" />
+<meta name="twitter:title" content="ArcadePipe — Starfighter" />
+<meta name="twitter:description" content="Jeu d'arcade spatial rétro gratuit, jouable directement dans le navigateur." />
+<link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div id="game-container">
+    <canvas id="game-canvas" role="img" aria-label="ArcadePipe — Starfighter"></canvas>
+    <div id="crt-overlay" aria-hidden="true"></div>
+    <!-- tabindex="-1" : jamais atteint par Tab, seul le jeu lui donne le focus. -->
+    <input id="name-input" type="text" maxlength="8" autocomplete="off" autocorrect="off" spellcheck="false" autocapitalize="characters" enterkeyhint="done" tabindex="-1" data-i18n-aria="name.prompt" />
+
+    <!-- Replié au départ ; main.js l'ouvre si le joueur l'avait laissé ouvert. -->
+    <div id="mc-wrap" class="collapsed">
+      <div id="music-controls">
+        <div class="mc-section">
+          <div class="mc-label" data-i18n="panel.music"></div>
+          <div class="mc-row">
+            <button id="music-stop-btn" type="button" data-i18n-title="panel.music.stop" data-i18n-aria="panel.music.stop">⏹</button>
+            <button id="music-next-btn" type="button" data-i18n-title="panel.music.next" data-i18n-aria="panel.music.next">⏭</button>
+            <input id="music-volume" type="range" min="0" max="100" step="1" data-i18n-title="panel.music.volume" data-i18n-aria="panel.music.volume" />
+          </div>
+        </div>
+        <div class="mc-section">
+          <div class="mc-label" data-i18n="panel.sfx"></div>
+          <div class="mc-row">
+            <input id="sfx-volume" type="range" min="0" max="100" step="1" data-i18n-title="panel.sfx.volume" data-i18n-aria="panel.sfx.volume" />
+          </div>
+        </div>
+        <div class="mc-section">
+          <div class="mc-label" data-i18n="panel.speed"></div>
+          <button id="speed-btn" type="button" class="mc-btn" data-i18n-title="panel.speed.title">x1</button>
+        </div>
+        <div class="mc-section">
+          <label class="mc-check">
+            <input id="autofire-toggle" type="checkbox" />
+            <span data-i18n="panel.autofire"></span>
+          </label>
+          <label class="mc-check">
+            <input id="crt-toggle" type="checkbox" />
+            <span data-i18n="panel.crt"></span>
+          </label>
+        </div>
+        <div class="mc-section">
+          <button id="help-btn" type="button" class="mc-btn" data-i18n="panel.help"></button>
+        </div>
+        <div class="mc-section">
+          <button id="fullscreen-btn" type="button" class="mc-btn" data-i18n="panel.fullscreen"></button>
+        </div>
+        <!-- Langue : les drapeaux de la langue proposée, la suivante (js/main.js). -->
+        <div class="mc-section mc-row">
+          <button id="lang-btn" type="button" class="mc-btn" data-i18n-title="panel.lang.title" data-i18n-aria="panel.lang.title"></button>
+        </div>
+        <div class="mc-section mc-version"><span id="version-label"></span> · <a class="privacy-link" data-i18n="panel.privacy" href="privacy.html" target="_blank" rel="noopener"></a></div>
+      </div>
+      <!-- Hors du panneau qui se replie, donc toujours visibles : Pause (seul
+           moyen de mettre en pause au tactile) et l'onglet du panneau. -->
+      <div id="mc-tabs">
+        <button id="pause-btn" type="button" data-i18n-title="panel.pause.title" data-i18n-aria="panel.pause.title">⏸</button>
+        <button id="mc-toggle" type="button" data-i18n-title="panel.toggle.title" data-i18n-aria="panel.toggle.title"></button>
+      </div>
+    </div>
+
+    <!-- NOVA au tactile (Espace au clavier), masqué tant qu'aucune charge n'est prête (main.js). -->
+    <button id="nova-btn" type="button" class="nova-btn hidden" data-i18n-title="nova.title">✦ NOVA</button>
+
+    <!-- Image du résultat à partager (shareCard.js), visible en fin de partie (main.js). -->
+    <button id="share-btn" type="button" class="share-btn hidden" data-i18n="share.button" data-i18n-title="share.title"></button>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

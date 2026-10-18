@@ -1,0 +1,14 @@
+venv/
+__pycache__/
+*.pyc
+arcadepipe.db*
+# Tests/lint/dev : utiles en dev, inutiles (et jamais exécutés) dans l'image.
+tests/
+requirements-dev.txt
+pyproject.toml
+.pytest_cache/
+.ruff_cache/
+seed.py
+README.md
+Dockerfile
+.dockerignore

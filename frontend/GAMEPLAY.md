@@ -1,0 +1,93 @@
+# Règles du jeu
+
+Ce que fait le jeu, côté joueur. Les valeurs chiffrées des règles vivent dans [`js/config.js`](js/config.js), sauf celles des ennemis ([`js/enemies.js`](js/enemies.js)) ; l'organisation du code est décrite dans le [README du frontend](README.md).
+
+## Le vaisseau
+
+- Il suit la souris ou le doigt. Au tactile, il vole un peu en avant du doigt, pour ne pas être caché dessous.
+- Tir automatique par défaut ; en décochant la case « Tir automatique », on tire en maintenant le clic ou le doigt.
+- 3 vies. Après un coup, le vaisseau clignote et reste invulnérable un court instant.
+- La zone qui encaisse les coups est minuscule (le centre du vaisseau), bien plus petite que le sprite.
+
+## Les ennemis
+
+| Type | PV | Comportement | À partir de |
+| --- | --- | --- | --- |
+| Normal (vert) | 1 | vole en ligne droite, ne tire pas | vague 1 |
+| Élite (violet) | 3 | ondule, tir visé | vague 3 |
+| Kamikaze (rouge) | 1 | poursuit le joueur pendant 8 secondes, puis file tout droit ; ne tire pas ; 2 à la fois au maximum | vague 4 |
+| Gunner (bleu) | 2 | un ennemi normal qui tire, plus lentement qu'une élite | vague 6 |
+
+- Ils apparaissent dans le tiers droit de l'écran, puis se déplacent librement.
+- À partir de la vague 2, six vagues ordinaires sur dix environ voient passer une formation (jamais une vague de boss) : trois ennemis normaux en flèche, qui entrent ensemble par la droite. Une par vague au plus.
+- Un ennemi ne tire que si le joueur est devant lui, et jamais depuis le tiers gauche de l'écran.
+- Un ennemi touché mais pas détruit passe à une version ternie de son sprite : il n'y a pas de jauge de PV.
+- Foncer dans un ennemi le détruit, sans rapporter de points, au prix d'un coup (un point de bouclier, ou une vie), sauf pendant l'invulnérabilité qui suit un coup.
+
+## Les vagues
+
+- Une vague se termine après un nombre d'ennemis abattus, qui augmente à chaque vague. Les ennemis apparaissent de plus en plus vite et leurs tirs accélèrent, jusqu'à un plafond.
+- Entre deux vagues, un saut spatial : ni tirs ni collisions.
+- **Bonus « INTACT »** : +500 points si la vague se termine sans vie perdue. Le HUD l'affiche sous les vies tant qu'il est encore possible.
+- Une vague sur 5 est un combat de boss.
+
+## Le boss
+
+- Sa coque est indestructible : il faut détruire ses points faibles (4 à 6 selon la vague), qui passent du jaune à l'orange puis au rouge. Une barre de vie en bas de l'écran résume l'ensemble.
+- Il est invulnérable pendant son entrée, puis tire aussitôt. Son combat avance par phases : chaque point faible détruit en passe une, et le temps aussi (une toutes les 30 secondes). À chaque phase, sa façon de tirer change (éventail, spirale, anneau) et sa cadence accélère : un boss qu'on se contente d'esquiver finit aussi dangereux qu'un boss presque détruit.
+- Deux couleurs de tirs, selon la façon de les esquiver : bleu pour les éventails visés (le tir du milieu part droit sur le vaisseau), blanc pour les spirales et les anneaux (chaque anneau passe là où le précédent laissait un couloir, et ces couloirs se déplacent).
+- Foncer dans sa coque coûte un coup (un point de bouclier, ou une vie).
+- Derrière lui, en décor, la silhouette du vaisseau-mère de la flotte ennemie.
+- Le premier boss est adouci (moins de vie, tirs plus lents, éventails et anneaux moins fournis : 3 tirs au lieu de 5 pour son premier éventail).
+- Le vaincre rapporte un gros bonus de score et une vie (5 au maximum).
+
+## Les bonus
+
+Un ennemi détruit lâche parfois un bonus. Une arme et un bouclier peuvent être actifs ensemble, mais aucune arme n'apparaît tant qu'une arme bonus est active, ni aucun bouclier tant qu'il en reste un. Un seul bonus au sol à la fois.
+
+| Bonus | Effet |
+| --- | --- |
+| Puissance | tirs plus forts, cadence plus lente |
+| Rafale | cadence très rapide, tirs plus faibles |
+| Chevrotine | cône de plombs, dont les dégâts diminuent avec la distance |
+| Bouclier | absorbe 3 coups, sans limite de temps |
+
+Les trois armes durent 20 secondes ; le décompte est en pause pendant un saut spatial.
+
+## Frôlement et NOVA
+
+- **Frôler** un tir ennemi rapporte des points, multipliés par la longueur de la chaîne de frôlements en cours, jusqu'à 20, pour les 40 premiers tirs frôlés de chaque vague ; les suivants ne font plus que charger NOVA. Frôler le corps d'un ennemi allonge la chaîne et charge NOVA, sans rapporter de points : un ennemi qui ne tire pas se frôle sans risque. Un son marque les chaînes de 5, 10 et 15.
+- La chaîne repart de zéro à chaque vague et à chaque coup encaissé (pas un coup absorbé par le bouclier).
+- Un tir ne compte qu'une fois ; un ennemi peut être frôlé de nouveau après un délai. La coque du boss ne compte pas.
+- Chaque frôlement charge la jauge **NOVA** (en haut à gauche) : 12 frôlements pour une charge. Une charge en réserve au maximum, deux à partir du deuxième boss.
+- NOVA (Espace, ou le bouton tactile) détruit tous les ennemis à l'écran et leurs tirs. Le boss y est insensible, mais ses tirs disparaissent.
+
+## Le niveau bonus
+
+- Offert avant les vagues 10, 20, 30...
+- Dix anneaux à traverser, chacun d'une nuance tirée au hasard entre le vert d'eau et le bleu ; il devient or s'il est réussi, rouge s'il est raté. Le vaisseau ne se déplace que de haut en bas, aucune vie ne peut être perdue.
+- Récompense : la jauge NOVA se remplit en proportion des anneaux réussis.
+
+## Fin de partie et classement
+
+- À la dernière vie perdue, l'écran GAME OVER propose **REJOUER** (une nouvelle partie aussitôt) ou **CLASSEMENT**.
+- Si le score entre dans le top 10, l'écran l'annonce et la seconde option devient **ENTRER MON PSEUDO** (8 caractères). Le score est enregistré dans les deux cas : en rejouant, c'est sous le dernier pseudo saisi, ou « AAA ».
+- Si le serveur du classement ne répond pas, le score n'est pas enregistré, et l'écran de fin le dit.
+- Le meilleur score est gardé sur l'appareil quand la partie se termine par la destruction du vaisseau : le menu l'affiche, et l'écran de fin annonce un nouveau record personnel. Une partie quittée par le menu de pause ne compte pas, ni pour le record ni pour le classement.
+- Le bouton Partager crée une image du résultat (score, vague, ennemis abattus, meilleure chaîne, distance) avec un QR code vers le jeu.
+
+## Réglages et accessibilité
+
+- En bas à gauche : le bouton Pause et le bouton ⚙, qui ouvre le panneau de réglages (musique, bruitages, vitesse du jeu x1, x1.5 ou x2, tir automatique, filtre rétro, aide, plein écran, langue française ou anglaise).
+- Le jeu est toujours en 16:9. Sur un écran plus large (téléphone en paysage), ces commandes et le bouton NOVA tiennent dans les bandes noires.
+- Clavier : Échap ou P pour la pause, Espace pour NOVA, M pour couper le son. Les menus se parcourent aux flèches et à Entrée.
+- Le jeu se met en pause quand l'onglet passe en arrière-plan.
+- Le tremblement d'écran est coupé si le système demande moins d'animations.
+- Les préférences sont gardées sur l'appareil ; sans stockage local, le jeu fonctionne sans les mémoriser.
+
+## Partis pris visuels et sonores
+
+- Aucun fichier image : chaque sprite est une grille de caractères convertie en image au démarrage ([`js/assets.js`](js/assets.js)).
+- La couleur porte une information. Aucun autre ennemi que le boss n'est jaune or ; la couleur d'un tir dit comment l'esquiver, pas qui l'a tiré.
+- Les couleurs de jeu sont saturées ; le décor et les particules sont ternis pour ne jamais se confondre avec un tir.
+- Tous les bruitages sont synthétisés par le code ([`js/audio/sfx.js`](js/audio/sfx.js)). La musique est une playlist de morceaux de mall-e, tirés au hasard sans répétition immédiate.

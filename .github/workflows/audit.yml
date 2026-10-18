@@ -1,0 +1,41 @@
+name: Audit des dépendances
+
+# Chaque lundi, et à la demande (onglet Actions, « Run workflow ») : une faille
+# publiée entre deux pushs serait sinon ignorée jusqu'au push suivant. En cas
+# d'échec, GitHub prévient par courriel. GitHub suspend ce déclenchement après
+# 60 jours sans activité dans le dépôt : il se réactive depuis l'onglet Actions.
+on:
+  schedule:
+    - cron: "0 6 * * 1" # lundi, 6 h UTC
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      # Actions épinglées par SHA (voir docs/deploiement.md).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false # rien à pousser : le jeton ne reste pas dans .git/config
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
+        with:
+          python-version: "3.13"
+      - name: pip-audit (backend)
+        run: |
+          pip install -r backend/requirements-dev.txt
+          pip-audit -r backend/requirements.txt
+      # Chaque audit est lancé même si le précédent a échoué (`if`) : une faille
+      # ne doit pas en cacher une autre.
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        if: ${{ !cancelled() }}
+        with:
+          node-version: "22"
+      - name: npm audit (frontend)
+        if: ${{ !cancelled() }}
+        run: npm audit --prefix frontend
+      - name: npm audit (e2e)
+        if: ${{ !cancelled() }}
+        run: npm audit --prefix e2e

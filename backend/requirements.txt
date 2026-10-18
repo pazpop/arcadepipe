@@ -1,0 +1,26 @@
+# Toutes les dépendances de l'image, y compris celles que les cinq premières
+# installent d'elles-mêmes : l'image est ainsi la même à chaque construction, et
+# pip-audit vérifie les versions réellement déployées (sauf `packaging`, qu'il
+# ignore quand la version épinglée est la dernière parue). Dependabot propose les
+# mises à jour. Liste refaite par `pip freeze` dans l'image après un ajout.
+# Seul absent : pydantic_core, dont pydantic impose déjà la version exacte
+# (l'épingler ici ferait échouer toute mise à jour de l'un sans l'autre).
+fastapi==0.142.2
+starlette==1.7.0
+uvicorn==0.54.0
+pydantic==2.13.5
+slowapi==0.1.10
+
+annotated-doc==0.0.5
+annotated-types==0.8.0
+anyio==4.15.1
+click==8.5.0
+Deprecated==3.0.0
+h11==0.16.0
+idna==3.20
+limits==5.8.0
+opentelemetry-api==1.45.1
+packaging==26.3
+typing-inspection==0.4.4
+typing_extensions==4.16.0
+wrapt==2.5.0

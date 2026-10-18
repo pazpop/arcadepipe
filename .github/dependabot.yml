@@ -33,6 +33,11 @@ updates:
     directory: "/backend"
     schedule:
       interval: "weekly"
+    # La version de Python (3.13) se change à la main, avec celle du CI : une version trop neuve n'a pas toujours
+    # les paquets précompilés (pydantic-core sous 3.15 : l'image ne se construisait plus). Les correctifs restent proposés.
+    ignore:
+      - dependency-name: "library/python"
+        update-types: ["version-update:semver-major", "version-update:semver-minor"]
   - package-ecosystem: "docker"
     directory: "/frontend"
     schedule:

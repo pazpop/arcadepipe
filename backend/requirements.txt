@@ -5,7 +5,7 @@
 # mises à jour. Liste refaite par `pip freeze` dans l'image après un ajout.
 # Seul absent : pydantic_core, dont pydantic impose déjà la version exacte
 # (l'épingler ici ferait échouer toute mise à jour de l'un sans l'autre).
-fastapi==0.143.1
+fastapi==0.143.2
 starlette==1.8.0
 uvicorn==0.54.0
 pydantic==2.14.1

@@ -1,7 +1,7 @@
 name: Tests & image
 
-# Lint et tests (e2e compris) sur les push et les PR (Dependabot compris) ;
-# images sur GHCR seulement sur un push sur main. Le déploiement se fait à part,
+# Lint, tests (e2e compris) et construction des images sur les push et les PR (Dependabot compris) ;
+# images poussées sur GHCR seulement sur un push sur main. Le déploiement se fait à part,
 # à la main, depuis le dépôt d'infra.
 on:
   push:
@@ -110,8 +110,9 @@ jobs:
           npx playwright install --with-deps chromium
           npx playwright test
 
+  # Sur une PR aussi (Dependabot compris) : les images sont construites sans être poussées. Une PR qui casse leur
+  # construction (une image de base trop neuve…) se voit avant d'être fusionnée.
   build-and-push:
-    if: github.event_name == 'push'
     needs: [lint, tests, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 15 # un job bloqué ne retient pas la file des runs
@@ -131,6 +132,7 @@ jobs:
         run: echo "version=3.$(git rev-list --count HEAD)" >> "$GITHUB_OUTPUT"
 
       - name: Log in to GHCR
+        if: github.event_name == 'push'
         uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
         with:
           registry: ${{ env.REGISTRY }}
@@ -141,7 +143,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: ./backend
-          push: true
+          push: ${{ github.event_name == 'push' }}
           provenance: false
           tags: |
             ${{ env.REGISTRY }}/${{ env.IMAGE_BACKEND }}:latest
@@ -151,7 +153,7 @@ jobs:
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7
         with:
           context: ./frontend
-          push: true
+          push: ${{ github.event_name == 'push' }}
           provenance: false
           build-args: |
             APP_VERSION=${{ steps.version.outputs.version }}
@@ -163,6 +165,7 @@ jobs:
       # provenance: false (plus haut), ni sbom, ni multi-arch. Sinon, des manifestes sans étiquette apparaissent, et le
       # ménage les effacerait sous une image gardée.
       - name: Garder les 5 dernières images (backend)
+        if: github.event_name == 'push'
         uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5.0.0
         with:
           package-name: ${{ github.event.repository.name }}-backend
@@ -170,6 +173,7 @@ jobs:
           min-versions-to-keep: 5
 
       - name: Garder les 5 dernières images (frontend)
+        if: github.event_name == 'push'
         uses: actions/delete-package-versions@e5bc658cc4c965c472efe991f8beea3981499c55 # v5.0.0
         with:
           package-name: ${{ github.event.repository.name }}-frontend

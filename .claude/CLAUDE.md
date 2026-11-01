@@ -1,12 +1,14 @@
 # ArcadePipe : règles pour l'assistant
 
+Lire d'abord `../methode/METHODE.md` (dépôt privé du propriétaire), à chaque reprise. Ce fichier ne contient que les
+divergences et ce qui est propre au projet.
+
 Jeu web public : frontend JS vanilla + Canvas (`frontend/`), backend FastAPI/SQLite (`backend/`), tests de bout en bout Playwright (`e2e/`). Lire d'abord `README.md`, `frontend/README.md` et `docs/`.
 
 ## Git
 
-- Commits locaux directement sur `main`. **Jamais de push**, ni de tag, ni de release : le propriétaire pousse lui-même.
-- Un commit par sujet.
-- Dépôt public : aucun nom réel, courriel personnel, adresse IP réelle ni chemin de machine dans le code, les commits ou la doc. Seul le pseudonyme `pazpop`.
+- Jamais de tag ni de release : c'est le propriétaire qui s'en charge.
+- Dépôt public.
 - Le déploiement n'est pas ici : il se fait à la main depuis le dépôt privé `infra-pazpop-hetzner`. Ce dépôt teste et publie les images sur GHCR (`.github/workflows/image.yml`).
 
 ## Version, CHANGELOG, ROADMAP
@@ -17,11 +19,11 @@ Jeu web public : frontend JS vanilla + Canvas (`frontend/`), backend FastAPI/SQL
 
 ## Anti-régression
 
-1. Chercher tout ce qui utilise la chose modifiée : clavier, doigt (tactile), tests, doc.
-2. Écrire un test qui échoue, puis la correction.
-3. Casser exprès pour vérifier que le test le voit.
-4. Après toute suppression : `python tools/check_unused.py`.
-5. Ne jamais annuler un travail non commité avec `git checkout` ou `git restore`.
+Divergence : plus strict que la méthode.
+
+- Ce qu'on cherche avant de modifier comprend le clavier et le doigt (tactile).
+- Tout changement du jeu : un test qui échoue, puis la correction, puis casser exprès pour vérifier que le test le voit.
+- Après toute suppression : `python tools/check_unused.py`.
 
 ## Tests à lancer
 

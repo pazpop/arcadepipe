@@ -1,6 +1,6 @@
 # Développement, tests et audit : jamais dans l'image Docker.
 -r requirements.txt
-pytest==9.1.1
-httpx2==2.13.1   # nécessaire pour fastapi.testclient.TestClient
-ruff==0.17.1
+pytest==9.2.0
+httpx2==2.16.0   # nécessaire pour fastapi.testclient.TestClient
+ruff==0.17.3
 pip-audit==2.10.1

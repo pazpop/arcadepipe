@@ -1,7 +1,7 @@
 # ArcadePipe : règles pour l'assistant
 
-Lire d'abord `../methode/METHODE.md` (dépôt privé du propriétaire), à chaque reprise. Ce fichier ne contient que les
-divergences et ce qui est propre au projet.
+Méthode commune : `../methode/METHODE.md`. Ce fichier ne contient que les divergences et ce qui est propre au
+projet.
 
 Type : jeu, web. Statut : PROD.
 

@@ -3,13 +3,13 @@
 Lire d'abord `../methode/METHODE.md` (dépôt privé du propriétaire), à chaque reprise. Ce fichier ne contient que les
 divergences et ce qui est propre au projet.
 
+Type : jeu, web. Statut : PROD.
+
 Jeu web public : frontend JS vanilla + Canvas (`frontend/`), backend FastAPI/SQLite (`backend/`), tests de bout en bout Playwright (`e2e/`). Lire d'abord `README.md`, `frontend/README.md` et `docs/`.
 
 ## Git
 
-- Jamais de tag ni de release : c'est le propriétaire qui s'en charge.
 - Dépôt public.
-- Le déploiement n'est pas ici : il se fait à la main depuis le dépôt privé `infra-pazpop-hetzner`. Ce dépôt teste et publie les images sur GHCR (`.github/workflows/image.yml`).
 
 ## Version, CHANGELOG, ROADMAP
 
@@ -19,10 +19,6 @@ Jeu web public : frontend JS vanilla + Canvas (`frontend/`), backend FastAPI/SQL
 
 ## Anti-régression
 
-Divergence : plus strict que la méthode.
-
-- Ce qu'on cherche avant de modifier comprend le clavier et le doigt (tactile).
-- Tout changement du jeu : un test qui échoue, puis la correction, puis casser exprès pour vérifier que le test le voit.
 - Après toute suppression : `python tools/check_unused.py`.
 
 ## Tests à lancer

@@ -3,7 +3,7 @@
 Méthode commune : `../methode/METHODE.md`. Ce fichier ne contient que les divergences et ce qui est propre au
 projet.
 
-Type : jeu, web. Statut : PROD.
+Type : jeu (@../../methode/JEUX.md), web (@../../methode/WEB.md). Statut : PROD.
 
 Jeu web public : frontend JS vanilla + Canvas (`frontend/`), backend FastAPI/SQLite (`backend/`), tests de bout en bout Playwright (`e2e/`). Lire d'abord `README.md`, `frontend/README.md` et `docs/`.
 

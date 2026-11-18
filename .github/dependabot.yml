@@ -1,17 +1,5 @@
 version: 2
 updates:
-  # PR à chaque nouvelle version (pip-audit, lui, ne signale qu'une CVE publiée).
-  # Une seule PR pour toutes les dépendances Python (backend/requirements.txt
-  # et requirements-dev.txt). Si deux paquets deviennent incompatibles, la PR
-  # échoue : ajouter alors une règle `ignore` pour le paquet en cause.
-  - package-ecosystem: "pip"
-    directory: "/backend"
-    schedule:
-      interval: "weekly"
-    groups:
-      python:
-        patterns: ["*"]
-
   # Outils de lint (frontend) et de test (e2e).
   - package-ecosystem: "npm"
     directory: "/frontend"
@@ -22,23 +10,8 @@ updates:
     schedule:
       interval: "weekly"
 
-  # Actions (épinglées par SHA) et images de base (épinglées par digest) :
-  # voir docs/deploiement.md.
+  # Actions, épinglées par SHA : voir docs/deploiement.md.
   - package-ecosystem: "github-actions"
     directory: "/"
-    schedule:
-      interval: "weekly"
-
-  - package-ecosystem: "docker"
-    directory: "/backend"
-    schedule:
-      interval: "weekly"
-    # La version de Python (3.13) se change à la main, avec celle du CI : une version trop neuve n'a pas toujours
-    # les paquets précompilés (pydantic-core sous 3.15 : l'image ne se construisait plus). Les correctifs restent proposés.
-    ignore:
-      - dependency-name: "library/python"
-        update-types: ["version-update:semver-major", "version-update:semver-minor"]
-  - package-ecosystem: "docker"
-    directory: "/frontend"
     schedule:
       interval: "weekly"

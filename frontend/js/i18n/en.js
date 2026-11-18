@@ -106,7 +106,6 @@ export default {
   "gameover.enterName": "ENTER YOUR NAME",
   "gameover.top": "YOU MADE THE TOP {size}!",
   "gameover.newRecord": "NEW PERSONAL BEST!",
-  "gameover.offline": "LEADERBOARD UNREACHABLE",
   "name.title": "YOU MADE THE LEADERBOARD!",
   "name.prompt": "ENTER YOUR NAME (8 CHARS MAX)",
   "name.validate": "▶ CONFIRM",
@@ -119,10 +118,7 @@ export default {
   "board.wave": "WAVE",
   "board.kills": "KILLS",
   "board.empty": "No scores yet.",
-  "board.loading": "Loading…",
-  "board.error": "Leaderboard unavailable right now.",
   "board.back": "ESC / TAP — BACK",
-  "score.notSent": "SCORE NOT SENT",
 
   // --- Credits ---
   "credits.by": "A GAME BY PAZPOP",

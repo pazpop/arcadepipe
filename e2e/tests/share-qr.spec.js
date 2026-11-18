@@ -9,7 +9,7 @@ import { test, expect, collectErrors } from "./helpers.js";
 
 const require = createRequire(import.meta.url);
 const JSQR_SRC = fs.readFileSync(require.resolve("jsqr/dist/jsQR.js"), "utf8");
-const GAME_URL = "https://arcadepipe.pazpop.net";
+const GAME_URL = "https://pazpop.itch.io/arcadepipe";
 
 test("le QR de la carte de partage se décode, y compris après recompression JPEG", async ({ page }) => {
   const errors = collectErrors(page);

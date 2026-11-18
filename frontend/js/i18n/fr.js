@@ -107,7 +107,6 @@ export default {
   "gameover.enterName": "ENTRER MON PSEUDO",
   "gameover.top": "TU ENTRES DANS LE TOP {size} !",
   "gameover.newRecord": "NOUVEAU RECORD PERSONNEL !",
-  "gameover.offline": "CLASSEMENT INJOIGNABLE",
   "name.title": "TU ENTRES DANS LE CLASSEMENT !",
   "name.prompt": "ENTRE TON PSEUDO (8 CAR. MAX)",
   "name.validate": "▶ VALIDER",
@@ -120,10 +119,7 @@ export default {
   "board.wave": "VAGUE",
   "board.kills": "ABATTUS",
   "board.empty": "Aucun score pour l'instant.",
-  "board.loading": "Chargement…",
-  "board.error": "Classement indisponible pour le moment.",
   "board.back": "ÉCHAP / TAP — RETOUR",
-  "score.notSent": "SCORE NON ENVOYÉ",
 
   // --- Crédits ---
   "credits.by": "UN JEU DÉVELOPPÉ PAR PAZPOP",

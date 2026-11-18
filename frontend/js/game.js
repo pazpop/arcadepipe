@@ -56,8 +56,6 @@ export function createGame({ input, audio, music, nameInputEl }) {
     pauseSelected: 0,
     gameOverSelected: 0, // REJOUER par défaut — remis à 0 à chaque mort (states/endOfRun.js)
     scoreQualifies: false, // le score de la partie terminée entre dans le classement (states/endOfRun.js)
-    leaderboardDown: false, // le serveur du classement n'a pas répondu à la fin de la partie
-    gameOverWaiting: false, // seconde option choisie, réponse du serveur attendue
     bestScore: Number(loadItem(STORAGE_KEYS.bestScore)) || 0, // record personnel, gardé sur l'appareil
     newRecord: false, // la partie terminée a battu ce record
     pauseStage: "menu", // "menu" | "confirmQuit"
@@ -100,19 +98,16 @@ export function createGame({ input, audio, music, nameInputEl }) {
     shipIntroTimer: 0,
 
     // Classement
-    scores: null, // null = chargement en cours ou échec (voir scoresFailed)
-    scoresFailed: false,
-    scoreNotSent: false, // envoi du score refusé ou perdu (states/endOfRun.js)
+    scores: [], // ceux de cet appareil (scores.js), lus à l'ouverture (states/leaderboardScreen.js)
     scoresRevealCount: 0,
     scoresRevealTimer: 0,
-    gamesPlayed: null, // total global (toutes parties) — voir states/leaderboardScreen.js
+    gamesPlayed: 0,
 
     // Crédits
     creditsScroll: 0,
 
     // Saisie du nom
     nameEntry: "",
-    nameEntrySending: false, // envoi du score en cours
   };
 
   // Ouvre l'aide depuis le bouton du panneau — pas forcément déjà en pause,

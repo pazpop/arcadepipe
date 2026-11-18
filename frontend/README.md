@@ -7,8 +7,8 @@ JS vanilla (modules ES6) + Canvas 2D, sans étape de build : les fichiers sont s
 | Fichier | Rôle |
 | --- | --- |
 | `index.html`, `css/style.css` | la page : le canvas, le panneau de réglages, les boutons posés par-dessus |
-| `og-image.png` | image affichée quand un lien vers le jeu est partagé |
-| `privacy.html`, `press/` | page de confidentialité et kit presse, en français et en anglais (captures refaites par `npm run presskit`, dans `e2e/`) ; les textes des pages itch.io et YouTube, à copier, sont dans [`docs/descriptions-itch-youtube.html`](../docs/descriptions-itch-youtube.html) (hors du site publié) |
+| `og-image.png` | image principale du kit presse |
+| `privacy.html`, `press/` | page de confidentialité et kit presse, en français et en anglais (captures refaites par `npm run presskit`, dans `e2e/`) ; les textes des pages itch.io et YouTube, à copier, sont dans [`docs/descriptions-itch-youtube.html`](../docs/descriptions-itch-youtube.html) (hors de l'archive itch.io) |
 | `js/main.js` | point d'entrée : crée le jeu, branche boutons et touches, lance la boucle |
 | `js/game.js` | machine à états : appelle l'écran courant de `js/states/` |
 | `js/config.js` | les constantes du jeu (couleurs, difficulté, bonus, boss...) ; celles des ennemis sont dans `js/enemies.js` |
@@ -19,8 +19,7 @@ JS vanilla (modules ES6) + Canvas 2D, sans étape de build : les fichiers sont s
 | `js/assets.js`, `stars.js` | sprites dessinés par le code, décor étoilé |
 | `js/audio/` | bruitages synthétisés (`sfx.js`) et lecteur de musique (`music.js`) |
 | `js/i18n.js`, `js/i18n/` | traductions, un fichier par langue |
-| `js/api.js`, `shareCard.js` | classement en ligne, image de partage |
-| `js/siteConfig.js`, `site-config.json` | réglages du déploiement : adresse de l'API (vide par défaut) |
+| `js/scores.js`, `shareCard.js` | classement de cet appareil (stockage du navigateur), image de partage |
 | `js/renderer.js`, `input.js`, `storage.js` | canvas à la résolution de l'écran, entrées clavier/souris/tactile, préférences |
 | `js/pool.js`, `color.js`, `states/navHelpers.js` | petites fonctions partagées |
 | `lib/qrcode.js` | bibliothèque tierce (QR code), copiée telle quelle : à ne pas modifier |
@@ -48,14 +47,14 @@ Tout le jeu dessine en coordonnées logiques 480×270 (`RES_W`, `RES_H`) ; `rend
 
 ## Lancer en local
 
-Les commandes sont dans le [README principal](../README.md#lancer-en-local). Le classement n'apparaît que si le [backend](../backend/README.md) tourne aussi, et seulement à cette adresse exacte (`localhost`, port 5500).
+Les commandes sont dans le [README principal](../README.md#lancer-en-local).
 
 ## Tests et lint
 
 Node 22 ou plus récent. Chaque commande part de la racine du dépôt :
 
 ```bash
-cd frontend/js && node --test                # logique pure : collisions, frôlement, bonus, ennemis, boss, tirs courbes, traductions, cache de l'API
+cd frontend/js && node --test                # logique pure : collisions, frôlement, bonus, ennemis, boss, tirs courbes, traductions, classement
 cd frontend && npm install && npm run lint   # ESLint
 python tools/check_unused.py                 # code fantôme : exports, textes, ids et styles inutilisés
 ```

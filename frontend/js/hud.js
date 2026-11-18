@@ -279,26 +279,20 @@ const COL = {
   kills: RES_W - 20,
 };
 
-// scores : null pendant le chargement, ou si le backend est injoignable (failed).
-export function drawLeaderboardScreen(ctx, scores, failed, revealCount, gamesPlayed, scoreNotSent) {
+export function drawLeaderboardScreen(ctx, scores, revealCount, gamesPlayed) {
   text(ctx, t("menu.leaderboard"), RES_W / 2, 24, { size: 16, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
-  // Masqué plutôt qu'un faux "0" si le backend est injoignable.
-  if (gamesPlayed != null) {
-    text(ctx, t("board.games", { count: gamesPlayed }), RES_W / 2, 34, { size: 7, align: "center", alpha: 0.6 });
-  }
+  text(ctx, t("board.games", { count: gamesPlayed }), RES_W / 2, 34, { size: 7, align: "center", alpha: 0.6 });
   text(ctx, t("board.rank"), COL.rank, 42, { size: 7, alpha: 0.7 });
   text(ctx, t("board.name"), COL.name, 42, { size: 7, alpha: 0.7 });
   text(ctx, t("board.score"), COL.score, 42, { size: 7, align: "right", alpha: 0.7 });
   text(ctx, t("board.wave"), COL.wave, 42, { size: 7, align: "right", alpha: 0.7 });
   text(ctx, t("board.kills"), COL.kills, 42, { size: 7, align: "right", alpha: 0.7 });
 
-  if (failed) text(ctx, t("board.error"), RES_W / 2, RES_H / 2, { size: 9, align: "center" });
-  else if (!scores) text(ctx, t("board.loading"), RES_W / 2, RES_H / 2, { size: 9, align: "center", alpha: 0.7 });
-  else if (scores.length === 0) text(ctx, t("board.empty"), RES_W / 2, RES_H / 2, { size: 9, align: "center" });
+  if (scores.length === 0) text(ctx, t("board.empty"), RES_W / 2, RES_H / 2, { size: 9, align: "center" });
 
   const rowH = 16;
   const startY = 58;
-  (scores || []).slice(0, revealCount).forEach((sc, i) => {
+  scores.slice(0, revealCount).forEach((sc, i) => {
     const isMedal = i < 3;
     const color = isMedal ? MEDAL_COLORS[i] : PALETTE.hud;
     const size = isMedal ? 10 : 8;
@@ -312,7 +306,6 @@ export function drawLeaderboardScreen(ctx, scores, failed, revealCount, gamesPla
     text(ctx, String(sc.kills), COL.kills, y, { size, align: "right", color, glow });
   });
 
-  if (scoreNotSent) text(ctx, t("score.notSent"), RES_W / 2, RES_H - 26, { size: 8, align: "center", color: PALETTE.danger });
   text(ctx, t("board.back"), RES_W / 2, RES_H - 12, { size: 7, align: "center", alpha: 0.7 });
 }
 
@@ -553,16 +546,16 @@ function drawGameOverScreen(ctx, score, wave, kills, distance) {
 // La seconde option mène à la saisie du pseudo quand le score entre dans le
 // classement (qualifies), sinon au classement. waiting : elle a été choisie
 // et la réponse du serveur se fait attendre.
-function gameOverOptionRects(qualifies, waiting) {
-  const second = t(qualifies ? "gameover.enterName" : "menu.leaderboard") + (waiting ? " …" : "");
+function gameOverOptionRects(qualifies) {
+  const second = t(qualifies ? "gameover.enterName" : "menu.leaderboard");
   return verticalOptionRects([t("gameover.replay"), second], RES_H * 0.62, 20, 200, 18);
 }
 
 export function hitTestGameOver(x, y) {
-  return hitTestRects(x, y, gameOverOptionRects(false, false));
+  return hitTestRects(x, y, gameOverOptionRects(false));
 }
 
-// g : l'état du jeu (score de la partie, record, réponse du classement).
+// g : l'état du jeu (score de la partie, record).
 // topSize : la taille du classement si le score y entre (pour l'annoncer), 0 sinon.
 export function drawDeathScreen(ctx, g, topSize) {
   ctx.save();
@@ -581,10 +574,8 @@ export function drawDeathScreen(ctx, g, topSize) {
       color: PALETTE.bulletPlayer,
       glow: PALETTE.bulletPlayer,
     });
-  } else if (g.leaderboardDown) {
-    text(ctx, t("gameover.offline"), RES_W / 2, RES_H * 0.52, { align: "center", alpha: 0.75 });
   }
-  drawOptionList(ctx, gameOverOptionRects(topSize > 0, g.gameOverWaiting), g.gameOverSelected, 12);
+  drawOptionList(ctx, gameOverOptionRects(topSize > 0), g.gameOverSelected, 12);
   ctx.restore();
 }
 
@@ -612,5 +603,5 @@ export function drawNameEntry(ctx, g, cursorVisible) {
   const shown = name + (cursorVisible && name.length < 8 ? "_" : "");
   text(ctx, shown.padEnd(8, "·"), RES_W / 2, NAME_ENTRY_Y + 60, { size: 14, align: "center", glow: PALETTE.hud });
   const r = nameEntryValidateRect();
-  text(ctx, t("name.validate") + (g.nameEntrySending ? " …" : ""), r.x, r.y, { size: 11, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
+  text(ctx, t("name.validate"), r.x, r.y, { size: 11, align: "center", color: PALETTE.bulletPlayer, glow: PALETTE.bulletPlayer });
 }

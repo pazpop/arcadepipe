@@ -2,8 +2,6 @@
 venv/
 __pycache__/
 *.pyc
-.pytest_cache/
-backend/arcadepipe.db*
 
 # OS
 .DS_Store

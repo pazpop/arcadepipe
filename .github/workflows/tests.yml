@@ -1,0 +1,76 @@
+name: Tests
+
+# Lint et tests (e2e compris) sur les push et les PR (Dependabot compris). Le jeu n'a pas de serveur : rien n'est
+# construit ni déployé ; l'archive d'itch.io se fait à la main (docs/deploiement.md).
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15 # un job bloqué ne retient pas la file des runs
+    permissions:
+      contents: read
+    steps:
+      # Actions épinglées par SHA (voir docs/deploiement.md).
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false # aucun job ne pousse : le jeton ne reste pas dans .git/config
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.13"
+      # Code resté après une suppression : exports, textes, ids et styles inutilisés.
+      - name: code fantôme (frontend)
+        run: python tools/check_unused.py
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+      - name: eslint (frontend)
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+
+  # Tests de logique pure (quelques secondes).
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15 # un job bloqué ne retient pas la file des runs
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false # aucun job ne pousse : le jeton ne reste pas dans .git/config
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+      - name: node --test (frontend)
+        working-directory: frontend/js
+        run: node --test
+
+  # Tests bout-en-bout (Playwright, quelques minutes) : le jeu piloté dans un vrai navigateur (voir e2e/README.md).
+  e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15 # un job bloqué ne retient pas la file des runs
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false # aucun job ne pousse : le jeton ne reste pas dans .git/config
+      # python -m http.server sert le jeu aux tests (e2e/playwright.config.js).
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: "3.13"
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: "22"
+      - name: Playwright
+        working-directory: e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test

@@ -1,6 +1,6 @@
 # Tests bout-en-bout (Playwright)
 
-Les tests de `backend/` et `frontend/js/` couvrent la logique pure, mais pas le canvas, la souris/le tactile ni l'audio. Ce dossier pilote un vrai navigateur (Chromium) sur le jeu, comme le ferait un joueur : il attrape surtout les vraies casses (erreur JS, bouton mort, écran figé). Le rendu canvas n'est pas inspectable comme du DOM : le « joli » reste à l'œil humain, via les captures de `test-results/`.
+Les tests de `frontend/js/` couvrent la logique pure, mais pas le canvas, la souris/le tactile ni l'audio. Ce dossier pilote un vrai navigateur (Chromium) sur le jeu, comme le ferait un joueur : il attrape surtout les vraies casses (erreur JS, bouton mort, écran figé). Le rendu canvas n'est pas inspectable comme du DOM : le « joli » reste à l'œil humain, via les captures de `test-results/`.
 
 ```bash
 cd e2e
@@ -9,12 +9,12 @@ npm run install-browsers   # télécharge Chromium (une fois)
 npm test                   # ou : npx playwright test --headed
 ```
 
-`npm test` démarre le serveur statique du frontend (port 5500) avec la commande `python`, qui doit donc exister (sur certains systèmes elle s'appelle `python3`). Hors CI, si un serveur écoute déjà sur ce port, c'est lui qui est testé : vérifier que rien d'autre n'y tourne. Si l'environnement du backend existe (`backend/venv`, voir son [README](../backend/README.md)), il démarre aussi le backend sur le port 8001, avec une base vide, pour les tests du classement ; sinon ces tests sont sautés. Les autres tests tournent sans backend : les appels au classement échouent (sauf si un backend de développement écoute sur le port 8000), ce que le jeu gère. Une erreur JavaScript non interceptée dans la page fait échouer n'importe quel test (`tests/helpers.js`). Résultats et captures dans `test-results/` (ignoré par git).
+`npm test` démarre le serveur statique du frontend (port 5500) avec la commande `python`, qui doit donc exister (sur certains systèmes elle s'appelle `python3`). Hors CI, si un serveur écoute déjà sur ce port, c'est lui qui est testé : vérifier que rien d'autre n'y tourne. Une erreur JavaScript non interceptée dans la page fait échouer n'importe quel test (`tests/helpers.js`). Résultats et captures dans `test-results/` (ignoré par git).
 
 ## Ce qui est couvert (`tests/`)
 
 - `menu-pause` — menu, pause (scène figée, bouton Pause au clavier), confirmation de sortie, aide (bienvenue, toutes ses pages, menu, pause, bouton du panneau), crédits, clavier et focus, panneau replié, plein écran, filtre rétro
-- `gameplay` — tir manuel et automatique, choix de piste, fin de vague, fin de partie sans serveur (classement annoncé injoignable, record personnel gardé et affiché au menu), serveur lent (« … », « Chargement… », REJOUER qui n'attend pas), partie quittée par la pause (record non enregistré)
+- `gameplay` — tir manuel et automatique, choix de piste, fin de vague, fin de partie (partie comptée, top annoncé, record personnel gardé et affiché au menu), partie quittée par la pause (record non enregistré)
 - `powerups-boss` — bonus (arme, bouclier, les deux ensemble), boss invulnérable à son entrée, vie perdue contre sa coque, boss vaincu
 - `graze-nova` — frôlements, jauge NOVA, bouton tactile (efface les tirs du boss), Espace (détruit les ennemis)
 - `bonus-level` — le niveau bonus se déclenche, se termine, récompense selon les anneaux réussis, puis la partie reprend
@@ -22,7 +22,7 @@ npm test                   # ou : npx playwright test --headed
 - `music-end` — une fin de piste enchaîne sur une autre piste, qui joue réellement
 - `i18n` — langue du navigateur par défaut, changement de langue mémorisé, et possible quand le stockage est bloqué
 - `mobile` — téléphone en paysage : commandes dans les bandes noires, le vaisseau suit le doigt, tir au doigt maintenu, Pause d'un second doigt
-- `leaderboard` — avec le vrai backend : scores du serveur triés, pseudo saisi puis score inscrit, REJOUER
+- `leaderboard` — classement du navigateur trié, parties jouées, pseudo saisi puis score inscrit, REJOUER
 - `pages` — page de confidentialité et kit presse
 - `share-qr` — le QR de la carte de partage se décode après recompression JPEG ; contraste vérifié au pixel
 
@@ -44,7 +44,7 @@ Les clics sont traités aussitôt (`handleTap`), les touches à la frame suivant
 Le texte du jeu est dessiné dans le canvas : il n'existe pas dans la page. `screenText(page)` (`tests/helpers.js`) renvoie les textes dessinés à la dernière image, ce qui permet de vérifier un message à l'écran :
 
 ```js
-await expect.poll(() => screenText(page)).toContain("CLASSEMENT INJOIGNABLE");
+await expect.poll(() => screenText(page)).toContain("NOUVEAU RECORD PERSONNEL !");
 ```
 
 ## Forcer une constante le temps d'un test
@@ -59,10 +59,6 @@ await page.evaluate(async () => {
 ```
 
 Marche pour tout module déjà chargé : `config.js` (constantes), `main.js` (instances `music` et `game`). Voir `tests/helpers.js` : `skipHints()` saute l'aide de bienvenue.
-
-## Après un déploiement
-
-`npm run smoke` ouvre le jeu en ligne et signale ce que les tests locaux ne peuvent pas voir, parce que cela dépend du serveur : une erreur dans la console (politique de sécurité CSP), un fichier manquant, les drapeaux du bouton de langue bloqués, un classement qui ne répond pas.
 
 ## Kit presse
 

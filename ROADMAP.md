@@ -14,7 +14,6 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 
 - [ ] **Titres des morceaux** : mall-e va leur en donner et les publier sur Bandcamp ; renommer alors les fichiers (`AUDIO.tracks`, `config.js`) et citer les titres dans les crédits.
 - [ ] **Publier sur itch.io** : déposer la dernière archive (`python tools/build_itch.py`, voir [docs/deploiement.md](docs/deploiement.md#itchio)), puis passer la page en public.
-- [ ] **Supprimer de faux scores à distance** : une commande d'administration protégée, au lieu d'une requête SQL à la main sur le serveur.
 - [ ] **Compléter le kit presse** (`frontend/press/`, captures refaites par `npm run presskit` dans `e2e/`) : la date de sortie, les liens des plateformes ; éventuellement la vidéo en MP4 ou en GIF, ou sur YouTube pour la page itch.io.
 - [ ] **Documentation du dépôt en anglais et en français** (README, docs).
 
@@ -26,7 +25,7 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 - [ ] **Messages de fin de partie variables** (« Presque le boss ! ») et meilleure chaîne de frôlements sur l'écran de fin, à partir de `getRunSummary()`.
 - [ ] **Menu Options** : y déplacer les réglages du panneau (filtre rétro, langue...), éventuellement une qualité d'affichage.
 - [ ] **Changer de langue sans recharger la page** (voir `nextLang`, `i18n.js`) et traduire les balises `<meta>` de `index.html` (titre et description des liens partagés, en français seulement).
-- [ ] **Distance parcourue au classement** (change le schéma de la base).
+- [ ] **Distance parcourue au classement** (un champ de plus dans `scores.js`).
 
 ## Idées à évaluer
 
@@ -41,11 +40,8 @@ Ce qui reste à faire, par ordre de priorité. Ce qui est fait est dans le [CHAN
 - **Couleurs de vaisseau à débloquer** avec le record local (palette de `assets.js`), purement cosmétiques.
 - **Vérifier les couleurs au simulateur de daltonisme** : gunner bleu et ennemi normal vert ont la même silhouette ; kamikaze rouge sur ennemis verts.
 - **Mode attract** : le jeu se joue seul derrière le menu.
-- Manette (Gamepad API) · démarrage à la vague N par paramètre d'URL · PWA installable hors ligne · classement hebdomadaire · interrupteurs de debug (hitbox, FPS).
+- Manette (Gamepad API) · démarrage à la vague N par paramètre d'URL · PWA installable hors ligne · interrupteurs de debug (hitbox, FPS).
 
 ## Technique
 
-- [ ] **Score authentifié** : jeton signé émis au début de la partie, exigé à l'envoi. Le score non authentifié est un risque assumé (voir [docs/securite.md](docs/securite.md)).
-- [ ] **Rate limiting en IPv6** : compter par préfixe /64 plutôt que par adresse (`get_client_ip`, `backend/main.py`), si l'instance publique est joignable en IPv6.
-- [ ] **Tests e2e** : le score (un kill le fait monter, bonus INTACT, valeurs envoyées au classement), un tir ennemi encaissé et le bouclier qui absorbe trois coups, la pause quand l'onglet passe en arrière-plan ; les réglages du panneau (volumes, vitesse), le bouton Partager ; Firefox et WebKit en plus de Chromium (`e2e/playwright.config.js`).
-- [ ] **Scan des images construites** ([Trivy](https://trivy.dev/)) en CI : `pip-audit` ne couvre pas les paquets système de l'image.
+- [ ] **Tests e2e** : le score (un kill le fait monter, bonus INTACT, valeurs inscrites au classement), un tir ennemi encaissé et le bouclier qui absorbe trois coups, la pause quand l'onglet passe en arrière-plan ; les réglages du panneau (volumes, vitesse), le bouton Partager ; Firefox et WebKit en plus de Chromium (`e2e/playwright.config.js`).

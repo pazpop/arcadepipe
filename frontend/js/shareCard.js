@@ -5,7 +5,7 @@ import { t } from "./i18n.js";
 import qrcodeFactory from "../lib/qrcode.js";
 
 const SIZE = 1080; // carré, la taille attendue par Discord/X pour un aperçu propre
-const SHARE_HOST = "arcadepipe.pazpop.net";
+const SHARE_HOST = "pazpop.itch.io/arcadepipe";
 
 function text(ctx, str, x, y, { size = 24, color = PALETTE.hud, align = "left", glow = null } = {}) {
   ctx.font = `${size}px monospace`;

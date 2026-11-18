@@ -178,6 +178,8 @@ export const STORAGE_KEYS = {
   gameSpeed: "arcadepipe_game_speed",
   lang: "arcadepipe_lang",
   bestScore: "arcadepipe_best_score",
+  scores: "arcadepipe_scores", // classement local (scores.js)
+  gamesPlayed: "arcadepipe_games_played",
 };
 
 // Multiplicateurs de vitesse de jeu proposés par le bouton "VITESSE DU JEU" (panneau

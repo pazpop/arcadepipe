@@ -11,9 +11,6 @@ Jeu web public, sans serveur : JS vanilla + Canvas (`frontend/`), publié à la 
 (`tools/build_itch.py`), classement dans le navigateur (`frontend/js/scores.js`) ; tests de bout en bout Playwright
 (`e2e/`). Lire d'abord `README.md`, `frontend/README.md` et `docs/`.
 
-Divergence avec `WEB.md` : pas d'image GHCR ni de déploiement par infra-pazpop-hetzner (archivé) ; la CI teste
-seulement.
-
 ## Git
 
 - Dépôt public.

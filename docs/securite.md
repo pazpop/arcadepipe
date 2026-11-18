@@ -10,7 +10,7 @@ Le jeu n'a pas de serveur : des fichiers statiques, servis par itch.io. Rien n'e
   sans erreur (`scores.js`).
 - **Aucune ressource externe** : ni script, ni police, ni mesure d'audience. La bibliothèque du QR code est copiée dans
   le dépôt (`frontend/lib/`).
-- **CI** : actions GitHub épinglées par SHA de commit ; Dependabot et un audit `npm` hebdomadaire
+- **CI** : actions GitHub épinglées par SHA de commit ; un audit `npm` hebdomadaire
   ([déploiement](deploiement.md#cicd)).
 
 ## Non fait volontairement

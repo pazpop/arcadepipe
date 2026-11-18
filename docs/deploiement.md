@@ -26,7 +26,6 @@ Tout est dans `.github/workflows/tests.yml`, hormis l'audit hebdomadaire. La CI 
 l'archive d'itch.io se fait à la main.
 
 - Actions GitHub épinglées par SHA de commit : un tag peut être redéplacé, un SHA non.
-- [Dependabot](../.github/dependabot.yml) ouvre une PR à chaque mise à jour (`npm`, `github-actions`).
 - `.github/workflows/audit.yml` lance `npm audit` chaque lundi : une faille publiée entre deux pushs dans une
   dépendance fait échouer ce workflow, et GitHub prévient par courriel. GitHub le suspend après 60 jours sans activité
   dans le dépôt.

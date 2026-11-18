@@ -1,6 +1,6 @@
 name: Tests
 
-# Lint et tests (e2e compris) sur les push et les PR (Dependabot compris). Le jeu n'a pas de serveur : rien n'est
+# Lint et tests (e2e compris) sur les push et les PR. Le jeu n'a pas de serveur : rien n'est
 # construit ni déployé ; l'archive d'itch.io se fait à la main (docs/deploiement.md).
 on:
   push:

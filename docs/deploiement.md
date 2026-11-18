@@ -9,6 +9,9 @@ Le jeu est fait de fichiers statiques, sans serveur : itch.io les héberge. `pyt
    *This file will be played in the browser*.
 2. Dimensions de l'affichage : 960 × 540 (le jeu est en 16:9), avec le bouton plein écran.
 
+Jusqu'au commit `4e1743b`, le jeu avait un serveur (FastAPI, SQLite, Docker) et un classement commun : c'est la
+version à reprendre pour voir comment c'était fait.
+
 Le kit presse (`frontend/press/`) et les textes des pages itch.io et YouTube
 ([`descriptions-itch-youtube.html`](descriptions-itch-youtube.html)) restent dans le dépôt : ils ne sont pas dans
 l'archive.

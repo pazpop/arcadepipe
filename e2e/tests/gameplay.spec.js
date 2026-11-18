@@ -104,11 +104,12 @@ test("fin de partie : partie comptée, top annoncé, record personnel gardé", a
   const { canvas } = canvasHelpers(page);
   expect((await gameState(page)).scoreQualifies).toBe(true);
   expect(await page.evaluate(() => localStorage.getItem("arcadepipe_games_played"))).toBe("1");
-  // Premier score de ce navigateur : c'est le record personnel.
+  // L'écran de fin est dessiné à l'image suivante : l'attendre avant de le lire. Premier score de ce navigateur :
+  // c'est le record personnel.
+  await expect.poll(() => screenText(page)).toContain("TU ENTRES DANS LE TOP 10 !");
   const shown = await screenText(page);
   expect(shown).toContain("GAME OVER");
   expect(shown).toContain("NOUVEAU RECORD PERSONNEL !");
-  expect(shown).toContain("TU ENTRES DANS LE TOP 10 !");
   expect(shown).not.toContain("ARME MASSIVE"); // la bannière de la vague ne reste pas figée sous GAME OVER
   expect(shown).not.toContain("INTACT"); // ni le rappel du bonus sans dégâts, qui clignote au premier coup de la vague
   const best = Number(await page.evaluate(() => localStorage.getItem("arcadepipe_best_score")));

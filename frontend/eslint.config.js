@@ -1,6 +1,5 @@
 // Config minimale (eslint:recommended) — filet de sécurité, pas une
-// transformation du style existant. Symétrique de ruff côté backend
-// (voir backend/pyproject.toml).
+// transformation du style existant.
 import js from "@eslint/js";
 
 export default [
